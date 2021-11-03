@@ -1,0 +1,85 @@
+{
+    "root": true,
+    "env": {
+        "es2021": true,
+        "node": true
+    },
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 12,
+        "project": ["tsconfig.json"],
+        "sourceType": "module"
+    },
+    "plugins": ["@typescript-eslint"],
+    "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-this-alias": "off",
+        "@typescript-eslint/naming-convention": [
+            "error",
+            {
+                "selector": "variable",
+                "format": ["camelCase", "UPPER_CASE"],
+                "leadingUnderscore": "allowDouble"
+            },
+            {
+                "selector": ["parameter", "function", "typeProperty", "objectLiteralProperty"],
+                "format": ["camelCase"],
+                "leadingUnderscore": "allowDouble"
+            },
+            {
+                "selector": ["variable", "parameter", "typeProperty"],
+                "types": ["boolean"],
+                "format": ["PascalCase"],
+                "prefix": ["is", "allow", "has", "can", "did", "will", "check", "use"]
+            },
+            {
+                "selector": "function",
+                "format": ["PascalCase"],
+                "modifiers": ["global", "exported"]
+            },
+            {
+                "selector": "classMethod",
+                "modifiers": ["private"],
+                "format": ["camelCase"],
+                "leadingUnderscore": "require"
+            },
+            {
+                "selector": "classMethod",
+                "format": ["camelCase"]
+            },
+            {
+                "selector": "classProperty",
+                "modifiers": ["private"],
+                "format": ["camelCase"],
+                "leadingUnderscore": "require"
+            },
+            {
+                "selector": "classProperty",
+                "format": ["camelCase", "UPPER_CASE"]
+            },
+            {
+                "selector": "typeAlias",
+                "format": ["PascalCase"],
+                "custom": {
+                    "regex": "^T[A-Z]",
+                    "match": true
+                }
+            },
+            {
+                "selector": "interface",
+                "format": ["PascalCase"],
+                "custom": {
+                    "regex": "^I[A-Z]",
+                    "match": true
+                }
+            },
+            {
+                "selector": "class",
+                "format": ["PascalCase"]
+            }
+        ]
+    }
+}

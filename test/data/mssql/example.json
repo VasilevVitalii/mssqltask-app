@@ -1,0 +1,9 @@
+{
+    "instance": "myserver/mysqlinstance",
+    "login": "sa",
+    "password": "password for sa",
+    "tags": [
+        "tag1",
+        "tag2"
+    ]
+}

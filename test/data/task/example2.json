@@ -1,0 +1,24 @@
+{
+    "name": "example 1",
+    "metronom": {
+        "kind": "custom",
+        "weekdaySun": true,
+        "weekdayMon": true,
+        "weekdayTue": true,
+        "weekdayWed": true,
+        "weekdayThu": true,
+        "weekdayFri": true,
+        "weekdaySat": true,
+        "periodMinutes": 1,
+        "periodicity": "every"
+    },
+    "queries": [
+        "SELECT * FROM sys.objects"
+    ],
+    "mssqls": {
+        "instances": [],
+        "tags": [
+            "tag1"
+        ]
+    }
+}

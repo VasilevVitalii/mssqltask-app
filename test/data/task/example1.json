@@ -1,0 +1,16 @@
+{
+    "name": "example 1",
+    "metronom": {
+        "kind": "cron",
+        "cron": "0 */1 * * * *"
+    },
+    "queries": [
+        "SELECT * FROM sys.objects"
+    ],
+    "mssqls": {
+        "instances": [
+            "myserver/mysqlinstance"
+        ],
+        "tags": []
+    }
+}

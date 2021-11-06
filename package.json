@@ -23,15 +23,15 @@
         "@types/node": "16.11.6",
         "@typescript-eslint/eslint-plugin": "5.3.0",
         "@typescript-eslint/parser": "5.3.0",
-        "eslint": "8.1.0",
-        "npm-check-updates": "11.8.5",
+        "eslint": "8.2.0",
+        "npm-check-updates": "12.0.0",
         "prettier": "2.4.1",
         "ts-node": "10.4.0",
         "typescript": "4.4.4",
         "vv-template-nodebackend": "^0.0.12"
     },
     "dependencies": {
-        "backdepot": "^0.0.4",
+        "backdepot": "^0.0.5",
         "mssqltask": "^0.0.6",
         "vv-common": "^0.0.6",
         "vv-logger": "^0.0.2"

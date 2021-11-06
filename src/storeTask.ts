@@ -1,6 +1,8 @@
-import * as vv from 'vv-common'
-import { TypeStateRow } from 'backdepot'
 import { TypeMetronom } from 'mssqltask'
+import * as vv from 'vv-common'
+import { IApp, TypeStateRow } from 'backdepot'
+import path from 'path'
+import fs from 'fs'
 
 export type TTask = {
     path: string,
@@ -67,6 +69,24 @@ export function SpliceList(list: TTask[], path: string, file: string) {
     const idx = list.findIndex(f => vv.equal(f.path, path) && vv.equal(f.file, file))
     if (idx < 0) return
     list.splice(idx, 1)
+}
+
+export function LoadAll(depot: IApp, dataPath: string, callback: (error: Error, list: TTask[]) => void) {
+    depot.get.obtain([{state: 'task'}], (error, states) => {
+        if (error) {
+            callback(error, undefined)
+            return
+        }
+        const fnd = states ? states.find(f => f.state === 'task') : undefined
+        if (!fnd || !fnd.rows) {
+            const fileExample = path.join(dataPath, 'example.json')
+            fs.writeFile(fileExample, JSON.stringify(Example1(), null, 4), {encoding: 'utf8'}, () => {})
+            fs.writeFile(fileExample, JSON.stringify(Example2(), null, 4), {encoding: 'utf8'}, () => {})
+            callback(undefined, [])
+            return
+        }
+        callback(undefined, fnd.rows.map(m => { return GetFromStorage(m) }))
+    })
 }
 
 export function Example1(): TTask {

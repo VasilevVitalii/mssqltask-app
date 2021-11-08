@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-type TOptions = {
+export type TOptions = {
     log: {
         path: string,
         lifeDays: number,

@@ -1,99 +1,145 @@
 import path from 'path'
 import fs from 'fs'
-import { Create as DepotCreate} from 'backdepot'
-import { Create as LoggerManagerCreate } from 'vv-logger'
+import { Create as DepotCreate, IApp} from 'backdepot'
+import { Create as LoggerManagerCreate, ILogger } from 'vv-logger'
 import * as options from './options'
 import * as storeMssql from './storeMssql'
 import * as storeTask from './storeTask'
+import { setTimeout } from 'timers'
 
 const loggerManager = LoggerManagerCreate()
 loggerManager.onError(error => {
     console.error(error)
 })
 
-const mssqls = [] as storeMssql.TMssql[]
-const tasks = [] as storeTask.TTask[]
+const env = {
+    logger: undefined as ILogger,
+    options: undefined as options.TOptions,
+    depot: {
+        app: undefined as IApp,
+        mssql: {
+            list: [] as storeMssql.TMssql[],
+            isInit: false,
+            isChange: false
+        },
+        task : {
+            list: [] as storeTask.TTask[],
+            isInit: false,
+            isChange: false
+        },
+    },
+    job: {
+        isInit: false,
+        needUpdateByMssql: false,
+        needUpdateByTask: false,
+    }
+    // isMssqlsInit: false,
+    // isTasksInit: false,
+    // isMssqlsChange: false,
+    // isMssqlsChange: false,
+}
 
 export function Go(currentPath: string) {
-    const opt = options.Read(path.join(currentPath, 'mssqltask-app.json'))
-    const logger = loggerManager.addLogger ({
-        consoleLevel: opt.log.allowTrace ? 'trace' : 'debug',
+    env.options = options.Read(path.join(currentPath, 'mssqltask-app.json'))
+    env.logger = loggerManager.addLogger ({
+        consoleLevel: env.options.log.allowTrace ? 'trace' : 'debug',
         transports: [
-            {kind: 'file', dir: opt.log.path, levels: ['error'], fileNamePrefix: 'error', fileLifeDay: opt.log.lifeDays},
-            {kind: 'file', dir: opt.log.path, levels: ['debug', 'error'], fileNamePrefix: 'debug', fileLifeDay: opt.log.lifeDays},
-            {kind: 'file', dir: opt.log.path, levels: ['trace', 'debug', 'error'], fileNamePrefix: 'trace', fileLifeDay: opt.log.lifeDays},
+            {kind: 'file', dir: env.options.log.path, levels: ['error'], fileNamePrefix: 'error', fileLifeDay: env.options.log.lifeDays},
+            {kind: 'file', dir: env.options.log.path, levels: ['debug', 'error'], fileNamePrefix: 'debug', fileLifeDay: env.options.log.lifeDays},
+            {kind: 'file', dir: env.options.log.path, levels: ['trace', 'debug', 'error'], fileNamePrefix: 'trace', fileLifeDay: env.options.log.lifeDays},
         ]
     })
-    const depot = DepotCreate({
+    depotGo()
+    jobGo()
+}
+
+function depotGo() {
+    env.depot.app = DepotCreate({
         pathMap: 'MEMORY',
-        pathData: path.join(currentPath, 'data'),
+        pathData: undefined,
         states: [
-            {name: 'mssql', pathData: opt.data.pathMssql},
-            {name: 'task', pathData: opt.data.pathTask},
+            {name: 'mssql', pathData: env.options.data.pathMssql},
+            {name: 'task', pathData: env.options.data.pathTask},
         ]
     }, error => {
         if (error) {
-            logger.error(`on init storage`, error)
+            env.logger.error(`on init storage`, error)
         }
     })
-    depot.callback.onError(error => {
-        logger.error(`STORAGE`, error)
+    env.depot.app.callback.onError(error => {
+        env.logger.error(`STORAGE`, error)
     })
-    depot.callback.onDebug(debug => {
-        logger.debug(`STORAGE - ${debug}`)
+    env.depot.app.callback.onDebug(debug => {
+        env.logger.debug(`STORAGE - ${debug}`)
     })
-    depot.callback.onTrace(trace => {
-        logger.trace(`STORAGE - ${trace}`)
+    env.depot.app.callback.onTrace(trace => {
+        env.logger.trace(`STORAGE - ${trace}`)
     })
-    depot.callback.onStateComplete(() => {
-        storeMssql.LoadAll(depot, opt.data.pathMssql, (error, list) => {
+    env.depot.app.callback.onStateComplete(() => {
+        storeMssql.Load(env.depot.app, env.depot.mssql.list, env.options.data.pathMssql, (error) => {
             if (error) {
-                logger.error('STORAGE', error)
-            }
-            if (list) {
-                mssqls.splice(0, mssqls.length)
-                mssqls.push(...list)
+                env.logger.error('STORAGE', error)
+            } else {
+                env.depot.mssql.isInit = true
             }
         })
-        storeTask.LoadAll(depot, opt.data.pathTask, (error, list) => {
+        storeTask.Load(env.depot.app, env.depot.task.list, env.options.data.pathTask, (error) => {
             if (error) {
-                logger.error('STORAGE', error)
-            }
-            if (list) {
-                tasks.splice(0, tasks.length)
-                tasks.push(...list)
+                env.logger.error('STORAGE', error)
+            } else {
+                env.depot.task.isInit = true
             }
         })
     })
-
-    depot.callback.onStateChange(states => {
-        console.log('STATE CHANGE!!!')
-        // states.forEach(state => {
-        //     if (state.state === 'mssql') {
-        //         if (state.action === 'insert') {
-        //             state.rows.forEach(row => {
-        //                 storeMssql.UpsertList(mssqls, storeMssql.GetFromStorage(row))
-        //             })
-        //         } else if (state.action === 'delete') {
-        //             state.rows.forEach(row => {
-        //                 storeMssql.SpliceList(mssqls, row.path, row.file)
-        //             })
-        //         }
-        //     } else if (state.state === 'task') {
-        //         if (state.action === 'insert') {
-        //             state.rows.forEach(row => {
-        //                 storeTask.UpsertList(tasks, storeTask.GetFromStorage(row))
-        //             })
-        //         } else if (state.action === 'delete') {
-        //             state.rows.forEach(row => {
-        //                 storeTask.SpliceList(tasks, row.path, row.file)
-        //             })
-        //         }
-        //     }
-        // })
-        // console.log(mssqls)
-        // console.log(tasks)
+    env.depot.app.callback.onStateChange(states => {
+        states.forEach(state => {
+            if (state.state === 'mssql') {
+                storeMssql.Upsert(state.rows, state.action, env.depot.mssql.list)
+                env.depot.mssql.isChange = true
+            } else if (state.state === 'task') {
+                storeTask.Upsert(state.rows, state.action, env.depot.task.list)
+                env.depot.task.isChange = true
+            }
+        })
     })
+    env.depot.app.start()
+}
 
-    depot.start()
+function jobGo() {
+    let timer = setTimeout(function tick() {
+        if (!env.depot.mssql.isInit || !env.depot.task.isInit) {
+            timer = setTimeout(tick, 1000)
+            return
+        }
+        let allowThisTick = true
+        if (env.job.isInit) {
+            if (env.depot.mssql.isChange) {
+                env.depot.mssql.isChange = false
+                env.job.needUpdateByMssql = true
+                allowThisTick = false
+            }
+            if (env.depot.task.isChange) {
+                env.depot.task.isChange = false
+                env.job.needUpdateByTask = true
+                allowThisTick = false
+            }
+            if (!env.job.needUpdateByMssql && !env.job.needUpdateByTask) {
+                allowThisTick = false
+            }
+        } else {
+            env.job.isInit = true
+        }
+
+        if (!allowThisTick) {
+            timer = setTimeout(tick, 1000)
+            return
+        }
+        env.job.needUpdateByMssql = false
+        env.job.needUpdateByTask = false
+
+        console.log(env.depot.mssql.list)
+        console.log(env.depot.task.list)
+
+        timer = setTimeout(tick, 1000)
+    }, 1000)
 }

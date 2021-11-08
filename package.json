@@ -34,6 +34,6 @@
         "backdepot": "^0.0.5",
         "mssqltask": "^0.0.6",
         "vv-common": "^0.0.6",
-        "vv-logger": "^0.0.2"
+        "vv-logger": "^0.0.3"
     }
 }

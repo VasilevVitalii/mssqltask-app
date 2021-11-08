@@ -3,6 +3,7 @@ import * as vv from 'vv-common'
 import { IApp, TypeStateRow } from 'backdepot'
 import path from 'path'
 import fs from 'fs'
+import { TStateRow } from 'backdepot/dist/src/index.env'
 
 export type TTask = {
     path: string,
@@ -16,7 +17,51 @@ export type TTask = {
     }
 }
 
-export function GetFromStorage(row: TypeStateRow): TTask {
+export function Load(depot: IApp, list: TTask[], dataPath: string, callback: (error: Error) => void) {
+    depot.get.obtain([{state: 'task'}], (error, states) => {
+        if (error) {
+            callback(error)
+            return
+        }
+        list.splice(0, list.length)
+        const fnd = states ? states.find(f => f.state === 'task') : undefined
+        if (!fnd || !fnd.rows || fnd.rows.length <= 0) {
+            const fileExample1 = path.join(dataPath, 'example1.json')
+            const fileExample2 = path.join(dataPath, 'example2.json')
+            fs.writeFile(fileExample1, JSON.stringify(example1(), null, 4), {encoding: 'utf8'}, () => {})
+            fs.writeFile(fileExample2, JSON.stringify(example2(), null, 4), {encoding: 'utf8'}, () => {})
+            callback(undefined)
+            return
+        }
+        list.push(...fnd.rows.map(m => { return getFromStorage(m) }))
+        callback(undefined)
+    })
+}
+
+export function Upsert(rows: TStateRow[], action: string, list: TTask[]) {
+    if (action === 'insert') {
+        rows.forEach(row => {
+            const item = getFromStorage(row)
+            const fnd = list.find(f => vv.equal(f.path, item.path) && vv.equal(f.file, item.file))
+            if (fnd) {
+                fnd.name = item.name
+                fnd.metronom = item.metronom
+                fnd.queries = item.queries
+                fnd.mssqls = item.mssqls
+            } else {
+                list.push(item)
+            }
+        })
+    } else if (action === 'delete') {
+        rows.forEach(row => {
+            const idx = list.findIndex(f => vv.equal(f.path, row.path) && vv.equal(f.file, row.file))
+            if (idx < 0) return
+            list.splice(idx, 1)
+        })
+    }
+}
+
+function getFromStorage(row: TypeStateRow): TTask {
     let metronom = undefined as TypeMetronom
     if (row.data?.metronom?.kind === 'cron') {
         metronom = {
@@ -53,43 +98,7 @@ export function GetFromStorage(row: TypeStateRow): TTask {
     }
 }
 
-export function UpsertList(list: TTask[], item: TTask) {
-    const fnd = list.find(f => vv.equal(f.path, item.path) && vv.equal(f.file, item.file))
-    if (fnd) {
-        fnd.name = item.name
-        fnd.metronom = item.metronom
-        fnd.queries = item.queries
-        fnd.mssqls = item.mssqls
-    } else {
-        list.push(item)
-    }
-}
-
-export function SpliceList(list: TTask[], path: string, file: string) {
-    const idx = list.findIndex(f => vv.equal(f.path, path) && vv.equal(f.file, file))
-    if (idx < 0) return
-    list.splice(idx, 1)
-}
-
-export function LoadAll(depot: IApp, dataPath: string, callback: (error: Error, list: TTask[]) => void) {
-    depot.get.obtain([{state: 'task'}], (error, states) => {
-        if (error) {
-            callback(error, undefined)
-            return
-        }
-        const fnd = states ? states.find(f => f.state === 'task') : undefined
-        if (!fnd || !fnd.rows) {
-            const fileExample = path.join(dataPath, 'example.json')
-            fs.writeFile(fileExample, JSON.stringify(Example1(), null, 4), {encoding: 'utf8'}, () => {})
-            fs.writeFile(fileExample, JSON.stringify(Example2(), null, 4), {encoding: 'utf8'}, () => {})
-            callback(undefined, [])
-            return
-        }
-        callback(undefined, fnd.rows.map(m => { return GetFromStorage(m) }))
-    })
-}
-
-export function Example1(): TTask {
+function example1(): TTask {
     return {
         path: undefined,
         file: undefined,
@@ -103,7 +112,7 @@ export function Example1(): TTask {
     }
 }
 
-export function Example2(): TTask {
+function example2(): TTask {
     return {
         path: undefined,
         file: undefined,

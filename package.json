@@ -31,7 +31,7 @@
         "vv-template-nodebackend": "^0.0.12"
     },
     "dependencies": {
-        "backdepot": "^0.0.5",
+        "backdepot": "^0.0.6",
         "mssqltask": "^0.0.6",
         "vv-common": "^0.0.6",
         "vv-logger": "^0.0.3"

@@ -102,6 +102,7 @@ function depotGo() {
             }
         })
     })
+
     env.depot.app.start()
 }
 

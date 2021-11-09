@@ -6,19 +6,21 @@ import fs from 'fs'
 import { TStateRow } from 'backdepot/dist/src/index.env'
 import { TUpsert } from './depot'
 
-export type TTask = {
+export type TDepotTask = {
     path: string,
     file: string,
     key: string,
     metronom: TypeMetronom,
-    queries: string[],
+    query: string[],
+    allowRows: boolean,
+    allowMessages: boolean,
     mssqls: {
         instances: string[],
         tags: string[]
     }
 }
 
-export function Load(depot: IApp, list: TTask[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
+export function Load(depot: IApp, list: TDepotTask[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
     depot.get.obtain([{state: 'task'}], (error, states) => {
         if (error) {
             callback(error, false, 0)
@@ -39,7 +41,7 @@ export function Load(depot: IApp, list: TTask[], dataPath: string, callback: (er
     })
 }
 
-export function Upsert(rows: TStateRow[], action: string, list: TTask[]): TUpsert {
+export function Upsert(rows: TStateRow[], action: string, list: TDepotTask[]): TUpsert {
     const res = {delete: 0,update: 0,insert: 0} as TUpsert
     if (action === 'insert') {
         rows.forEach(row => {
@@ -48,7 +50,9 @@ export function Upsert(rows: TStateRow[], action: string, list: TTask[]): TUpser
             if (fnd) {
                 fnd.key = item.key
                 fnd.metronom = item.metronom
-                fnd.queries = item.queries
+                fnd.query = item.query
+                fnd.allowRows = item.allowRows
+                fnd.allowMessages = item.allowMessages
                 fnd.mssqls = item.mssqls
                 res.update++
             } else {
@@ -67,7 +71,7 @@ export function Upsert(rows: TStateRow[], action: string, list: TTask[]): TUpser
     return res
 }
 
-function getFromStorage(row: TypeStateRow): TTask {
+function getFromStorage(row: TypeStateRow): TDepotTask {
     let metronom = undefined as TypeMetronom
     if (row.data?.metronom?.kind === 'cron') {
         metronom = {
@@ -96,7 +100,9 @@ function getFromStorage(row: TypeStateRow): TTask {
         file: row.file,
         key: row.data?.key,
         metronom: metronom,
-        queries: vv.toArray(row.data?.queries) || [],
+        query: vv.toArray(row.data?.queries) || [],
+        allowRows: vv.toBool(row.data?.allowRows) || true,
+        allowMessages: vv.toBool(row.data?.allowMessages) || true,
         mssqls: {
             instances: vv.toArray(row.data?.mssqls?.instances) || [],
             tags: vv.toArray(row.data?.mssqls?.tags) || []
@@ -104,13 +110,15 @@ function getFromStorage(row: TypeStateRow): TTask {
     }
 }
 
-function example1(): TTask {
+function example1(): TDepotTask {
     return {
         path: undefined,
         file: undefined,
         key: 'example 1',
         metronom: {kind: 'cron', cron: '0 */1 * * * *'},
-        queries: ['SELECT * FROM sys.objects'],
+        query: ['SELECT * FROM sys.objects'],
+        allowRows: true,
+        allowMessages: true,
         mssqls: {
             instances: ['myserver/mysqlinstance'],
             tags: []
@@ -118,7 +126,7 @@ function example1(): TTask {
     }
 }
 
-function example2(): TTask {
+function example2(): TDepotTask {
     return {
         path: undefined,
         file: undefined,
@@ -135,7 +143,9 @@ function example2(): TTask {
             periodMinutes: 1,
             periodicity: 'every'
         },
-        queries: ['SELECT * FROM sys.objects'],
+        query: ['SELECT * FROM sys.objects'],
+        allowRows: true,
+        allowMessages: true,        
         mssqls: {
             instances: [],
             tags: ['tag1']

@@ -6,7 +6,7 @@ import { TStateRow } from 'backdepot/dist/src/index.env'
 import { TUpsert } from './depot'
 
 
-export type TMssql = {
+export type TDepotMssql = {
     path: string,
     file: string,
     instance: string,
@@ -15,7 +15,7 @@ export type TMssql = {
     tags: string[]
 }
 
-export function Load(depot: IApp, list: TMssql[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
+export function Load(depot: IApp, list: TDepotMssql[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
     depot.get.obtain([{state: 'mssql'}], (error, states) => {
         if (error) {
             callback(error, false, 0)
@@ -34,7 +34,7 @@ export function Load(depot: IApp, list: TMssql[], dataPath: string, callback: (e
     })
 }
 
-export function Upsert(rows: TStateRow[], action: string, list: TMssql[]): TUpsert  {
+export function Upsert(rows: TStateRow[], action: string, list: TDepotMssql[]): TUpsert  {
     const res = {delete: 0,update: 0,insert: 0} as TUpsert
     if (action === 'insert') {
         rows.forEach(row => {
@@ -63,7 +63,7 @@ export function Upsert(rows: TStateRow[], action: string, list: TMssql[]): TUpse
     return res
 }
 
-function getFromStorage(row: TypeStateRow): TMssql {
+function getFromStorage(row: TypeStateRow): TDepotMssql {
     return {
         path: row.path,
         file: row.file,
@@ -74,7 +74,7 @@ function getFromStorage(row: TypeStateRow): TMssql {
     }
 }
 
-function example(): TMssql {
+function example(): TDepotMssql {
     return {
         path: undefined,
         file: undefined,

@@ -41,7 +41,7 @@ export function Go() {
             } else {
                 env.depot.mssql.isInit = true
                 env.depot.mssql.isChange = true
-                env.logger.debug(`APP depot mssql - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
+                env.logger.debug(`DEPOT mssql - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
             }
         })
         depotTask.Load(env.depot.app, env.depot.task.list, env.options.data.pathTask, (error, isCreateExample, countLoaded) => {
@@ -50,7 +50,7 @@ export function Go() {
             } else {
                 env.depot.task.isInit = true
                 env.depot.task.isChange = true
-                env.logger.debug(`APP depot task - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
+                env.logger.debug(`DEPOT task - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
             }
         })
     })
@@ -58,11 +58,11 @@ export function Go() {
         states.forEach(state => {
             if (state.state === 'mssql') {
                 const stat = depotMssql.Upsert(state.rows, state.action, env.depot.mssql.list)
-                env.logger.debug(`APP depot mssql - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
+                env.logger.debug(`DEPOT mssql - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
                 env.depot.mssql.isChange = true
             } else if (state.state === 'task') {
                 const stat = depotTask.Upsert(state.rows, state.action, env.depot.task.list)
-                env.logger.debug(`APP depot task - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
+                env.logger.debug(`DEPOT task - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
                 env.depot.task.isChange = true
             }
         })
@@ -92,6 +92,7 @@ function refresh() {
         }
 
         if (env.depot.mssql.isChangePrev) {
+            env.mssqltask.needUpdate = true
             env.depot.mssql.isChangePrev = false
             env.depot.mssql.badList.splice(0, env.depot.mssql.badList.length)
             for (let i = 0; i < env.depot.mssql.list.length; i++) {
@@ -101,12 +102,13 @@ function refresh() {
                     if (!vv.equal(itemA.instance, itemB.instance)) continue
                     if (env.depot.mssql.badList.some(f => vv.equal(f, itemA.instance))) continue
                     env.depot.mssql.badList.push(itemA.instance)
-                    env.logger.error(`APP depot mssql - ignore instance "${itemA.instance}", because it occurs more than once`)
+                    env.logger.error(`DEPOT mssql - ignore "${itemA.instance}", because it occurs more than once`)
                 }
             }
         }
 
         if (env.depot.task.isChangePrev) {
+            env.mssqltask.needUpdate = true
             env.depot.task.isChangePrev = false
             env.depot.task.badList.splice(0, env.depot.task.badList.length)
             for (let i = 0; i < env.depot.task.list.length; i++) {
@@ -116,13 +118,9 @@ function refresh() {
                     if (!vv.equal(itemA.key, itemB.key)) continue
                     if (env.depot.task.badList.some(f => vv.equal(f, itemA.key))) continue
                     env.depot.task.badList.push(itemA.key)
-                    env.logger.error(`APP depot task - ignore task "${itemA.key}", because it occurs more than once`)
+                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it occurs more than once`)
                 }
             }
-        }
-
-        if (env.depot.mssql.isChangePrev || env.depot.task.isChangePrev) {
-            env.mssqltask.needUpdate = true
         }
 
         env.depot.timerRefresh = setTimeout(tick, 1000)

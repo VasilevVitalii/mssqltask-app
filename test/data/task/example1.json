@@ -4,12 +4,14 @@
         "kind": "cron",
         "cron": "0 */1 * * * *"
     },
-    "queries": [
+    "query": [
         "SELECT * FROM sys.objects"
     ],
+    "allowRows": true,
+    "allowMessages": true,
     "mssqls": {
         "instances": [
-            "myserver/mysqlinstance"
+            "myserver/mysqlinstance1"
         ],
         "tags": []
     }

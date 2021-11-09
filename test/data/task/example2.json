@@ -12,9 +12,11 @@
         "periodMinutes": 1,
         "periodicity": "every"
     },
-    "queries": [
+    "query": [
         "SELECT * FROM sys.objects"
     ],
+    "allowRows": true,
+    "allowMessages": true,
     "mssqls": {
         "instances": [],
         "tags": [

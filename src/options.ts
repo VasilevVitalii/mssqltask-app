@@ -12,7 +12,8 @@ export type TOptions = {
         pathTask: string
     },
     task: {
-        maxThreads: number
+        maxThreads: number,
+        pathTickets: string
     }
 }
 
@@ -32,6 +33,7 @@ export function Read(fullFileName: string): TOptions {
         },
         task: {
             maxThreads: dataJson?.task?.maxThreads || 20,
+            pathTickets: (dataJson?.task?.pathTickets || path.join(path.parse(fullFileName).dir, 'result')).replace(/\\/g, '/'),
         }
     } as TOptions
 

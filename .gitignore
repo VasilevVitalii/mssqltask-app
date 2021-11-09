@@ -3,3 +3,4 @@ dist
 test/*.json
 test/log
 test/data
+test/result

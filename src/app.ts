@@ -2,12 +2,11 @@ import path from 'path'
 import fs from 'fs'
 import { IApp } from 'backdepot'
 import { Create as LoggerManagerCreate, ILogger } from 'vv-logger'
-import * as mssqltask from 'mssqltask'
 import * as options from './options'
 import * as storeMssql from './depotMssql'
 import * as storeTask from './depotTask'
 import { Go as depotGo } from './depot'
-import { Go as mssqltaskGo } from './mssqltask'
+import { Go as mssqltaskGo, TMssqlTask } from './mssqltask'
 
 const loggerManager = LoggerManagerCreate()
 loggerManager.onError(error => {
@@ -21,14 +20,14 @@ export const env = {
         app: undefined as IApp,
         timerRefresh: undefined as NodeJS.Timeout,
         mssql: {
-            list: [] as storeMssql.TMssql[],
+            list: [] as storeMssql.TDepotMssql[],
             badList: [] as string[],
             isInit: false,
             isChange: false,
             isChangePrev: false,
         },
         task : {
-            list: [] as storeTask.TTask[],
+            list: [] as storeTask.TDepotTask[],
             badList: [] as string[],
             isInit: false,
             isChange: false,
@@ -38,7 +37,7 @@ export const env = {
     mssqltask: {
         timerRefresh: undefined as NodeJS.Timeout,
         needUpdate: false,
-        list: [] as {mssqltask: mssqltask.IApp, state: ('work' | 'stop' | 'remove')}[]
+        list: [] as TMssqlTask[]
     }
 }
 
@@ -66,7 +65,7 @@ export function Go(currentPath: string) {
             env.logger.error(error as Error)
         }
     }
-    env.logger.debug(`APP start${appVer ? ', version '.concat(appVer) : ''}`)
+    env.logger.debug(`APP - start${appVer ? ', version '.concat(appVer) : ''}`)
 
     depotGo()
     mssqltaskGo()

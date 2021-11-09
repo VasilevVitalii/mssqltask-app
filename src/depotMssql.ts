@@ -3,6 +3,8 @@ import { IApp, TypeStateRow } from 'backdepot'
 import path from 'path'
 import fs from 'fs'
 import { TStateRow } from 'backdepot/dist/src/index.env'
+import { TUpsert } from './depot'
+
 
 export type TMssql = {
     path: string,
@@ -13,26 +15,27 @@ export type TMssql = {
     tags: string[]
 }
 
-export function Load(depot: IApp, list: TMssql[], dataPath: string, callback: (error: Error) => void) {
+export function Load(depot: IApp, list: TMssql[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
     depot.get.obtain([{state: 'mssql'}], (error, states) => {
         if (error) {
-            callback(error)
+            callback(error, false, 0)
             return
         }
         list.splice(0, list.length)
         const fnd = states ? states.find(f => f.state === 'mssql') : undefined
         if (!fnd || !fnd.rows || fnd.rows.length <= 0) {
+            callback(undefined, true, 0)
             const fileExample = path.join(dataPath, 'example.json')
             fs.writeFile(fileExample, JSON.stringify(example(), null, 4), {encoding: 'utf8'}, () => {})
-            callback(undefined)
             return
         }
         list.push(...fnd.rows.map(m => { return getFromStorage(m) }))
-        callback(undefined)
+        callback(undefined, false, list.length)
     })
 }
 
-export function Upsert(rows: TStateRow[], action: string, list: TMssql[]) {
+export function Upsert(rows: TStateRow[], action: string, list: TMssql[]): TUpsert  {
+    const res = {delete: 0,update: 0,insert: 0} as TUpsert
     if (action === 'insert') {
         rows.forEach(row => {
             const item = getFromStorage(row)
@@ -42,8 +45,10 @@ export function Upsert(rows: TStateRow[], action: string, list: TMssql[]) {
                 fnd.login = item.login
                 fnd.password = item.password,
                 fnd.tags = item.tags
+                res.update++
             } else {
                 list.push(item)
+                res.insert++
             }
         })
     } else if (action === 'delete') {
@@ -51,8 +56,11 @@ export function Upsert(rows: TStateRow[], action: string, list: TMssql[]) {
             const idx = list.findIndex(f => vv.equal(f.path, row.path) && vv.equal(f.file, row.file))
             if (idx < 0) return
             list.splice(idx, 1)
+            res.delete++
         })
     }
+
+    return res
 }
 
 function getFromStorage(row: TypeStateRow): TMssql {

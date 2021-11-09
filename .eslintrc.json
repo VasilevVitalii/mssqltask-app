@@ -33,7 +33,7 @@
                 "selector": ["variable", "parameter", "typeProperty"],
                 "types": ["boolean"],
                 "format": ["PascalCase"],
-                "prefix": ["is", "allow", "has", "can", "did", "will", "check", "use"]
+                "prefix": ["is", "allow", "has", "can", "did", "will", "check", "use", "need"]
             },
             {
                 "selector": "function",

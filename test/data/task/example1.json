@@ -1,5 +1,5 @@
 {
-    "name": "example 1",
+    "key": "example 1",
     "metronom": {
         "kind": "cron",
         "cron": "0 */1 * * * *"

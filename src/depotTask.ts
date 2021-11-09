@@ -4,11 +4,12 @@ import { IApp, TypeStateRow } from 'backdepot'
 import path from 'path'
 import fs from 'fs'
 import { TStateRow } from 'backdepot/dist/src/index.env'
+import { TUpsert } from './depot'
 
 export type TTask = {
     path: string,
     file: string,
-    name: string,
+    key: string,
     metronom: TypeMetronom,
     queries: string[],
     mssqls: {
@@ -17,39 +18,42 @@ export type TTask = {
     }
 }
 
-export function Load(depot: IApp, list: TTask[], dataPath: string, callback: (error: Error) => void) {
+export function Load(depot: IApp, list: TTask[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
     depot.get.obtain([{state: 'task'}], (error, states) => {
         if (error) {
-            callback(error)
+            callback(error, false, 0)
             return
         }
         list.splice(0, list.length)
         const fnd = states ? states.find(f => f.state === 'task') : undefined
         if (!fnd || !fnd.rows || fnd.rows.length <= 0) {
+            callback(undefined, true, 0)
             const fileExample1 = path.join(dataPath, 'example1.json')
             const fileExample2 = path.join(dataPath, 'example2.json')
             fs.writeFile(fileExample1, JSON.stringify(example1(), null, 4), {encoding: 'utf8'}, () => {})
             fs.writeFile(fileExample2, JSON.stringify(example2(), null, 4), {encoding: 'utf8'}, () => {})
-            callback(undefined)
             return
         }
         list.push(...fnd.rows.map(m => { return getFromStorage(m) }))
-        callback(undefined)
+        callback(undefined, false, list.length)
     })
 }
 
-export function Upsert(rows: TStateRow[], action: string, list: TTask[]) {
+export function Upsert(rows: TStateRow[], action: string, list: TTask[]): TUpsert {
+    const res = {delete: 0,update: 0,insert: 0} as TUpsert
     if (action === 'insert') {
         rows.forEach(row => {
             const item = getFromStorage(row)
             const fnd = list.find(f => vv.equal(f.path, item.path) && vv.equal(f.file, item.file))
             if (fnd) {
-                fnd.name = item.name
+                fnd.key = item.key
                 fnd.metronom = item.metronom
                 fnd.queries = item.queries
                 fnd.mssqls = item.mssqls
+                res.update++
             } else {
                 list.push(item)
+                res.insert++
             }
         })
     } else if (action === 'delete') {
@@ -57,8 +61,10 @@ export function Upsert(rows: TStateRow[], action: string, list: TTask[]) {
             const idx = list.findIndex(f => vv.equal(f.path, row.path) && vv.equal(f.file, row.file))
             if (idx < 0) return
             list.splice(idx, 1)
+            res.delete++
         })
     }
+    return res
 }
 
 function getFromStorage(row: TypeStateRow): TTask {
@@ -88,7 +94,7 @@ function getFromStorage(row: TypeStateRow): TTask {
     return {
         path: row.path,
         file: row.file,
-        name: row.data?.name,
+        key: row.data?.key,
         metronom: metronom,
         queries: vv.toArray(row.data?.queries) || [],
         mssqls: {
@@ -102,7 +108,7 @@ function example1(): TTask {
     return {
         path: undefined,
         file: undefined,
-        name: 'example 1',
+        key: 'example 1',
         metronom: {kind: 'cron', cron: '0 */1 * * * *'},
         queries: ['SELECT * FROM sys.objects'],
         mssqls: {
@@ -116,7 +122,7 @@ function example2(): TTask {
     return {
         path: undefined,
         file: undefined,
-        name: 'example 1',
+        key: 'example 2',
         metronom: {
             kind: 'custom',
             weekdaySun: true,

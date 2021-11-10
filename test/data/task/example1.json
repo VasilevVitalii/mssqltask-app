@@ -4,7 +4,7 @@
         "kind": "cron",
         "cron": "0 */1 * * * *"
     },
-    "query": [
+    "queries": [
         "SELECT * FROM sys.objects"
     ],
     "allowRows": true,

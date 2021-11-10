@@ -1,5 +1,5 @@
 {
-    "key": "example 3",
+    "key": "example 4",
     "metronom": {
         "kind": "custom",
         "weekdaySun": true,
@@ -9,18 +9,18 @@
         "weekdayThu": true,
         "weekdayFri": true,
         "weekdaySat": true,
-        "periodMinutes": 1,
+        "periodMinutes": 2,
         "periodicity": "every"
     },
-    "query": [
-        "SELECT * FROM sys.objects"
+    "queries": [
+        "SELECT 1"
     ],
     "allowRows": true,
     "allowMessages": true,
     "mssqls": {
         "instances": [],
         "tags": [
-            "tag1"
+            "tag1", "tag2"
         ]
     }
 }

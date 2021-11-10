@@ -8,81 +8,58 @@ const SUCCESS_STORY_LENGTH = 10
 
 export type TMssqlTask = {
     mssqltask: mssqltask.IApp,
-    key: string,
+    source: {task: TDepotTask, mssqls: TDepotMssql[]},
     usedWorkers: number,
     state: ('idle' | 'work' | 'stop'),
     needRemove: boolean,
-    shift: TMssqlTask,
+    shift: {task: TDepotTask, mssqls: TDepotMssql[]},
     sucessStory: ('full' | 'part' | 'none')[]
 }
 
 export function Go() {
     env.mssqltask.timerRefresh = setTimeout(function tick() {
+        for (let i = env.mssqltask.list.length - 1; i >= 0; i--) {
+            if (!env.mssqltask.list[i].needRemove) continue
+            env.mssqltask.list.splice(i, 1)
+        }
         if (!env.mssqltask.needUpdate) {
             env.mssqltask.timerRefresh = setTimeout(tick, 1000)
             return
         }
         env.mssqltask.needUpdate = false
 
-        let list = env.depot.task.list.filter(f => !env.depot.task.badList.some(ff => vv.equal(ff, f.key))).map(m => { return {
-            item: m,
+        const list = env.depot.task.list.filter(f => !env.depot.task.badList.some(ff => vv.equal(ff, f.key))).map(m => { return {
+            task: m,
             mssqls: serverList(m, env.depot.mssql.list.filter(f => !env.depot.mssql.badList.some(ff => vv.equal(ff, f.instance))))
         }})
-        list.filter(f => f.mssqls.length <= 0).forEach(item => {
-            env.logger.error(`MSSQLTASK - ignore "${item.item.key}", because it has an empty server list`)
+        for (let i = list.length - 1; i >= 0; i--) {
+            const item = list[i]
+            let needIgnore = false
+            if (item.mssqls.length <= 0) {
+                needIgnore = true
+                env.logger.error(`MSSQLTASK - ignore "${item.task.key}", because it has an empty server list`)
+            }
+            if (needIgnore) {
+                list.splice(i, 1)
+            }
+        }
+
+        env.mssqltask.list.filter(f => !list.some(ff => vv.equal(ff.task.path, f.source.task.path) && vv.equal(ff.task.file, f.source.task.file))).forEach(item => {
+            item.mssqltask.finish()
         })
-        list = list.filter(f => f.mssqls.length > 0)
-
-        env.mssqltask.list.filter(f => !list.some(ff => vv.equal(ff.item.key, f.key))).forEach(item => {
-            console.log('FINISH!', item.key)
-            item.mssqltask.stop()
+        list.forEach(item => {
+            const fnd = env.mssqltask.list.find(f => vv.equal(f.source.task.path, item.task.path) && vv.equal(f.source.task.file, item.task.file))
+            if (fnd) {
+                const itemJson = JSON.stringify(item)
+                if (itemJson !== JSON.stringify(fnd.source)) {
+                    env.logger.debug(`MSSQLTASK - shift "${fnd.source.task.key}" -> "${item.task.key}"`)
+                    fnd.shift = JSON.parse(itemJson)
+                    fnd.mssqltask.finish()
+                }
+            } else {
+                addAndStart(item)
+            }
         })
-
-        list.filter(f => !env.mssqltask.list.some(ff => vv.equal(ff.key, f.item.key))).forEach(item => {
-            const t = {
-                key: item.item.key,
-                mssqltask: createItem(item),
-                usedWorkers: 0,
-                shift: undefined,
-                state: 'idle',
-                needRemove: false,
-                sucessStory: []
-            } as TMssqlTask
-            env.mssqltask.list.push(t)
-
-            t.mssqltask.onChanged(state => {
-                console.log(state)
-
-                // if (state.kind === 'start') {
-                //     t.state = 'work'
-                //     t.usedWorkers = state.usedWorkers
-                //     setMaxWorkers()
-                // }
-
-                // if (state.kind === 'stop') {
-                //     t.state = 'idle'
-                //     t.usedWorkers = 0
-                //     setMaxWorkers()
-                //     const countOk = state.ticket.servers.filter(f => !f.execError).length
-                //     const countBad = state.ticket.servers.filter(f => f.execError).length
-                //     t.sucessStory.unshift(countBad === 0 ? 'full' : countOk === 0 ? 'none' : 'part')
-                //     if (t.sucessStory.length > SUCCESS_STORY_LENGTH) { t.sucessStory.splice(SUCCESS_STORY_LENGTH, 1) }
-                // }
-            })
-
-            env.logger.debug(`MSSQLTASK - start "${item.item.key}"`)
-            t.mssqltask.start()
-        })
-
-        // // 1. удаление которых нет
-        // // 2. удаление, которые надо заменить + замена
-        // // 3. добавление
-        // env.depot.task.list.filter(f => !env.mssqltask.list.some(ff => vv.equal(ff.key, f.key))).forEach(task => {
-        //     //const servers = serverList(task, env.depot.mssql.list.filter)
-        //     // const item = mssqltask.Create({
-        //     // })
-        // })
-
 
         env.mssqltask.timerRefresh = setTimeout(tick, 1000)
     }, 1000)
@@ -105,15 +82,15 @@ function serverList(task: TDepotTask, mssqls: TDepotMssql[] ): TDepotMssql[] {
     return res
 }
 
-function createItem(depot: {item: TDepotTask, mssqls: TDepotMssql[]}) : mssqltask.IApp {
+function createCore(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) : mssqltask.IApp {
     const res = mssqltask.Create({
-        key: depot.item.key,
-        metronom: depot.item.metronom,
-        queries: depot.item.queries,
+        key: depot.task.key,
+        metronom: depot.task.metronom,
+        queries: depot.task.queries,
         servers: depot.mssqls,
         processResult: {
-            allowCallbackRows: depot.item.allowRows,
-            allowCallbackMessages: depot.item.allowMessages,
+            allowCallbackRows: depot.task.allowRows,
+            allowCallbackMessages: depot.task.allowMessages,
             pathSaveTickets: env.options.task.pathTickets,
             pathSaveRows: env.options.task.pathTickets,
             pathSaveMessages: env.options.task.pathTickets,
@@ -121,9 +98,47 @@ function createItem(depot: {item: TDepotTask, mssqls: TDepotMssql[]}) : mssqltas
     })
     res.maxWorkersSet(env.options.task.maxThreads)
     res.onError(error => {
-        env.logger.error('MSSQLTASK', error)
+        env.logger.error('MSSQLTASK core', error)
     })
     return res
+}
+
+function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
+    const item: TMssqlTask = {
+        mssqltask: createCore(depot),
+        source: JSON.parse(JSON.stringify(depot)),
+        usedWorkers: 0,
+        shift: undefined,
+        state: 'idle',
+        needRemove: false,
+        sucessStory: []
+    }
+    env.mssqltask.list.push(item)
+
+    item.mssqltask.onChanged(state => {
+        if (state.kind === 'start') {
+            item.state = 'work'
+            item.usedWorkers = state.usedWorkers
+            setMaxWorkers()
+        } else if (state.kind === 'stop') {
+            item.state = 'idle'
+            item.usedWorkers = 0
+            setMaxWorkers()
+            const countOk = state.ticket.servers.filter(f => !f.execError).length
+            const countBad = state.ticket.servers.filter(f => f.execError).length
+            item.sucessStory.unshift(countBad === 0 ? 'full' : countOk === 0 ? 'none' : 'part')
+            if (item.sucessStory.length > SUCCESS_STORY_LENGTH) item.sucessStory.splice(SUCCESS_STORY_LENGTH, 1)
+        } else if (state.kind === 'finish') {
+            env.logger.debug(`MSSQLTASK - finish "${item.source.task.key}"`)
+            item.needRemove = true
+            if (item.shift) {
+                addAndStart(item.shift)
+            }
+        }
+    })
+
+    env.logger.debug(`MSSQLTASK - start "${item.source.task.key}"`)
+    item.mssqltask.start()
 }
 
 function setMaxWorkers() {

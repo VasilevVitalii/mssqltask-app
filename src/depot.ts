@@ -112,13 +112,19 @@ function refresh() {
             env.depot.task.isChangePrev = false
             env.depot.task.badList.splice(0, env.depot.task.badList.length)
             for (let i = 0; i < env.depot.task.list.length; i++) {
+                let hasBadKey = false
+                const itemA = env.depot.task.list[i]
                 for (let j = i + 1; j < env.depot.task.list.length; j++) {
-                    const itemA = env.depot.task.list[i]
                     const itemB = env.depot.task.list[j]
                     if (!vv.equal(itemA.key, itemB.key)) continue
                     if (env.depot.task.badList.some(f => vv.equal(f, itemA.key))) continue
+                    hasBadKey = true
                     env.depot.task.badList.push(itemA.key)
                     env.logger.error(`DEPOT task - ignore "${itemA.key}", because it occurs more than once`)
+                }
+                if (!hasBadKey && vv.isEmpty(itemA.queries.join(''))) {
+                    env.depot.task.badList.push(itemA.key)
+                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because because it has an empty query list`)
                 }
             }
         }

@@ -24,7 +24,7 @@
         "@typescript-eslint/eslint-plugin": "5.3.1",
         "@typescript-eslint/parser": "5.3.1",
         "eslint": "8.2.0",
-        "npm-check-updates": "^12.0.1",
+        "npm-check-updates": "^12.0.2",
         "prettier": "2.4.1",
         "ts-node": "10.4.0",
         "typescript": "4.4.4",
@@ -32,7 +32,7 @@
     },
     "dependencies": {
         "backdepot": "^0.0.7",
-        "mssqltask": "^0.0.6",
+        "mssqltask": "^0.0.7",
         "vv-common": "^0.0.6",
         "vv-logger": "^0.0.3"
     }

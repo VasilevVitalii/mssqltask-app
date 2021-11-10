@@ -4,10 +4,14 @@ import * as mssqltask from 'mssqltask'
 import { TDepotTask } from './depotTask'
 import { TDepotMssql } from './depotMssql'
 
+const SUCCESS_STORY_LENGTH = 10
+
 export type TMssqlTask = {
     mssqltask: mssqltask.IApp,
     key: string,
-    state: ('worked' | 'stopped' | 'needremove'),
+    usedWorkers: number,
+    state: ('idle' | 'work' | 'stop'),
+    needRemove: boolean,
     shift: TMssqlTask,
     sucessStory: ('full' | 'part' | 'none')[]
 }
@@ -29,24 +33,41 @@ export function Go() {
         })
         list = list.filter(f => f.mssqls.length > 0)
 
+        env.mssqltask.list.filter(f => !list.some(ff => vv.equal(ff.item.key, f.key))).forEach(item => {
+            console.log('FINISH!', item.key)
+            item.mssqltask.stop()
+        })
+
         list.filter(f => !env.mssqltask.list.some(ff => vv.equal(ff.key, f.item.key))).forEach(item => {
             const t = {
                 key: item.item.key,
                 mssqltask: createItem(item),
+                usedWorkers: 0,
                 shift: undefined,
-                state: 'worked',
+                state: 'idle',
+                needRemove: false,
                 sucessStory: []
             } as TMssqlTask
             env.mssqltask.list.push(t)
 
             t.mssqltask.onChanged(state => {
-                if (state.kind === 'stop') {
-                    const countOk = state.ticket.servers.filter(f => !f.execError).length
-                    const countBad = state.ticket.servers.filter(f => f.execError).length
-                    t.sucessStory.unshift(countBad === 0 ? 'full' : countOk === 0 ? 'none' : 'part')
-                    if (t.sucessStory.length > 10) { t.sucessStory.splice(10, 1) }
-                    console.log(t.sucessStory)
-                }
+                console.log(state)
+
+                // if (state.kind === 'start') {
+                //     t.state = 'work'
+                //     t.usedWorkers = state.usedWorkers
+                //     setMaxWorkers()
+                // }
+
+                // if (state.kind === 'stop') {
+                //     t.state = 'idle'
+                //     t.usedWorkers = 0
+                //     setMaxWorkers()
+                //     const countOk = state.ticket.servers.filter(f => !f.execError).length
+                //     const countBad = state.ticket.servers.filter(f => f.execError).length
+                //     t.sucessStory.unshift(countBad === 0 ? 'full' : countOk === 0 ? 'none' : 'part')
+                //     if (t.sucessStory.length > SUCCESS_STORY_LENGTH) { t.sucessStory.splice(SUCCESS_STORY_LENGTH, 1) }
+                // }
             })
 
             env.logger.debug(`MSSQLTASK - start "${item.item.key}"`)
@@ -88,7 +109,7 @@ function createItem(depot: {item: TDepotTask, mssqls: TDepotMssql[]}) : mssqltas
     const res = mssqltask.Create({
         key: depot.item.key,
         metronom: depot.item.metronom,
-        query: depot.item.query.join('\n'),
+        queries: depot.item.queries,
         servers: depot.mssqls,
         processResult: {
             allowCallbackRows: depot.item.allowRows,
@@ -102,6 +123,17 @@ function createItem(depot: {item: TDepotTask, mssqls: TDepotMssql[]}) : mssqltas
     res.onError(error => {
         env.logger.error('MSSQLTASK', error)
     })
-
     return res
+}
+
+function setMaxWorkers() {
+    let usedWorkers = 0
+    env.mssqltask.list.filter(f => f.state === 'work').forEach(item => {
+        usedWorkers = usedWorkers + item.usedWorkers
+    })
+    let freeWorkers = env.options.task.maxThreads - usedWorkers
+    if (freeWorkers < 3) freeWorkers = 3
+    env.mssqltask.list.filter(f => f.state === 'idle').forEach(item => {
+        item.mssqltask.maxWorkersSet(freeWorkers)
+    })
 }

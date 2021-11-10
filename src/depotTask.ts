@@ -11,7 +11,7 @@ export type TDepotTask = {
     file: string,
     key: string,
     metronom: TypeMetronom,
-    query: string[],
+    queries: string[],
     allowRows: boolean,
     allowMessages: boolean,
     mssqls: {
@@ -50,7 +50,7 @@ export function Upsert(rows: TStateRow[], action: string, list: TDepotTask[]): T
             if (fnd) {
                 fnd.key = item.key
                 fnd.metronom = item.metronom
-                fnd.query = item.query
+                fnd.queries = item.queries
                 fnd.allowRows = item.allowRows
                 fnd.allowMessages = item.allowMessages
                 fnd.mssqls = item.mssqls
@@ -100,7 +100,7 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
         file: row.file,
         key: row.data?.key,
         metronom: metronom,
-        query: vv.toArray(row.data?.queries) || [],
+        queries: vv.toArray(row.data?.queries) || [],
         allowRows: vv.toBool(row.data?.allowRows) || true,
         allowMessages: vv.toBool(row.data?.allowMessages) || true,
         mssqls: {
@@ -116,7 +116,7 @@ function example1(): TDepotTask {
         file: undefined,
         key: 'example 1',
         metronom: {kind: 'cron', cron: '0 */1 * * * *'},
-        query: ['SELECT * FROM sys.objects'],
+        queries: ['SELECT * FROM sys.objects'],
         allowRows: true,
         allowMessages: true,
         mssqls: {
@@ -143,9 +143,9 @@ function example2(): TDepotTask {
             periodMinutes: 1,
             periodicity: 'every'
         },
-        query: ['SELECT * FROM sys.objects'],
+        queries: ['SELECT * FROM sys.objects'],
         allowRows: true,
-        allowMessages: true,        
+        allowMessages: true,
         mssqls: {
             instances: [],
             tags: ['tag1']

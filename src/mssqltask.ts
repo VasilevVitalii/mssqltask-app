@@ -52,7 +52,8 @@ export function Go() {
             if (fnd) {
                 const itemJson = JSON.stringify(item)
                 if (itemJson !== JSON.stringify(fnd.source)) {
-                    env.logger.debug(`MSSQLTASK - shift "${fnd.source.task.key}" -> "${item.task.key}"`)
+                    const submsg = fnd.source.task.key === item.task.key ? `"${fnd.source.task.key}"` : `"${fnd.source.task.key}" -> "${item.task.key}"`
+                    env.logger.debug(`MSSQLTASK - shift ${submsg}`)
                     fnd.shift = JSON.parse(itemJson)
                     fnd.mssqltask.finish()
                 }

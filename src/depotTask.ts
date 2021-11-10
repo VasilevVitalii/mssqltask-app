@@ -10,6 +10,7 @@ export type TDepotTask = {
     path: string,
     file: string,
     key: string,
+    title: string,
     metronom: TypeMetronom,
     queries: string[],
     allowRows: boolean,
@@ -42,13 +43,14 @@ export function Load(depot: IApp, list: TDepotTask[], dataPath: string, callback
 }
 
 export function Upsert(rows: TStateRow[], action: string, list: TDepotTask[]): TUpsert {
-    const res = {delete: 0,update: 0,insert: 0} as TUpsert
+    const res: TUpsert = {delete: 0,update: 0,insert: 0}
     if (action === 'insert') {
         rows.forEach(row => {
             const item = getFromStorage(row)
             const fnd = list.find(f => vv.equal(f.path, item.path) && vv.equal(f.file, item.file))
             if (fnd) {
                 fnd.key = item.key
+                fnd.title = item.title
                 fnd.metronom = item.metronom
                 fnd.queries = item.queries
                 fnd.allowRows = item.allowRows
@@ -98,7 +100,8 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
     return {
         path: row.path,
         file: row.file,
-        key: row.data?.key,
+        key: vv.nz(vv.toString(row.data?.key), '').trim(),
+        title: vv.nz(vv.toString(row.data?.key), '').trim(),
         metronom: metronom,
         queries: vv.toArray(row.data?.queries) || [],
         allowRows: vv.toBool(row.data?.allowRows) || true,
@@ -114,7 +117,8 @@ function example1(): TDepotTask {
     return {
         path: undefined,
         file: undefined,
-        key: 'example 1',
+        key: 'task1',
+        title: 'example 1',
         metronom: {kind: 'cron', cron: '0 */1 * * * *'},
         queries: ['SELECT * FROM sys.objects'],
         allowRows: true,
@@ -130,7 +134,8 @@ function example2(): TDepotTask {
     return {
         path: undefined,
         file: undefined,
-        key: 'example 2',
+        key: 'task2',
+        title: 'example 2',
         metronom: {
             kind: 'custom',
             weekdaySun: true,

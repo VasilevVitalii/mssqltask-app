@@ -112,20 +112,44 @@ function refresh() {
             env.depot.task.isChangePrev = false
             env.depot.task.badList.splice(0, env.depot.task.badList.length)
             for (let i = 0; i < env.depot.task.list.length; i++) {
-                let hasBadKey = false
                 const itemA = env.depot.task.list[i]
-                for (let j = i + 1; j < env.depot.task.list.length; j++) {
-                    const itemB = env.depot.task.list[j]
-                    if (!vv.equal(itemA.key, itemB.key)) continue
-                    if (env.depot.task.badList.some(f => vv.equal(f, itemA.key))) continue
-                    hasBadKey = true
+
+                let needCheckDoubles = true
+
+                if (vv.isEmpty(itemA.key) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
                     env.depot.task.badList.push(itemA.key)
-                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it occurs more than once`)
+                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has an empty key`)
+                    needCheckDoubles = false
                 }
-                if (!hasBadKey && vv.isEmpty(itemA.queries.join(''))) {
+
+                if (itemA.key.length > 50 && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
                     env.depot.task.badList.push(itemA.key)
-                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because because it has an empty query list`)
+                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has a key with length more 50 chars`)
+                    needCheckDoubles = false
                 }
+
+                if (!(new RegExp(/^[a-zA-Z0-9-_]+$/g)).test(itemA.key) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
+                    env.depot.task.badList.push(itemA.key)
+                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has a key with illegal chars, legal chars - "a-z", "A-Z", "0-9", "_", "-"`)
+                    needCheckDoubles = false
+                }
+
+                if (vv.isEmpty(itemA.queries.join('')) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
+                    env.depot.task.badList.push(itemA.key)
+                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has an empty query list`)
+                    needCheckDoubles = false
+                }
+
+                if (needCheckDoubles) {
+                    for (let j = i + 1; j < env.depot.task.list.length; j++) {
+                        const itemB = env.depot.task.list[j]
+                        if (!vv.equal(itemA.key, itemB.key)) continue
+                        if (env.depot.task.badList.some(f => vv.equal(f, itemA.key))) continue
+                        env.depot.task.badList.push(itemA.key)
+                        env.logger.error(`DEPOT task - ignore "${itemA.key}", because it occurs more than once`)
+                    }
+                }
+
             }
         }
 

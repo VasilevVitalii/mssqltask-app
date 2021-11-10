@@ -35,7 +35,7 @@ export function Load(depot: IApp, list: TDepotMssql[], dataPath: string, callbac
 }
 
 export function Upsert(rows: TStateRow[], action: string, list: TDepotMssql[]): TUpsert  {
-    const res = {delete: 0,update: 0,insert: 0} as TUpsert
+    const res: TUpsert = {delete: 0,update: 0,insert: 0}
     if (action === 'insert') {
         rows.forEach(row => {
             const item = getFromStorage(row)

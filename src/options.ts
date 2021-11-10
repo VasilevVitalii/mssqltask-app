@@ -21,7 +21,7 @@ export function Read(fullFileName: string): TOptions {
     const dataRaw = fs.existsSync(fullFileName) ? fs.readFileSync(fullFileName, 'utf8') : undefined
     const dataJson = (dataRaw ? JSON.stringify(dataRaw) : {}) as TOptions
 
-    const result = {
+    const result: TOptions = {
         log: {
             path: (dataJson?.log?.path || path.join(path.parse(fullFileName).dir, 'log')).replace(/\\/g, '/'),
             lifeDays: dataJson?.log?.lifeDays || 10,
@@ -35,7 +35,7 @@ export function Read(fullFileName: string): TOptions {
             maxThreads: dataJson?.task?.maxThreads || 20,
             pathTickets: (dataJson?.task?.pathTickets || path.join(path.parse(fullFileName).dir, 'result')).replace(/\\/g, '/'),
         }
-    } as TOptions
+    }
 
     if (result.log.lifeDays <= 0) result.log.lifeDays = 1
     if (result.task.maxThreads <= 0) result.task.maxThreads = 1

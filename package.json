@@ -12,13 +12,19 @@
         "precommit": "node ./.auto/precommit.js"
     },
     "pkg": {
-        "scripts": "dist/**/*.js",
+        "scripts": "dist/src/*.js",
         "assets": [
-            "node_modules/",
-            "node_modules/**/*",
-            "node_modules/vv-logger/**/*"
+            "node_modules/vv-logger/dist/src/*.js",
+            "node_modules/vv-logger/dist/src/**/.js",
+            "node_modules/backdepot/dist/src/*.js",
+            "node_modules/backdepot/dist/src/**/*.js",
+            "node_modules/mssqltask/dist/src/*.js",
+            "node_modules/mssqltask/dist/src/**/.js",
+            "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
         ],
-        "targets": [ "node12-win-x64" ],
+        "targets": [
+            "node14-win-x64"
+        ],
         "outputPath": "compile"
     },
     "repository": {
@@ -45,7 +51,7 @@
         "vv-template-nodebackend": "^0.0.14"
     },
     "dependencies": {
-        "backdepot": "^0.0.7",
+        "backdepot": "^0.0.8",
         "mssqltask": "^0.0.10",
         "vv-common": "^0.0.6",
         "vv-logger": "^0.0.3"

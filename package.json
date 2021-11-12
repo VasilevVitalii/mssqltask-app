@@ -8,12 +8,14 @@
         "test": "node ./dist/test/index.js",
         "update": "npx npm-check-updates -u && npm i && npm audit fix && node ./node_modules/vv-template-nodebackend/index.js",
         "build": "tsc",
-        "compile": "tsc && node ./.auto/compile.js",
+        "compile_win": "tsc && npm rebuild && node ./.auto/compile.win.before.js && pkg . --t node14-win-x64 --compress GZip &&  node ./.auto/compile.win.after.js",
         "precommit": "node ./.auto/precommit.js"
     },
     "pkg": {
+        "node_version": "14.17.6",
         "scripts": "dist/src/*.js",
         "assets": [
+            "dist/src/package.json",
             "node_modules/vv-logger/dist/src/*.js",
             "node_modules/vv-logger/dist/src/**/.js",
             "node_modules/backdepot/dist/src/*.js",
@@ -21,9 +23,6 @@
             "node_modules/mssqltask/dist/src/*.js",
             "node_modules/mssqltask/dist/src/**/.js",
             "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
-        ],
-        "targets": [
-            "node14-win-x64"
         ],
         "outputPath": "compile"
     },
@@ -46,6 +45,7 @@
         "npm-check-updates": "^12.0.2",
         "pkg": "^5.4.1",
         "prettier": "2.4.1",
+        "resedit": "^1.2.0",
         "ts-node": "10.4.0",
         "typescript": "4.4.4",
         "vv-template-nodebackend": "^0.0.14"
@@ -53,7 +53,7 @@
     "dependencies": {
         "backdepot": "^0.0.8",
         "mssqltask": "^0.0.10",
-        "vv-common": "^0.0.6",
-        "vv-logger": "^0.0.3"
+        "vv-common": "^0.0.7",
+        "vv-logger": "^0.0.4"
     }
 }

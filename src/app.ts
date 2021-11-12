@@ -1,5 +1,6 @@
 import path from 'path'
 import fs from 'fs'
+import * as vv from 'vv-common'
 import { IApp } from 'backdepot'
 import { Create as LoggerManagerCreate, ILogger } from 'vv-logger'
 import * as options from './options'
@@ -48,24 +49,15 @@ export function Go(currentPath: string) {
         transports: [
             {kind: 'file', dir: env.options.log.path, levels: ['error'], fileNamePrefix: 'error', fileLifeDay: env.options.log.lifeDays},
             {kind: 'file', dir: env.options.log.path, levels: ['debug', 'error'], fileNamePrefix: 'debug', fileLifeDay: env.options.log.lifeDays},
-            {kind: 'file', dir: env.options.log.path, levels: ['trace', 'debug', 'error'], fileNamePrefix: 'trace', fileLifeDay: env.options.log.lifeDays},
+            env.options.log.allowTrace ? {kind: 'file', dir: env.options.log.path, levels: ['trace', 'debug', 'error'], fileNamePrefix: 'trace', fileLifeDay: env.options.log.lifeDays} : undefined,
         ]
     })
 
-    const packageJsonPath = fs.existsSync(path.join(currentPath, 'package.json')) ? path.join(currentPath, 'package.json') : (
-        fs.existsSync(path.join(currentPath, '..', 'package.json')) ? path.join(currentPath, '..', 'package.json') : (
-            fs.existsSync(path.join(currentPath, '..', '..', 'package.json')) ? path.join(currentPath, '..', '..', 'package.json') : undefined
-        )
-    )
-    let appVer = undefined
-    if (packageJsonPath) {
-        try {
-            appVer = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version
-        } catch (error) {
-            env.logger.error(error as Error)
-        }
-    }
-    env.logger.debug(`APP - start${appVer ? ', version '.concat(appVer) : ''}`)
+    const packageJsonPath = fs.existsSync(path.join(__dirname, 'package.json')) ? path.join(__dirname, 'package.json') : undefined
+    const packageJsonRaw = packageJsonPath ? fs.readFileSync(packageJsonPath, 'utf8') : '{}'
+    const packageJson = vv.PackajeJsonParse(packageJsonRaw)
+
+    env.logger.debug(`APP - start${packageJson.version ? ', version '.concat(packageJson.version) : ''}`)
 
     depotGo()
     mssqltaskGo()

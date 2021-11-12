@@ -1,0 +1,28 @@
+
+#RUN AS SERVICE
+1. Download free tool nssm from www.nssm.cc
+2. Put nssm.exe near mssqltask-app.exe
+3. Near mssqltask-app.exe create file start.cmd with body:
+
+    nssm install mssqltask-app mssqltask-app.exe
+    nssm start mssqltask-app
+
+4. Near mssqltask-app.exe create file stop.cmd with body:
+
+    nssm stop mssqltask-app
+    nssm remove mssqltask-app confirm
+
+5. As administrator run start.cmd
+6. Enjoy
+
+#APP SETTING
+All app settings store in file mssqltask-app.json, which is located next to mssqltask-app.exe.
+If not exists mssqltask-app.json, just start mssqltask-app.exec, it will create setting file.
+Details:
+log.path - path for store log files
+log.lifeDays - when deleting old log files, for how many last days should logs be left
+log.allowTrace - write in log additional info
+data.pathMssql - path for store files with connection to mssql
+data.pathTask - path for store files with task
+task.maxThreads - how many workers can used tasks
+task.pathTickets - path for store tasks results

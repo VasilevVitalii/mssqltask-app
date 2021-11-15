@@ -6,6 +6,9 @@ const AdmZip = require('adm-zip')
 const ResEdit = require('resedit')
 const s = require('./compile.shared')
 
+process.exit()
+
+/*
 const exeFile = path.join(s.dirCompile('win'), 'mssqltask-app.exe')
 const icoFile = path.join(s.dirAssets(), 'logo.ico')
 const pjFile = path.join(s.dirDist(), 'package.json')
@@ -72,3 +75,4 @@ zip.addLocalFile(path.join(s.dirCompile('win'), 'readme.txt'))
 zip.writeZip(path.join(s.dirCompile('win'), `mssqltask-app-win64-${pj.version.replace(/\./g, '-')}.zip`))
 
 console.log('DONE!')
+*/

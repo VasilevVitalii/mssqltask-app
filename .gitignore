@@ -1,6 +1,7 @@
 node_modules
 dist
-compile
+compile-win
+compile-lin
 test/*.json
 test/log
 test/data

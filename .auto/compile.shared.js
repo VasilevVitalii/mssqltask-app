@@ -12,9 +12,14 @@ function dirDist() {
 }
 exports.dirDist = dirDist
 
-/** @returns {string} */
-function dirCompile() {
-    return path.join(__dirname, "..", "compile")
+/**
+ * @param {'win' | 'lin'} os
+ * @returns {string}
+ *  */
+function dirCompile(os) {
+    if (os === 'win') return path.join(__dirname, "..", "compile-win")
+    if (os === 'lin') return path.join(__dirname, "..", "compile-lin")
+    return '???'
 }
 exports.dirCompile = dirCompile
 

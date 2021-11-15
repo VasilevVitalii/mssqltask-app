@@ -50,18 +50,18 @@ function readmeText(os) {
     readme.push(`homepage "${pj.homepage}"`)
 
     if (os === 'win') {
-        const t = fs.readFileSync(path.join(dirArtifacts(), 'for-compile', 'description-win.txt'), 'utf8')
+        const t = fs.readFileSync(path.join(dirArtifacts(), 'docs', 'description-win.txt'), 'utf8')
         if (t.trim().length > 0) {
             readme.push(t)
         }
     }
     if (os === 'lin') {
-        const t = fs.readFileSync(path.join(dirArtifacts(), 'for-compile', 'description-linux.txt'), 'utf8')
+        const t = fs.readFileSync(path.join(dirArtifacts(), 'docs', 'description-linux.txt'), 'utf8')
         if (t.trim().length > 0) {
             readme.push(t)
         }
     }
-    const t = fs.readFileSync(path.join(dirArtifacts(), 'for-compile', 'description.txt'), 'utf8')
+    const t = fs.readFileSync(path.join(dirArtifacts(), 'docs', 'description.txt'), 'utf8')
     if (t.trim().length > 0) {
         readme.push(t)
     }

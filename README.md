@@ -5,14 +5,19 @@ Can save results to JSON files (for example, to collect various statistics).
 ## 1. getting started
 
 From https://drive.google.com/drive/folders/13qF-zbjZE8DPyhU5-tyyxaRlpdqWNPjF?usp=sharing download app for windows or linux.
-Unzip and run. After first start app will create setting file "mssqltask-app.json" and directories "data", "log", "result"
+Unzip and run. After first start app will create setting file "mssqltask-app.json" and directories "data", "log", "result".
 In directory "data" app will create examples:
 * connecting to the server
 * tasks
-Change them. The results of the tasks will be in the "results" directory.
-Enjoy.
 
-## 2. app settings
+Change examples (app does not need to be restarted). The results of the exec tasks will be in the "results" directory.
+
+## 2. how it works
+
+![work schema](/artifacts/docs/howitwork.svg)
+
+## 2. app settings - mssqltask-app.json
+
 Stored
 
 ## 1. how it works

@@ -1,4 +1,7 @@
+//@ts-check
 const path = require("path")
+const fs = require('fs')
+const vv = require('vv-common')
 
 /** @returns {string} */
 function dirRoot() {
@@ -13,20 +16,55 @@ function dirDist() {
 exports.dirDist = dirDist
 
 /**
- * @param {'win' | 'lin'} os
  * @returns {string}
  *  */
-function dirCompile(os) {
-    if (os === 'win') return path.join(__dirname, "..", "compile-win")
-    if (os === 'lin') return path.join(__dirname, "..", "compile-lin")
-    return '???'
+function dirCompile() {
+    return path.join(__dirname, "..", "compile")
 }
 exports.dirCompile = dirCompile
 
 /** @returns {string} */
-function dirAssets() {
-    return path.join(__dirname, "..", "assets")
+function dirArtifacts() {
+    return path.join(__dirname, "..", "artifacts")
 }
-exports.dirAssets = dirAssets
+exports.dirArtifacts = dirArtifacts
 
+/**
+ * @param {'win' | 'lin'} os
+ * @returns {string}
+ */
+function readmeText(os) {
+    const pj = vv.PackajeJsonParse(fs.readFileSync(path.join(dirDist(), 'package.json'), 'utf8'))
+    const readme = [
+        '#ABOUT'
+    ]
+    readme.push(`app "${pj.name}", version "${pj.version}"`)
+    readme.push(`license "${pj.license}"`)
+    if (pj.dependencies.length > 0) {
+        readme.push(`dependencies`)
+        pj.dependencies.forEach(d => {
+            readme.push(`    "${d.package}", version "${d.version}"`)
+        })
+    }
+    readme.push(`author "${pj.author}"`)
+    readme.push(`homepage "${pj.homepage}"`)
 
+    if (os === 'win') {
+        const t = fs.readFileSync(path.join(dirArtifacts(), 'for-compile', 'description-win.txt'), 'utf8')
+        if (t.trim().length > 0) {
+            readme.push(t)
+        }
+    }
+    if (os === 'lin') {
+        const t = fs.readFileSync(path.join(dirArtifacts(), 'for-compile', 'description-linux.txt'), 'utf8')
+        if (t.trim().length > 0) {
+            readme.push(t)
+        }
+    }
+    const t = fs.readFileSync(path.join(dirArtifacts(), 'for-compile', 'description.txt'), 'utf8')
+    if (t.trim().length > 0) {
+        readme.push(t)
+    }
+    return readme.join('\n')
+}
+exports.readmeText = readmeText

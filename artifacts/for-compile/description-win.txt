@@ -1,0 +1,17 @@
+
+#RUN AS SERVICE IN WINDOWS
+1. Download free tool nssm from www.nssm.cc
+2. Put nssm.exe near mssqltask-app-win.exe
+3. Near mssqltask-app-win.exe create two files:
+3.1. start.cmd:
+
+    nssm install mssqltask-app mssqltask-app-win.exe
+    nssm start mssqltask-app
+
+3.2. stop.cmd:
+
+    nssm stop mssqltask-app
+    nssm remove mssqltask-app confirm
+
+4. As administrator run start.cmd
+5. Enjoy

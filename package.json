@@ -8,8 +8,7 @@
         "test": "node ./dist/test/index.js",
         "update": "npx npm-check-updates -u && npm i && npm audit fix && node ./node_modules/vv-template-nodebackend/index.js",
         "build": "tsc",
-        "compile_win": "tsc && npm rebuild && node ./.auto/compile.win.before.js && pkg . --t node14-win-x64 --out-path compile-win --compress GZip &&  node ./.auto/compile.win.after.js",
-        "compile_lin": "tsc && npm rebuild && node ./.auto/compile.lin.before.js && pkg . --t node14-linux-arm64 --out-path compile-lin --compress GZip &&  node ./.auto/compile.lin.after.js",
+        "compile": "tsc && npm rebuild && node ./.auto/compile.before.js && pkg . --out-path compile --compress GZip &&  node ./.auto/compile.after.js",
         "precommit": "node ./.auto/precommit.js"
     },
     "pkg": {
@@ -24,6 +23,10 @@
             "node_modules/mssqltask/dist/src/*.js",
             "node_modules/mssqltask/dist/src/**/.js",
             "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
+        ],
+        "targets": [
+            "node14-win-x64",
+            "node14-linux"
         ]
     },
     "repository": {

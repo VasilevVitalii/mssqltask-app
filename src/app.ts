@@ -43,7 +43,7 @@ export const env = {
 }
 
 export function Go(currentPath: string) {
-    env.options = options.Read(path.join(currentPath, 'mssqltask-app.json'))
+    env.options = options.Read(currentPath)
     env.logger = loggerManager.addLogger ({
         consoleLevel: env.options.log.allowTrace ? 'trace' : 'debug',
         transports: [
@@ -58,6 +58,10 @@ export function Go(currentPath: string) {
     const packageJson = vv.PackajeJsonParse(packageJsonRaw)
 
     env.logger.debug(`APP - start${packageJson.version ? ', version '.concat(packageJson.version) : ''}`)
+    env.logger.debug(`APP - log.path "${env.options.log.path}"`)
+    env.logger.debug(`APP - data.pathMssql "${env.options.data.pathMssql}"`)
+    env.logger.debug(`APP - data.pathTask "${env.options.data.pathTask}"`)
+    env.logger.debug(`APP - task.path "${env.options.task.path}"`)
 
     depotGo()
     mssqltaskGo()

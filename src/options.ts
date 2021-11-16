@@ -13,27 +13,28 @@ export type TOptions = {
     },
     task: {
         maxThreads: number,
-        pathTickets: string
+        path: string
     }
 }
 
-export function Read(fullFileName: string): TOptions {
+export function Read(currentPath: string): TOptions {
+    const fullFileName = path.join(currentPath, 'mssqltask-app.json')
     const dataRaw = fs.existsSync(fullFileName) ? fs.readFileSync(fullFileName, 'utf8') : undefined
     const dataJson = (dataRaw ? JSON.stringify(dataRaw) : {}) as TOptions
 
     const result: TOptions = {
         log: {
-            path: (dataJson?.log?.path || path.join(path.parse(fullFileName).dir, 'log')).replace(/\\/g, '/'),
+            path: (dataJson?.log?.path || path.join('log')).replace(/\\/g, '/'),
             lifeDays: dataJson?.log?.lifeDays || 10,
             allowTrace: dataJson?.log?.allowTrace === true ? true : false
         },
         data: {
-            pathMssql: (dataJson?.data?.pathMssql || path.join(path.parse(fullFileName).dir, 'data', 'mssql')).replace(/\\/g, '/'),
-            pathTask: (dataJson?.data?.pathTask || path.join(path.parse(fullFileName).dir, 'data', 'task')).replace(/\\/g, '/'),
+            pathMssql: (dataJson?.data?.pathMssql || path.join('data', 'mssql')).replace(/\\/g, '/'),
+            pathTask: (dataJson?.data?.pathTask || path.join('data', 'task')).replace(/\\/g, '/'),
         },
         task: {
             maxThreads: dataJson?.task?.maxThreads || 20,
-            pathTickets: (dataJson?.task?.pathTickets || path.join(path.parse(fullFileName).dir, 'result')).replace(/\\/g, '/'),
+            path: (dataJson?.task?.path || path.join('result')).replace(/\\/g, '/'),
         }
     }
 
@@ -43,6 +44,11 @@ export function Read(fullFileName: string): TOptions {
     if (JSON.stringify(result, null, 4) !== dataRaw) {
         fs.writeFileSync(fullFileName, JSON.stringify(result, null, 4), 'utf8')
     }
+
+    if (!path.isAbsolute(result.log.path)) result.log.path = path.join(currentPath, result.log.path)
+    if (!path.isAbsolute(result.data.pathMssql)) result.data.pathMssql = path.join(currentPath, result.data.pathMssql)
+    if (!path.isAbsolute(result.data.pathTask)) result.data.pathTask = path.join(currentPath, result.data.pathTask)
+    if (!path.isAbsolute(result.task.path)) result.task.path = path.join(currentPath, result.task.path)
 
     return result
 }

@@ -92,9 +92,9 @@ function createCore(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) : mssqltas
         processResult: {
             allowCallbackRows: depot.task.allowRows,
             allowCallbackMessages: depot.task.allowMessages,
-            pathSaveTickets: env.options.task.pathTickets,
-            pathSaveRows: env.options.task.pathTickets,
-            pathSaveMessages: env.options.task.pathTickets,
+            pathSaveTickets: env.options.task.path,
+            pathSaveRows: env.options.task.path,
+            pathSaveMessages: env.options.task.path,
         }
     })
     res.maxWorkersSet(env.options.task.maxThreads)

@@ -3,17 +3,17 @@ Many tasks for many Microsoft SQL Servers.
 Can save queries results to JSON files (for example, to collect various statistics).
 ## 1. getting started
 From https://drive.google.com/drive/folders/13qF-zbjZE8DPyhU5-tyyxaRlpdqWNPjF?usp=sharing download app for windows or linux.
-Unzip and run. After first start app will create setting file "mssqltask-app.json" and directories "data", "log", "result".
-In directory "data" app will create examples:
+Unzip and run. After first start app will create setting file **mssqltask-app.json** and directories **data**, **log**, **result**.
+In directory **data** app will create examples:
 * connecting to the server
 * tasks
 
-Change examples (app does not need to be restarted). The results of the exec tasks will be in the "results" directory.
+Change examples (app does not need to be restarted). The results of the exec tasks will be in the **results** directory.
 ## 2. how it works
 ![how it works](/artifacts/docs/howitwork.svg)
 ## 3. details
 ### 3.1. app settigs
-Stored in mssqltask-app.json. Always near with app. Default setting:
+Stored in **mssqltask-app.json**. Always near with app. Default setting:
 ```json
 {
     "log": {
@@ -81,7 +81,7 @@ Second directory contains tasks (with a list of MS SQL Servers for which this ta
 * property **title**
     - will be used in UI, which is planned to be made in the next versions
 * property **metronom**
-    - supports two styles - cron style (used lib "https://github.com/node-schedule/node-schedule#readme") or custom style ("periodicity" = "every" or "once"):
+    - supports two styles - cron style (used lib "https://github.com/node-schedule/node-schedule#readme") or custom style (**"periodicity" = "every" or "once"**):
     ```json
     "metronom": {
         "kind": "cron",
@@ -102,21 +102,21 @@ Second directory contains tasks (with a list of MS SQL Servers for which this ta
     }
     ```
 * property **queries**
-    - each query in array executed separately, cannot contain "GO"
+    - each query in array executed separately, cannot contain **GO**
     - all queries executed in one connection to base **tempdb**
     - comparison query in Microsoft SQL Server Management Studio and query in JSON:
     ```sql
-        SELECT * FROM sys.objects
-        GO
-        SELECT * FROM sys.columns
-        EXEC mybase.myschema.myproc
-        PRINT 'hello'
+    SELECT * FROM sys.objects
+    GO
+    SELECT * FROM sys.columns
+    EXEC mybase.myschema.myproc
+    PRINT 'hello'
     ```
     ```json
-        "queries": [
-            "SELECT * FROM list of sys.objects",
-            "SELECT * FROM list of sys.columns\nEXEC mybase.myschema.myproc\nPRINT 'hello'",
-        ],
+    "queries": [
+        "SELECT * FROM list of sys.objects",
+        "SELECT * FROM list of sys.columns\nEXEC mybase.myschema.myproc\nPRINT 'hello'",
+    ],
     ```
 * properties **allowRows** and **allowMessages**
     - allow to save queries results as json files in **result** directory

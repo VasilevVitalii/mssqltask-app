@@ -57,6 +57,8 @@
         "backdepot": "^0.0.8",
         "mssqltask": "^0.0.10",
         "vv-common": "^0.0.7",
+        "vv-httpgate": "^0.0.4",
+        "vv-jwt": "^0.0.3",
         "vv-logger": "^0.0.4"
     }
 }

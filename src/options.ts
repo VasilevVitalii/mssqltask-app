@@ -14,13 +14,20 @@ export type TOptions = {
     task: {
         maxThreads: number,
         path: string
+    },
+    console: {
+        allowApi: boolean
+        allowUi: boolean
+        passwordEdit: string,
+        passwordView: string,
+        http: string
     }
 }
 
 export function Read(currentPath: string): TOptions {
     const fullFileName = path.join(currentPath, 'mssqltask-app.json')
     const dataRaw = fs.existsSync(fullFileName) ? fs.readFileSync(fullFileName, 'utf8') : undefined
-    const dataJson = (dataRaw ? JSON.stringify(dataRaw) : {}) as TOptions
+    const dataJson = (dataRaw ? JSON.parse(dataRaw) : {}) as TOptions
 
     const result: TOptions = {
         log: {
@@ -35,11 +42,19 @@ export function Read(currentPath: string): TOptions {
         task: {
             maxThreads: dataJson?.task?.maxThreads || 20,
             path: (dataJson?.task?.path || path.join('result')).replace(/\\/g, '/'),
+        },
+        console: {
+            allowApi: dataJson?.console?.allowApi === true ? true : false,
+            allowUi: dataJson?.console?.allowUi === true ? true : false,
+            passwordEdit: dataJson?.console?.passwordEdit || '',
+            passwordView: dataJson?.console?.passwordView || '',
+            http: dataJson?.console?.http || 'http://localhost:3000',
         }
     }
 
     if (result.log.lifeDays <= 0) result.log.lifeDays = 1
     if (result.task.maxThreads <= 0) result.task.maxThreads = 1
+    if (!result.console.allowApi) result.console.allowUi = false
 
     if (JSON.stringify(result, null, 4) !== dataRaw) {
         fs.writeFileSync(fullFileName, JSON.stringify(result, null, 4), 'utf8')

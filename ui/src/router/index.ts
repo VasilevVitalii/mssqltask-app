@@ -3,11 +3,11 @@ import { reactive } from "vue"
 
 import Welcome from "../views/Welcome.vue"
 import Signin from "../views/Signin.vue"
-import Console from "../views/Console.vue"
+import Workflow from "../views/Workflow.vue"
 import PageNotFound from "../views/PageNotFound.vue"
 
-export type TUrl = "welcome" | "signin" | "console" | "404"
-export type TConsole = "dashboard" | "history" | "edit"
+export type TUrl = "u-welcome" | "u-signin" | "u-workflow" | "u-404"
+export type TWorkflow = "w-dashboard" | "w-history" | "w-edit"
 
 export type TRoute = {
     url: TUrl
@@ -16,13 +16,13 @@ export type TRoute = {
 }
 
 const namedRoutes: TRoute[] = [
-    { url: "welcome", path: "/welcome", component: Welcome },
-    { url: "signin", path: "/signin", component: Signin },
-    { url: "console", path: "/console", component: Console },
-    { url: "404", path: "/404", component: PageNotFound }
+    { url: "u-welcome", path: "/welcome", component: Welcome },
+    { url: "u-signin", path: "/signin", component: Signin },
+    { url: "u-workflow", path: "/workflow", component: Workflow },
+    { url: "u-404", path: "/404", component: PageNotFound }
 ]
 
-export const console = reactive({ value: "dashboard" as TConsole })
+export const workflow = reactive({ value: "dashboard" as TWorkflow })
 
 const routes: RouteRecordRaw[] = namedRoutes.map(m => {
     return {
@@ -38,28 +38,28 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     if (to.path === "/") {
-        next({ path: namedRoutes.find(f => f.url === "welcome")?.path || "/welcome" })
+        next({ path: namedRoutes.find(f => f.url === "u-welcome")?.path || "/welcome" })
         return
     }
     const r = namedRoutes.find(f => f.path === to.path)
     if (!r) {
-        next({ path: namedRoutes.find(f => f.url === "404")?.path || "/welcome" })
+        next({ path: namedRoutes.find(f => f.url === "u-404")?.path || "/welcome" })
         return
     }
 
     next()
 })
 
-export function goto(to: TUrl | TConsole) {
+export function goto(to: TUrl | TWorkflow) {
     let needPath = ""
-    if (to === "welcome") {
-        needPath = namedRoutes.find(f => f.url === "welcome")?.path || ""
-    } else if (to === "signin") {
-        needPath = namedRoutes.find(f => f.url === "signin")?.path || ""
-    } else if (to === "console" || to === "dashboard" || to === "history" || to === "edit") {
-        needPath = namedRoutes.find(f => f.url === "console")?.path || ""
-        if (to !== "console") {
-            console.value = to
+    if (to === "u-welcome") {
+        needPath = namedRoutes.find(f => f.url === "u-welcome")?.path || ""
+    } else if (to === "u-signin") {
+        needPath = namedRoutes.find(f => f.url === "u-signin")?.path || ""
+    } else if (to === "u-workflow" || to === "w-dashboard" || to === "w-history" || to === "w-edit") {
+        needPath = namedRoutes.find(f => f.url === "u-workflow")?.path || ""
+        if (to !== "u-workflow") {
+            workflow.value = to
         }
     }
     if (needPath !== "" && router.currentRoute.value.path !== needPath) {
@@ -68,18 +68,3 @@ export function goto(to: TUrl | TConsole) {
 }
 
 export default router
-
-//https://class-component.vuejs.org/guide/class-component.html#data
-
-// <script lang="ts">
-// import { Options, Vue } from "vue-class-component"
-// // import HelloWorld from "@/components/HelloWorld.vue" // @ is an alias to /src
-
-// // @Options({
-// //     components: {
-// //         HelloWorld
-// //     }
-// // })
-// export default class Home extends Vue {}
-
-// </script>

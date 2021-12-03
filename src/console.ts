@@ -1,10 +1,16 @@
-import * as vv from 'vv-common'
 import { env } from './app'
-import { Create as CreateHttpGate } from 'vv-httpgate'
-import { TRequest } from 'vv-httpgate/dist/src/replyRequest'
+import { Create as CreateHttpGate, TRequest } from 'vv-httpgate'
+import * as consoleSignin from './consoleSignin'
+import * as consoleEdit from './consoleEdit'
+import { TDepotMssql } from './depotMssql'
+import { TDepotTask } from './depotTask'
 
-export type TPost =
-    {kind: 'signin', data: {password: string}}
+export type TPostSignin = {kind: 'signin', data: {password: string}}
+export type TPostEditLoad = {kind: 'edit-load', token: string}
+export type TPost = TPostSignin | TPostEditLoad
+
+export type TReplySignin = {kind: 'signin', data: {token: string}}
+export type TReplyEditLoad = {kind: 'edit-load', data: {mssqls: {path: string, file: string, data: TDepotMssql}[], tasks: {path: string, file: string, data: TDepotTask}[]}}
 
 export function Go() {
     if (!env.options.console.allowApi) return
@@ -22,13 +28,12 @@ export function Go() {
             const post = getPost(request)
             if (!post) return
             if (post.kind === 'signin') {
-                const check = checkPassword(post.data?.password)
-                if (!check) {
-                    request.reply(403, `Incorrect password`)
-                    return
-                }
+                consoleSignin.Create(request, post)
+            } else if (post.kind === 'edit-load') {
+                if (!consoleSignin.Check(request, post.token, 'edit')) return
+                consoleEdit.Load(request)
             } else {
-                request.reply(400, `Unknown kind = ${post.kind}`)
+                request.reply(400, `unknown kind "${post['kind']}"`)
             }
 
             return
@@ -61,10 +66,4 @@ function getPost(request: TRequest): TPost {
         return undefined
     }
     return data
-}
-
-function checkPassword(password: string): ('view' | 'edit') {
-    if (env.options.console.passwordEdit === password) return 'edit'
-    if (env.options.console.passwordView === password) return 'view'
-    return undefined
 }

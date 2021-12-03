@@ -1,0 +1,9 @@
+POST http://localhost:3000 HTTP/1.1
+content-type: application/json
+
+{
+    "kind": "signin",
+    "data": {
+        "password": "123"
+    }
+}

@@ -5,7 +5,6 @@ import fs from 'fs'
 import { TStateRow } from 'backdepot/dist/src/index.env'
 import { TUpsert } from './depot'
 
-
 export type TDepotMssql = {
     path: string,
     file: string,

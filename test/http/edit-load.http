@@ -1,0 +1,7 @@
+POST http://localhost:3000 HTTP/1.1
+content-type: application/json
+
+{
+    "kind": "edit-load",
+    "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJhZGRpdGlvbmFsIjp7ImFjY2Vzc0xldmVsIjoiZWRpdCJ9LCJpc3MiOiJtc3NxbHRhc2stYXBwIiwiaWF0IjoxNjM4NTIxNTkyNDAzLCJleHAiOjE2Mzg2MDc5OTI0MDN9.buyCCJdLIGZEEwpFcdDtDBK6XJfbUoTZ3N979mTKyGA="
+}

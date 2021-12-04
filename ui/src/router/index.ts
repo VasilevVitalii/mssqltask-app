@@ -5,6 +5,7 @@ import Welcome from "../views/Welcome.vue"
 import Signin from "../views/Signin.vue"
 import Workflow from "../views/Workflow.vue"
 import PageNotFound from "../views/PageNotFound.vue"
+import { TPost } from "../../../src/console"
 
 export type TUrl = "u-welcome" | "u-signin" | "u-workflow" | "u-404"
 export type TWorkflow = "w-dashboard" | "w-history" | "w-edit"
@@ -65,6 +66,35 @@ export function goto(to: TUrl | TWorkflow) {
     if (needPath !== "" && router.currentRoute.value.path !== needPath) {
         router.push({ path: needPath })
     }
+}
+
+const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: "Vue POST Request Example" })
+}
+
+export function post(data: TPost) {
+    const request = {
+        method: "POST",
+        headers: { "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify(data)
+    }
+
+    fetch("http://localhost:3000", requestOptions)
+        .then(async response => {
+            const data = await response.json()
+
+            // check for error response
+            if (!response.ok) {
+                // get error message from body or default to response status
+                const error = (data && data.message) || response.status
+                return Promise.reject(error)
+            }
+        })
+        .catch(error => {
+            console.error("There was an error!", error)
+        })
 }
 
 export default router

@@ -29,7 +29,6 @@
                 </q-card-section>
                 <q-card-actions align="right">
                     <q-btn flat @click="goto('w-edit')">go to</q-btn>
-                    <q-btn flat @click="post()">post</q-btn>
                 </q-card-actions>
             </q-card>
         </div>

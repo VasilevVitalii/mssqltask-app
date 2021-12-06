@@ -6,6 +6,7 @@ import Signin from "../views/Signin.vue"
 import Workflow from "../views/Workflow.vue"
 import PageNotFound from "../views/PageNotFound.vue"
 import { TPost } from "../../../src/console"
+import { state as stateEdit } from "@/store/edit"
 
 export type TUrl = "u-welcome" | "u-signin" | "u-workflow" | "u-404"
 export type TWorkflow = "w-dashboard" | "w-history" | "w-edit"
@@ -51,6 +52,14 @@ router.beforeEach((to, from, next) => {
     next()
 })
 
+router.afterEach((to, from) => {
+    if (to.path === namedRoutes.find(f => f.url === "u-workflow")?.path || ("" && workflow.value === "w-edit")) {
+        if (!stateEdit.tryLoaded) {
+            stateEdit.load()
+        }
+    }
+})
+
 export function goto(to: TUrl | TWorkflow) {
     let needPath = ""
     if (to === "u-welcome") {
@@ -68,33 +77,38 @@ export function goto(to: TUrl | TWorkflow) {
     }
 }
 
-const requestOptions = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: "Vue POST Request Example" })
-}
-
-export function post(data: TPost) {
+export async function post(data: TPost): Promise<{ errorText: string | undefined; response: any | undefined }> {
     const request = {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=UTF-8" },
         body: JSON.stringify(data)
     }
-
-    fetch("http://localhost:3000", requestOptions)
+    return await fetch("http://localhost:3000", request)
         .then(async response => {
             const data = await response.json()
-
-            // check for error response
+            console.log(data)
+            return { errorText: undefined, response: data }
             if (!response.ok) {
-                // get error message from body or default to response status
                 const error = (data && data.message) || response.status
                 return Promise.reject(error)
             }
         })
         .catch(error => {
-            console.error("There was an error!", error)
+            return { errorText: (error as Error)?.message || "UNKNOWN MESSAGE", response: undefined }
+            // console.error("There was an error!", error)
         })
+}
+
+export function tokenGet(): string {
+    return (localStorage.getItem("token") as string) || ""
+}
+
+export function tokenClear() {
+    localStorage.removeItem("token")
+}
+
+export function signIn(password: string) {
+    console.log(password)
 }
 
 export default router

@@ -1,6 +1,5 @@
-import { TRequest } from 'vv-httpgate'
 import { env } from './app'
-import { TPostSignin, TReplySignin } from './console'
+import { TReplyBox, TReplySignin } from './console'
 import { Create as CreateJwtManager } from 'vv-jwt'
 
 const jwtManager = CreateJwtManager({
@@ -9,45 +8,50 @@ const jwtManager = CreateJwtManager({
     expDelta: 1000 * 60 * 60 * 24,   //create tokens with one day life
 })
 
-export function Create(request: TRequest, data: TPostSignin): void {
-    if (!data || !data.data) {
-        request.reply(403, `Incorrect password request`)
-        return
-    }
+export function Create(replyBox: TReplyBox, password: string): void {
+    // if (!data || !data.data) {
+    //     replyBox.statusCode = 403
+    //     replyBox.reply.error = `Incorrect password request`
+    //     return
+    // }
     let accessLevel: string = undefined
-    if (env.options.console.passwordEdit === data.data.password) {
+    if (env.options.console.passwordEdit === password) {
         accessLevel = 'edit'
-    } else if (env.options.console.passwordView === data.data.password) {
+    } else if (env.options.console.passwordView === password) {
         accessLevel = 'view'
     }
     if (!accessLevel) {
-        request.reply(403, `Incorrect password`)
+        replyBox.statusCode = 403
+        replyBox.reply.error = `Incorrect password`
         return
     }
     const jwt = jwtManager.create({additional:{accessLevel: accessLevel}})
     if (jwt.error) {
-        request.reply(403, `Error generate token: ${jwt.error.message}`)
+        replyBox.statusCode = 500
+        replyBox.reply.error = `Error generate token: ${jwt.error.message}`
         return
     }
-    request.replySetHeader('content-type', 'application/json; charset=UTF-8')
-    request.reply(200, {kind: 'signin', data: {token: jwt.jwtString}} as TReplySignin)
+
+    replyBox.statusCode = 200
+    replyBox.reply: TReplySignin = {
+        
+    }   // .data = {token: jwt.jwtString}
 }
 
-export function Check(request: TRequest, token: string, needAccessLevel: 'edit' | 'view'): boolean {
+export function Check(token: string, needAccessLevel: 'edit' | 'view'): string {
     const defaultAccessLevel = !env.options.console.passwordEdit ? 'edit' : !env.options.console.passwordView ? 'view' : undefined
-    if (compareAccessLevel(needAccessLevel, defaultAccessLevel)) return true
-    if (defaultAccessLevel === 'edit' && needAccessLevel === 'view') return true
+    if (compareAccessLevel(needAccessLevel, defaultAccessLevel)) return undefined
+    if (defaultAccessLevel === 'edit' && needAccessLevel === 'view') return undefined
     const check = jwtManager.check(token)
     if (check.deny) {
-        request.reply(403, check.deny.message)
+        return check.deny.message
     }
     const accessLevel = (check.jwt?.additional as any)?.accessLevel
     if (!accessLevel) {
-        request.reply(403, `empty access level in token`)
+        return `empty access level in token`
     }
-    if (compareAccessLevel(needAccessLevel, accessLevel)) return true
-    request.reply(403, `token has poor access level`)
-    return false
+    if (compareAccessLevel(needAccessLevel, accessLevel)) return ''
+    return `token has poor access level`
 }
 
 function compareAccessLevel(need:  'edit' | 'view', available: 'edit' | 'view'): boolean {

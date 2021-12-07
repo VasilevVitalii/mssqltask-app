@@ -1,5 +1,5 @@
 import { env } from './app'
-import { TPost, TReplyBox, TReplySignin } from './console'
+import { TPost, TReplyBox } from './console'
 import { Create as CreateJwtManager } from 'vv-jwt'
 
 type TPostAccessLevel = 'edit' | 'view'

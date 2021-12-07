@@ -4,10 +4,10 @@
     </div>
 </template>
 <script lang="ts">
-import { workflow } from "@/router"
+//import { workflow } from "@/transport/router"
 export default {
     setup() {
-        return { workflow: workflow }
+        return { workflow: "aaa" }
     }
 }
 </script>

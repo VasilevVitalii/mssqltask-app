@@ -1,22 +1,24 @@
 <template>
     <q-toolbar class="text-white bg-primary" v-show="$route.path === '/workflow'">
-        <q-btn flat @click="goto('u-welcome')">home</q-btn>
-        <q-btn flat @click="goto('w-dashboard')">dashboard</q-btn>
-        <q-btn flat @click="goto('w-history')">history</q-btn>
-        <q-btn flat @click="goto('w-edit')">edit</q-btn>
+        <q-btn flat @click="routerGoto('u-welcome')">home</q-btn>
+        <q-btn flat @click="routerGoto('w-dashboard')">dashboard</q-btn>
+        <q-btn flat @click="routerGoto('w-history')">history</q-btn>
+        <q-btn flat @click="routerGoto('w-edit')">edit</q-btn>
         <q-space />
-        <q-btn flat>sign in</q-btn>
+        <q-btn flat v-show="stateToken.token" @click="clearToken()">sign out</q-btn>
     </q-toolbar>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue"
-import { workflow, goto } from "@/router"
+import { routerGoto } from "@/transport/router"
+import { clearToken, stateToken } from "@/store/token"
 
 export default defineComponent({
     setup() {
         return {
-            workflow: workflow.value,
-            goto: goto
+            routerGoto,
+            stateToken,
+            clearToken
         }
     }
 })

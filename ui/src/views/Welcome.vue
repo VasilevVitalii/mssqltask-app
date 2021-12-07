@@ -10,7 +10,7 @@
                     <div class="text-subtitle2 menu-text">realtime view work tasks</div>
                 </q-card-section>
                 <q-card-actions align="right">
-                    <q-btn flat @click="goto('w-dashboard')">go to</q-btn>
+                    <q-btn flat @click="routerGoto('w-dashboard')">go to</q-btn>
                 </q-card-actions>
             </q-card>
             <q-card square flat class="menu-card bg-primary text-white">
@@ -19,7 +19,7 @@
                     <div class="text-subtitle2 menu-text">history work task - performance analysis, viewing results</div>
                 </q-card-section>
                 <q-card-actions align="right">
-                    <q-btn flat @click="goto('w-history')">go to</q-btn>
+                    <q-btn flat @click="routerGoto('w-history')">go to</q-btn>
                 </q-card-actions>
             </q-card>
             <q-card square flat class="menu-card bg-primary text-white">
@@ -28,17 +28,17 @@
                     <div class="text-subtitle2 menu-text">edit tasks and connections to MS SQL Servers</div>
                 </q-card-section>
                 <q-card-actions align="right">
-                    <q-btn flat @click="goto('w-edit')">go to</q-btn>
+                    <q-btn flat @click="routerGoto('w-edit')">go to</q-btn>
                 </q-card-actions>
             </q-card>
         </div>
     </div>
 </template>
 <script lang="ts">
-import { goto, post } from "@/router"
+import { routerGoto } from "@/transport/router"
 export default {
     setup() {
-        return { goto: goto, post: post }
+        return { routerGoto }
     }
 }
 </script>

@@ -1,7 +1,8 @@
 import { reactive } from "vue"
 import { TDepotMssql } from "../../../src/depotMssql"
 import { TDepotTask } from "../../../src/depotTask"
-import { post, tokenGet } from "@/router"
+import { send } from "@/transport/rest"
+import { stateToken } from "./token"
 
 export type TMssql = {
     deleted: boolean
@@ -17,20 +18,23 @@ export type TTask = {
     edit: { path: string; file: string; data: TDepotTask }[]
 }
 
-export const state = reactive({
+export const stateEdit = reactive({
     tryLoaded: false,
     loading: false,
-    loadErrorText: undefined as string | undefined,
     load: async function () {
         if (this.loading) return
         this.loading = true
-        const res = await post({
-            kind: "edit-load",
-            token: tokenGet()
-        })
-        this.loadErrorText = res.errorText
-        this.loading = false
-        this.tryLoaded = true
+        send(
+            {
+                kind: "edit-load",
+                token: stateToken.token
+            },
+            result => {
+                console.log(result)
+                this.loading = false
+                this.tryLoaded = true
+            }
+        )
     },
     mssqls: [] as TMssql[],
     tasks: [] as TTask[]

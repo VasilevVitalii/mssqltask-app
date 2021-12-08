@@ -50,7 +50,7 @@ router.beforeEach((to, from, next) => {
 })
 
 router.afterEach(to => {
-    if (to.path === navigationWorkflow.route.path && stateRouter.currentWorkflow === "w-edit" && !stateEdit.tryLoaded) {
+    if (to.path === navigationWorkflow.route.path && stateRouter.currentWorkflow === "w-edit" && !stateEdit.loadedInit) {
         stateEdit.load()
     }
 })

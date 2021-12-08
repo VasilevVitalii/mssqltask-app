@@ -2,24 +2,22 @@ import { reactive } from "vue"
 import { TDepotMssql } from "../../../src/depotMssql"
 import { TDepotTask } from "../../../src/depotTask"
 import { send } from "@/transport/rest"
-import { stateToken } from "./token"
+import { TReplyEditLoad } from "../../../src/console"
 
-export type TMssql = {
-    deleted: boolean
-    changed: () => boolean
-    load: { path: string; file: string; data: TDepotMssql }[]
-    edit: { path: string; file: string; data: TDepotMssql }[]
+type TEntity = { deleted: boolean; changed: () => boolean }
+
+export type TMssqlEntity = TEntity & {
+    load: TDepotMssql
+    edit: TDepotMssql
 }
 
-export type TTask = {
-    deleted: boolean
-    changed: () => boolean
-    load: { path: string; file: string; data: TDepotTask }[]
-    edit: { path: string; file: string; data: TDepotTask }[]
+export type TTaskEntity = TEntity & {
+    load: TDepotTask
+    edit: TDepotTask
 }
 
 export const stateEdit = reactive({
-    tryLoaded: false,
+    loadedInit: false,
     loading: false,
     load: async function () {
         if (this.loading) return
@@ -27,15 +25,55 @@ export const stateEdit = reactive({
         send(
             {
                 kind: "edit-load",
-                token: stateToken.token
+                token: ""
             },
             result => {
-                console.log(result)
+                this.mssqls = ((result as TReplyEditLoad)?.data?.mssqls || []).map(m => {
+                    const s = JSON.stringify(m)
+                    return {
+                        edit: JSON.parse(s) as TDepotMssql,
+                        load: JSON.parse(s) as TDepotMssql,
+                        deleted: false,
+                        changed: function () {
+                            return (
+                                this.load.path !== this.edit.path ||
+                                this.load.file !== this.edit.file ||
+                                this.load.instance !== this.edit.instance ||
+                                this.load.password !== this.edit.password ||
+                                this.load.login !== this.edit.login ||
+                                JSON.stringify(this.load.tags) !== JSON.stringify(this.edit.tags)
+                            )
+                        }
+                    }
+                })
+
+                this.tasks = ((result as TReplyEditLoad)?.data?.tasks || []).map(m => {
+                    const s = JSON.stringify(m)
+                    return {
+                        edit: JSON.parse(s) as TDepotTask,
+                        load: JSON.parse(s) as TDepotTask,
+                        deleted: false,
+                        changed: function () {
+                            return (
+                                this.load.path !== this.edit.path ||
+                                this.load.file !== this.edit.file ||
+                                this.load.key !== this.edit.key ||
+                                this.load.title !== this.edit.title ||
+                                this.load.allowMessages !== this.edit.allowMessages ||
+                                this.load.allowRows !== this.edit.allowRows ||
+                                JSON.stringify(this.load.metronom) !== JSON.stringify(this.edit.metronom) ||
+                                JSON.stringify(this.load.mssqls) !== JSON.stringify(this.edit.mssqls) ||
+                                JSON.stringify(this.load.queries) !== JSON.stringify(this.edit.queries)
+                            )
+                        }
+                    }
+                })
+
                 this.loading = false
-                this.tryLoaded = true
+                this.loadedInit = true
             }
         )
     },
-    mssqls: [] as TMssql[],
-    tasks: [] as TTask[]
+    mssqls: [] as TMssqlEntity[],
+    tasks: [] as TTaskEntity[]
 })

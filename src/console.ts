@@ -11,7 +11,7 @@ export type TPost = TPostSignin | TPostEditLoad
 
 export type TReplyUnknown = {kind: 'unknown'}
 export type TReplySignin = {kind: 'signin', data?: {token: string}}
-export type TReplyEditLoad = {kind: 'edit-load', data?: {mssqls: {path: string, file: string, data: TDepotMssql}[], tasks: {path: string, file: string, data: TDepotTask}[]}}
+export type TReplyEditLoad = {kind: 'edit-load', data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
 export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyEditLoad)
 export type TReplyBox = {statusCode: number, reply: TReply}
 
@@ -60,7 +60,7 @@ export function Go() {
             }
 
             if (post?.kind === 'edit-load') {
-                consoleEdit.Load(post, replyBox => {
+                consoleEdit.Load(replyBox => {
                     sendReplyBox(request, replyBox)
                 })
                 return

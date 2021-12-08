@@ -24,8 +24,10 @@ export function Load(depot: IApp, list: TDepotMssql[], dataPath: string, callbac
         const fnd = states ? states.find(f => f.state === 'mssql') : undefined
         if (!fnd || !fnd.rows || fnd.rows.length <= 0) {
             callback(undefined, true, 0)
-            const fileExample = path.join(dataPath, 'example.json')
-            fs.writeFile(fileExample, JSON.stringify(example(), null, 4), {encoding: 'utf8'}, () => {})
+            if (dataPath) {
+                const fileExample = path.join(dataPath, 'example.json')
+                fs.writeFile(fileExample, JSON.stringify(example(), null, 4), {encoding: 'utf8'}, () => {})
+            }
             return
         }
         list.push(...fnd.rows.map(m => { return getFromStorage(m) }))

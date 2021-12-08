@@ -31,10 +31,12 @@ export function Load(depot: IApp, list: TDepotTask[], dataPath: string, callback
         const fnd = states ? states.find(f => f.state === 'task') : undefined
         if (!fnd || !fnd.rows || fnd.rows.length <= 0) {
             callback(undefined, true, 0)
-            const fileExample1 = path.join(dataPath, 'example1.json')
-            const fileExample2 = path.join(dataPath, 'example2.json')
-            fs.writeFile(fileExample1, JSON.stringify(example1(), null, 4), {encoding: 'utf8'}, () => {})
-            fs.writeFile(fileExample2, JSON.stringify(example2(), null, 4), {encoding: 'utf8'}, () => {})
+            if(dataPath) {
+                const fileExample1 = path.join(dataPath, 'example1.json')
+                const fileExample2 = path.join(dataPath, 'example2.json')
+                fs.writeFile(fileExample1, JSON.stringify(example1(), null, 4), {encoding: 'utf8'}, () => {})
+                fs.writeFile(fileExample2, JSON.stringify(example2(), null, 4), {encoding: 'utf8'}, () => {})
+            }
             return
         }
         list.push(...fnd.rows.map(m => { return getFromStorage(m) }))

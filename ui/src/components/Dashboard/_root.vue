@@ -4,7 +4,7 @@
     </div>
 </template>
 <script lang="ts">
-//import { routerGoto } from "@/transport/router"
+//import { routerGoto } from "@/core/router"
 export default {
     setup() {
         return { workflow: "aaaa" }

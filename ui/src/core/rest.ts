@@ -1,61 +1,65 @@
 import { reactive } from "vue"
-import { stateNotife } from "@/store/notify"
-import { stateToken } from "@/store/token"
+import { notify } from "./dialog"
+import { state as StateToken } from "./token"
 import axios from "axios"
 import { TPost, TReply } from "../../../src/console"
-import { routerGoto } from "./router"
+import { goto } from "./router"
 
 type TResponse = { status: number; data: TReply }
 type TQueueItem = { data: TPost; callback: (result: any | undefined) => void }
 
-export const stateRest = reactive({
-    queue: [] as TQueueItem[],
+const queue: TQueueItem[] = []
+
+export const state = reactive({
     accessAllow: true
 })
 
+export function clearQueue() {
+    queue.splice(0, queue.length).forEach(q => {
+        q.callback(undefined)
+    })
+}
+
 export function send(data: TPost, callback: (result: any | undefined) => void) {
-    stateRest.queue.push({ data, callback })
+    queue.push({ data, callback })
 }
 
 let timer = setTimeout(async function tick() {
-    // if (stateRest.queue.length > 0) {
-    //     console.log(`queue ${stateRest.queue.length}, accessAllow ${stateRest.accessAllow}`)
-    // }
-    if (!stateRest.accessAllow) {
+    if (!state.accessAllow) {
         timer = setTimeout(tick, 1000)
         return
     }
-    const q = stateRest.queue.shift()
+    const q = queue.shift()
     if (q) {
         sendCore(q.data, (error, result) => {
             if (error) {
-                stateNotife.list.push({ kind: "error", text: error })
+                notify("error", error)
                 q.callback(undefined)
                 return
             }
             if (!result) {
-                stateNotife.list.push({ kind: "error", text: "empty response" })
+                notify("error", "empty response")
                 q.callback(undefined)
                 return
             }
             if (result.status === 403) {
-                if (stateToken.token === (q.data as any).token) {
-                    stateRest.accessAllow = false
+                if (StateToken.token === (q.data as any).token) {
+                    state.accessAllow = false
                     if (result.data?.error) {
-                        stateNotife.list.push({ kind: "error", text: result.data.error })
+                        notify("error", result.data.error)
                     }
-                    routerGoto("u-signin")
+                    goto("u-signin")
                 }
-                stateRest.queue.unshift(q)
+                queue.unshift(q)
                 return
             }
             if (result.status !== 200) {
-                stateNotife.list.push({ kind: "error", text: result.data?.error || `response with status ${result.status}` })
+                notify("error", result.data?.error || `response with status ${result.status}`)
                 q.callback(undefined)
                 return
             }
             if (!result.data) {
-                stateNotife.list.push({ kind: "error", text: `empty data in response` })
+                notify("error", `empty data in response`)
                 q.callback(undefined)
                 return
             }
@@ -68,8 +72,7 @@ let timer = setTimeout(async function tick() {
 }, 200)
 
 export function sendCore(data: TPost, callback: (error: Error | undefined, response: TResponse | undefined) => void) {
-    console.log(`sendCore: ${stateToken.token}, ${stateToken.token.toString()}`)
-    ;(data as any).token = stateToken.token.toString()
+    ;(data as any).token = StateToken.token.toString()
     axios({
         url: "http://localhost:3000",
         method: "POST",

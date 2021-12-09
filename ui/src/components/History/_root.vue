@@ -4,7 +4,7 @@
     </div>
 </template>
 <script lang="ts">
-//import { workflow } from "@/transport/router"
+//import { workflow } from "@/core/router"
 export default {
     setup() {
         return { workflow: "aaa" }

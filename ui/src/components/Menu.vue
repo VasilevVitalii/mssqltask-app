@@ -5,20 +5,25 @@
         <q-btn flat :class="{ noactive: stateRouter.currentWorkflow !== 'w-history' }" @click="routerGoto('w-history')">history</q-btn>
         <q-btn flat :class="{ noactive: stateRouter.currentWorkflow !== 'w-edit' }" @click="routerGoto('w-edit')">edit</q-btn>
         <q-space />
-        <q-btn flat class="noactive" v-show="stateToken.token && stateToken.token.length > 0" @click="setToken('')">sign out</q-btn>
+        <q-btn flat class="noactive" v-show="stateToken.token && stateToken.token.length > 0" @click="signout()">sign out</q-btn>
     </q-toolbar>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue"
-import { routerGoto, stateRouter } from "@/transport/router"
-import { setToken, stateToken } from "@/store/token"
+import { goto as routerGoto, state as stateRouter } from "@/core/router"
+import { setToken, state as stateToken } from "@/core/token"
 
 export default defineComponent({
     setup() {
+        const signout = () => {
+            setToken("")
+            routerGoto("u-welcome")
+        }
+
         return {
             routerGoto,
             stateToken,
-            setToken,
+            signout,
             stateRouter
         }
     }

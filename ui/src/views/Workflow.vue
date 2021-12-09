@@ -1,12 +1,12 @@
 <template>
     <div>
-        <div v-show="stateRouter.currentWorkflow === 'w-dashboard'">
+        <div v-show="currentWorkflow === 'w-dashboard'">
             <ComponentDashboard />
         </div>
-        <div v-show="stateRouter.currentWorkflow === 'w-history'">
+        <div v-show="currentWorkflow === 'w-history'">
             <ComponentHistory />
         </div>
-        <div v-show="stateRouter.currentWorkflow === 'w-edit'">
+        <div v-show="currentWorkflow === 'w-edit'">
             <ComponentEdit />
         </div>
     </div>
@@ -15,8 +15,8 @@
 import ComponentDashboard from "@/components/Dashboard/_root.vue"
 import ComponentHistory from "@/components/History/_root.vue"
 import ComponentEdit from "@/components/Edit/_root.vue"
+import { state } from "@/core/router"
 
-import { stateRouter } from "@/transport/router"
 export default {
     components: {
         ComponentDashboard,
@@ -24,7 +24,7 @@ export default {
         ComponentEdit
     },
     setup() {
-        return { stateRouter }
+        return { currentWorkflow: state.currentWorkflow }
     }
 }
 </script>

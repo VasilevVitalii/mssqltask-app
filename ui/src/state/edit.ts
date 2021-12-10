@@ -4,10 +4,10 @@ import { TDepotTask } from "../../../src/depotTask"
 import { send } from "@/core/rest"
 import { TReplyEditLoad } from "../../../src/console"
 
-type TEntity = { deleted: boolean; changed: () => boolean }
+type TEntity = { idx: number; del: boolean; upd: () => boolean; new: () => boolean }
 
 export type TMssqlEntity = TEntity & {
-    load: TDepotMssql
+    load: TDepotMssql | undefined
     edit: TDepotMssql
 }
 
@@ -30,32 +30,19 @@ export const state = reactive({
             result => {
                 const r = result as TReplyEditLoad
                 if (r) {
-                    this.mssqls = (r.data?.mssqls || []).map(m => {
+                    this.mssqls = (r.data?.mssqls || []).map((m, idx) => {
                         const s = JSON.stringify(m)
-                        return {
-                            edit: JSON.parse(s) as TDepotMssql,
-                            load: JSON.parse(s) as TDepotMssql,
-                            deleted: false,
-                            changed: function () {
-                                return (
-                                    this.load.path !== this.edit.path ||
-                                    this.load.file !== this.edit.file ||
-                                    this.load.instance !== this.edit.instance ||
-                                    this.load.password !== this.edit.password ||
-                                    this.load.login !== this.edit.login ||
-                                    JSON.stringify(this.load.tags) !== JSON.stringify(this.edit.tags)
-                                )
-                            }
-                        }
+                        return mssqlEntity(idx, JSON.parse(s), JSON.parse(s))
                     })
-
-                    this.tasks = (r.data?.tasks || []).map(m => {
+                    this.tasks = (r.data?.tasks || []).map((m, idx) => {
                         const s = JSON.stringify(m)
                         return {
+                            idx: idx,
                             edit: JSON.parse(s) as TDepotTask,
                             load: JSON.parse(s) as TDepotTask,
-                            deleted: false,
-                            changed: function () {
+                            del: false,
+                            upd: function () {
+                                if (!this.load) return false
                                 return (
                                     this.load.path !== this.edit.path ||
                                     this.load.file !== this.edit.file ||
@@ -67,6 +54,9 @@ export const state = reactive({
                                     JSON.stringify(this.load.mssqls) !== JSON.stringify(this.edit.mssqls) ||
                                     JSON.stringify(this.load.queries) !== JSON.stringify(this.edit.queries)
                                 )
+                            },
+                            new: function () {
+                                return this.load ? false : true
                             }
                         }
                     })
@@ -77,5 +67,48 @@ export const state = reactive({
         )
     },
     mssqls: [] as TMssqlEntity[],
-    tasks: [] as TTaskEntity[]
+    tasks: [] as TTaskEntity[],
+    maxIdxMssql: function () {
+        let idx = 0
+        this.mssqls.forEach(item => {
+            if (item.idx > idx) {
+                idx = item.idx
+            }
+        })
+        return idx
+    },
+    newMssql: function () {
+        return mssqlEntity(this.maxIdxMssql() + 1, undefined, undefined)
+    }
 })
+
+function mssqlEntity(idx: number, load: TDepotMssql | undefined, edit: TDepotMssql | undefined): TMssqlEntity {
+    const e = edit || {
+        path: "",
+        file: "",
+        instance: "",
+        login: "",
+        password: "",
+        tags: []
+    }
+    return {
+        idx: idx,
+        edit: e,
+        load: load,
+        del: false,
+        upd: function () {
+            if (!this.load) return false
+            return (
+                this.load.path !== this.edit.path ||
+                this.load.file !== this.edit.file ||
+                this.load.instance !== this.edit.instance ||
+                this.load.password !== this.edit.password ||
+                this.load.login !== this.edit.login ||
+                JSON.stringify(this.load.tags) !== JSON.stringify(this.edit.tags)
+            )
+        },
+        new: function () {
+            return this.load ? false : true
+        }
+    }
+}

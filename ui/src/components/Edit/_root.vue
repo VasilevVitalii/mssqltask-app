@@ -7,6 +7,7 @@
         <q-toolbar>
             <q-btn flat @click="state.load()">reload</q-btn>
             <q-btn flat>save</q-btn>
+            <q-btn flat @click="addItem(pointEdit)">add</q-btn>
             <q-btn flat>group change</q-btn>
             <q-space />
             <q-btn-dropdown flat color="primary" :label="'show ' + pointEdit + ' list'">
@@ -16,7 +17,6 @@
                             <q-item-label>mssql</q-item-label>
                         </q-item-section>
                     </q-item>
-
                     <q-item clickable v-close-popup @click="pointEdit = 'task'">
                         <q-item-section>
                             <q-item-label>task</q-item-label>
@@ -42,9 +42,21 @@ export default {
     setup() {
         let pointEdit = ref("mssql")
 
+        const addItem = (pointEdit: string) => {
+            if (pointEdit === "mssql") {
+                const newItem = state.newMssql()
+                newItem.edit.instance = "enter instance"
+                newItem.edit.login = "enter login"
+                state.mssqls.push(newItem)
+            } else if (pointEdit === "task") {
+                console.log("еще не сделано")
+            }
+        }
+
         return {
             state,
-            pointEdit
+            pointEdit,
+            addItem
         }
     }
 }

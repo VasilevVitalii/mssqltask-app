@@ -19,6 +19,7 @@ export function Load(callback: (replyBox: TReplyBox) => void) {
             })
             return
         }
+        mssqls.forEach(item => { item.password = undefined })
         LoadTask(env.depot.app, tasks, undefined, error => {
             if (error) {
                 callback({

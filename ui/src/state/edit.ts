@@ -19,7 +19,7 @@ export type TTaskEntity = TEntity & {
 export const state = reactive({
     loadedInit: false,
     buzy: false,
-    load: async function () {
+    load: function (callback?: () => void) {
         if (this.buzy) return
         this.buzy = true
         send(
@@ -63,10 +63,13 @@ export const state = reactive({
                 }
                 this.buzy = false
                 this.loadedInit = true
+                if (callback) {
+                    callback()
+                }
             }
         )
     },
-    delete: async function () {
+    delete: function (callback?: () => void) {
         if (this.buzy) return
         this.buzy = true
         send(
@@ -88,6 +91,37 @@ export const state = reactive({
             },
             () => {
                 this.buzy = false
+                if (callback) {
+                    callback()
+                }
+            }
+        )
+    },
+    change: function (callback?: () => void) {
+        if (this.buzy) return
+        this.buzy = true
+        send(
+            {
+                kind: "edit-change",
+                token: "",
+                data: {
+                    mssqls: this.mssqls
+                        .filter(f => f.del !== true && (f.new() || f.upd()))
+                        .map(m => {
+                            return m.edit
+                        }),
+                    tasks: this.tasks
+                        .filter(f => f.del !== true && (f.new() || f.upd()))
+                        .map(m => {
+                            return m.edit
+                        })
+                }
+            },
+            () => {
+                this.buzy = false
+                if (callback) {
+                    callback()
+                }
             }
         )
     },

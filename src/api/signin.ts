@@ -12,9 +12,10 @@ const jwtManager = CreateJwtManager({
 })
 
 const postAccessLevelCheck: TPostAccessLevelCheck[] = [
-    {kind: 'edit-load', level: 'edit'},
-    {kind: 'test-connection', level: 'edit'},
+    {kind: 'test-connection', level: 'view'},
+    {kind: 'edit-load', level: 'view'},
     {kind: 'edit-delete', level: 'edit'},
+    {kind: 'edit-change', level: 'edit'},
 ]
 
 export function Create(password: string): TReplyBox {

@@ -139,14 +139,15 @@ export default defineComponent({
             send({ kind: "test-connection", token: "", data: { mssqls: [mssql.edit] } }, result => {
                 const r = result as TReplyConnection
                 if (r && r.data && r.data.mssqls && r.data.mssqls.length === 1 && r.data.errors.length === 1 && r.data.infos.length === 1) {
+                    const instance = r.data.mssqls[0].instance
                     const error = r.data.errors[0]
                     const info = r.data.infos[0]
                     if (error) {
-                        notify("error", `Error test connection: ${error}`)
+                        notify("error", `Error test connection ${instance}: ${error}`)
                     } else {
                         notify(
                             "info",
-                            `Success test connection: duration(msec): ${info.duration}, timezone (min regarding Greenwich) = ${info.timezone}, versuin = ${info.version}`
+                            `Success test connection ${instance}: duration(msec): ${info.duration}, timezone (min regarding Greenwich) = ${info.timezone}, versuin = ${info.version}`
                         )
                     }
                 }

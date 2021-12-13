@@ -39,8 +39,11 @@ export default {
         let pointEdit = ref("mssql")
 
         const saveItems = async () => {
-            await state.delete()
-            await state.load()
+            state.delete(() => {
+                state.change(() => {
+                    state.load()
+                })
+            })
         }
 
         const addItem = (pointEdit: string) => {

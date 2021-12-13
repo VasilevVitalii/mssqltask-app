@@ -1,26 +1,33 @@
-import { env } from './app'
+import { env } from './../app'
 import { Create as CreateHttpGate, TRequest } from 'vv-httpgate'
-import * as consoleSignin from './consoleSignin'
-import * as consoleEdit from './consoleEdit'
-import { TDepotMssql } from './depotMssql'
-import { TDepotTask } from './depotTask'
+import * as apiSignin from './signin'
+import * as apiEdit from './edit'
+import * as apiTestConnection from './connection'
+
+import { TDepotMssql } from './../depotMssql'
+import { TDepotTask } from './../depotTask'
+import { TServerInfo } from 'mssqldriver'
 
 export type TPostSignin = {kind: 'signin', data: {password: string}}
+export type TPostConnection = {kind: 'test-connection', token: string, data: {mssqls: TDepotMssql[]}}
 export type TPostEditLoad = {kind: 'edit-load', token: string}
-export type TPost = TPostSignin | TPostEditLoad
+export type TPostEditDelete = {kind: 'edit-delete', token: string, data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
+export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete
 
 export type TReplyUnknown = {kind: 'unknown'}
 export type TReplySignin = {kind: 'signin', data?: {token: string}}
+export type TReplyConnection = {kind: 'test-connection', data?: {mssqls: TDepotMssql[], errors: string[], infos: TServerInfo[] }}
 export type TReplyEditLoad = {kind: 'edit-load', data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
-export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyEditLoad)
+export type TReplyEditDelete = {kind: 'edit-delete'}
+export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete)
 export type TReplyBox = {statusCode: number, reply: TReply}
 
 export function Go() {
-    if (!env.options.console.allowApi) return
+    if (!env.options.manage.allowApi) return
 
-    const httpGate = CreateHttpGate({url: env.options.console.http})
+    const httpGate = CreateHttpGate({url: env.options.manage.http})
     httpGate.onError(error => {
-        env.logger.error('CONSOLE', error)
+        env.logger.error('API', error)
     })
     httpGate.onRequest(request => {
         if (request.method === 'GET') {
@@ -42,7 +49,7 @@ export function Go() {
                 return
             }
 
-            const denyAccess = consoleSignin.Check(post)
+            const denyAccess = apiSignin.Check(post)
             if (denyAccess) {
                 sendReplyBox (request, {
                     statusCode: 403,
@@ -55,12 +62,26 @@ export function Go() {
             }
 
             if (post?.kind === 'signin') {
-                sendReplyBox(request, consoleSignin.Create(post?.data?.password))
+                sendReplyBox(request, apiSignin.Create(post?.data?.password))
+                return
+            }
+
+            if (post?.kind === 'test-connection') {
+                apiTestConnection.Test(post, replyBox => {
+                    sendReplyBox(request, replyBox)
+                })
                 return
             }
 
             if (post?.kind === 'edit-load') {
-                consoleEdit.Load(replyBox => {
+                apiEdit.Load(replyBox => {
+                    sendReplyBox(request, replyBox)
+                })
+                return
+            }
+
+            if (post?.kind === 'edit-delete') {
+                apiEdit.Delete(post, replyBox => {
                     sendReplyBox(request, replyBox)
                 })
                 return
@@ -89,7 +110,7 @@ export function Go() {
     })
     httpGate.start(addr => {
         if (addr) {
-            env.logger.debug(`CONSOLE - start at http://${addr.url}:${addr.port}`)
+            env.logger.debug(`API - start at http://${addr.url}:${addr.port}`)
         }
     })
 }

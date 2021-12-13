@@ -1,14 +1,10 @@
 <template>
-    <ComponentBuzy v-show="state.loading"></ComponentBuzy>
-    <!-- <div v-show="state.loading" style="text-align: center; margin: 10px 0px 0px 0px">
-        <q-circular-progress indeterminate size="100px" color="primary" class="q-ma-md" />
-    </div> -->
-    <div v-show="!state.loading">
+    <ComponentBuzy v-show="state.buzy"></ComponentBuzy>
+    <div v-show="!state.buzy">
         <q-toolbar>
             <q-btn flat @click="state.load()">reload</q-btn>
-            <q-btn flat>save</q-btn>
+            <q-btn flat @click="saveItems()">save</q-btn>
             <q-btn flat @click="addItem(pointEdit)">add</q-btn>
-            <q-btn flat>group change</q-btn>
             <q-space />
             <q-btn-dropdown flat color="primary" :label="'show ' + pointEdit + ' list'">
                 <q-list>
@@ -42,6 +38,11 @@ export default {
     setup() {
         let pointEdit = ref("mssql")
 
+        const saveItems = async () => {
+            await state.delete()
+            await state.load()
+        }
+
         const addItem = (pointEdit: string) => {
             if (pointEdit === "mssql") {
                 const newItem = state.newMssql()
@@ -56,7 +57,8 @@ export default {
         return {
             state,
             pointEdit,
-            addItem
+            addItem,
+            saveItems
         }
     }
 }

@@ -2,7 +2,7 @@ import { reactive } from "vue"
 import { TDepotMssql } from "../../../src/depotMssql"
 import { TDepotTask } from "../../../src/depotTask"
 import { send } from "@/core/rest"
-import { TReplyEditLoad } from "../../../src/console"
+import { TReplyEditLoad } from "../../../src/api"
 
 type TEntity = { idx: number; del: boolean; upd: () => boolean; new: () => boolean }
 
@@ -18,10 +18,10 @@ export type TTaskEntity = TEntity & {
 
 export const state = reactive({
     loadedInit: false,
-    loading: false,
+    buzy: false,
     load: async function () {
-        if (this.loading) return
-        this.loading = true
+        if (this.buzy) return
+        this.buzy = true
         send(
             {
                 kind: "edit-load",
@@ -61,8 +61,33 @@ export const state = reactive({
                         }
                     })
                 }
-                this.loading = false
+                this.buzy = false
                 this.loadedInit = true
+            }
+        )
+    },
+    delete: async function () {
+        if (this.buzy) return
+        this.buzy = true
+        send(
+            {
+                kind: "edit-delete",
+                token: "",
+                data: {
+                    mssqls: this.mssqls
+                        .filter(f => f.del === true)
+                        .map(m => {
+                            return m.edit
+                        }),
+                    tasks: this.tasks
+                        .filter(f => f.del === true)
+                        .map(m => {
+                            return m.edit
+                        })
+                }
+            },
+            () => {
+                this.buzy = false
             }
         )
     },

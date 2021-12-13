@@ -1,5 +1,5 @@
-import { env } from './app'
-import { TPost, TReplyBox } from './console'
+import { env } from '../app'
+import { TPost, TReplyBox } from './index'
 import { Create as CreateJwtManager } from 'vv-jwt'
 
 type TPostAccessLevel = 'edit' | 'view'
@@ -12,14 +12,16 @@ const jwtManager = CreateJwtManager({
 })
 
 const postAccessLevelCheck: TPostAccessLevelCheck[] = [
-    {kind: 'edit-load', level: 'edit'}
+    {kind: 'edit-load', level: 'edit'},
+    {kind: 'test-connection', level: 'edit'},
+    {kind: 'edit-delete', level: 'edit'},
 ]
 
 export function Create(password: string): TReplyBox {
     let accessLevel: string = undefined
-    if (env.options.console.passwordEdit === password) {
+    if (env.options.manage.passwordEdit === password) {
         accessLevel = 'edit'
-    } else if (env.options.console.passwordView === password) {
+    } else if (env.options.manage.passwordView === password) {
         accessLevel = 'view'
     }
     if (!accessLevel) {
@@ -61,7 +63,7 @@ export function Check(post: TPost): string {
     const needAccessLevel = postAccessLevelCheck.find(f => f.kind === post.kind)?.level
     if (!needAccessLevel) return undefined
 
-    const defaultAccessLevel = !env.options.console.passwordEdit ? 'edit' : !env.options.console.passwordView ? 'view' : undefined
+    const defaultAccessLevel = !env.options.manage.passwordEdit ? 'edit' : !env.options.manage.passwordView ? 'view' : undefined
     if (compareAccessLevel(needAccessLevel, defaultAccessLevel)) return undefined
     if (defaultAccessLevel === 'edit' && needAccessLevel === 'view') return undefined
 

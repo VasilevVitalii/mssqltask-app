@@ -17,32 +17,31 @@
                     label: 'instance',
                     field: 'instance',
                     sortable: true,
-                    style: 'max-width: 30px',
-                    headerStyle: 'max-width: 30px',
+                    style: 'width: 250px',
                     align: 'left'
                 },
-                { name: 'login', label: 'login', field: 'login', sortable: true, align: 'left' },
-                { name: 'password', label: 'password', field: 'password', style: 'width: 30px', headerStyle: 'width: 30px', align: 'center' },
+                { name: 'login', label: 'login', field: 'login', sortable: true, align: 'left', style: 'width: 100px' },
+                { name: 'password', label: 'password', field: 'password', style: 'width: 50px', align: 'center' },
                 { name: 'tags', label: 'tags', field: 'tags', align: 'left' },
-                { name: 'state' }
+                { name: 'state', style: 'width: 350px' }
             ]">
             <template v-slot:body="props">
                 <q-tr :props="props">
-                    <q-td key="instance" :props="props" style="max-width: 200px">
+                    <q-td key="instance" :props="props">
                         <q-input dense v-model="props.row.edit.instance" borderless> </q-input>
                     </q-td>
                     <q-td key="login" :props="props">
                         <q-input dense v-model="props.row.edit.login" borderless> </q-input>
                     </q-td>
-                    <q-td key="password" :props="props" style="width: 30px">
+                    <q-td key="password" :props="props">
                         <q-btn
                             flat
                             dense
                             size="sm"
                             color="primary"
-                            label="change"
+                            :label="props.row.edit.password ? 'change' : props.row.new() ? 'set' : 'change'"
                             style="margin: 2px 0px 0px 0px"
-                            @click=";[(passwordText = ''), (passwordShow = true), (passwordIdx = props.row.idx)]" />
+                            @click="passwordChange(props.row.idx)" />
                     </q-td>
                     <q-td key="tags" :props="props">
                         <div style="display: flex; flex-flow: wrap">
@@ -73,16 +72,6 @@
                                 </q-input>
                             </div>
                         </div>
-
-                        <!-- <q-chip
-                            outline
-                            color="primary"
-                            v-for="(tag, idx) in props.row.edit.tags"
-                            v-bind:key="idx"
-                            removable
-                            @remove="props.row.edit.tags = props.row.edit.tags.filter(f => f !== tag)">
-                            {{ tag }}
-                        </q-chip> -->
                     </q-td>
                     <q-td key="state" :props="props">
                         <div style="display: flex; margin: 2px 0px 0px 0px">
@@ -104,48 +93,74 @@
                                 <q-separator vertical style="margin: 0px 5px 0px 5px"></q-separator>
                             </div>
 
-                            <q-btn flat dense size="sm" color="primary">clone</q-btn>
+                            <q-btn flat dense size="sm" color="primary" @click="cloneItem(props.row.idx)">clone</q-btn>
                             <q-separator vertical style="margin: 0px 5px 0px 5px"></q-separator>
-                            <q-btn flat dense size="sm" color="primary">test connection</q-btn>
+                            <q-btn flat dense size="sm" color="primary" @click="testConnection(props.row.idx)">test connection</q-btn>
                         </div>
                     </q-td>
                 </q-tr>
             </template>
         </q-table>
-
-        <q-dialog v-model="passwordShow">
-            <q-card>
-                <q-card-section>
-                    <div class="text-h6">
-                        for instance <b> {{ state.mssqls[passwordIdx].edit.instance }} </b>
-                    </div>
-                </q-card-section>
-                <q-card-section>
-                    <q-input v-model="passwordText" square outlined type="password" label="new password" />
-                </q-card-section>
-
-                <q-card-actions align="right">
-                    <q-btn flat label="change" color="primary" v-close-popup @click="state.mssqls[passwordIdx].edit.password = passwordText" />
-                    <q-btn flat label="cancel" color="primary" v-close-popup />
-                </q-card-actions>
-            </q-card>
-        </q-dialog>
     </div>
 </template>
 <script lang="ts">
 import { defineComponent, ref } from "vue"
 import { state } from "@/state/edit"
+import { send } from "@/core/rest"
+import { TReplyConnection } from "../../../../src/api"
+import { notify, promt } from "@/core/dialog"
 
 export default defineComponent({
     setup() {
+        const cloneItem = (idx: number) => {
+            const parentItem = state.mssqls[idx]
+            const cloneItem = state.newMssql()
+            cloneItem.edit = JSON.parse(JSON.stringify(parentItem.edit))
+            cloneItem.edit.instance = `${cloneItem.edit.instance} - clone`
+            cloneItem.edit.path = ""
+            cloneItem.edit.file = ""
+            state.mssqls.push(cloneItem)
+        }
+
+        const passwordChange = async (idx: number): Promise<boolean> => {
+            const mssql = state.mssqls[idx].edit
+            const password = await promt("text", "password for instance", `enter password for instance ${mssql.instance}`, "")
+            if (password === undefined) return false
+            mssql.password = password
+            return true
+        }
+
+        const testConnection = async (idx: number) => {
+            const mssql = state.mssqls[idx]
+            if (mssql.new() && !mssql.edit.password) {
+                const isPass = await passwordChange(idx)
+                if (!isPass) return
+            }
+            send({ kind: "test-connection", token: "", data: { mssqls: [mssql.edit] } }, result => {
+                const r = result as TReplyConnection
+                if (r && r.data && r.data.mssqls && r.data.mssqls.length === 1 && r.data.errors.length === 1 && r.data.infos.length === 1) {
+                    const error = r.data.errors[0]
+                    const info = r.data.infos[0]
+                    if (error) {
+                        notify("error", `Error test connection: ${error}`)
+                    } else {
+                        notify(
+                            "info",
+                            `Success test connection: duration(msec): ${info.duration}, timezone (min regarding Greenwich) = ${info.timezone}, versuin = ${info.version}`
+                        )
+                    }
+                }
+            })
+        }
+
         return {
             pagination: ref({
                 rowsPerPage: 0
             }),
-            passwordIdx: ref(-1),
-            passwordShow: ref(false),
-            passwordText: ref(""),
-            state
+            state,
+            passwordChange,
+            testConnection,
+            cloneItem
         }
     }
 })

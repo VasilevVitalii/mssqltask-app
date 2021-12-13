@@ -15,7 +15,7 @@ export type TOptions = {
         maxThreads: number,
         path: string
     },
-    console: {
+    manage: {
         allowApi: boolean
         allowUi: boolean
         passwordEdit: string,
@@ -43,18 +43,18 @@ export function Read(currentPath: string): TOptions {
             maxThreads: dataJson?.task?.maxThreads || 20,
             path: (dataJson?.task?.path || path.join('result')).replace(/\\/g, '/'),
         },
-        console: {
-            allowApi: dataJson?.console?.allowApi === true ? true : false,
-            allowUi: dataJson?.console?.allowUi === true ? true : false,
-            passwordEdit: dataJson?.console?.passwordEdit || '',
-            passwordView: dataJson?.console?.passwordView || '',
-            http: dataJson?.console?.http || 'http://localhost:3000',
+        manage: {
+            allowApi: dataJson?.manage?.allowApi === true ? true : false,
+            allowUi: dataJson?.manage?.allowUi === true ? true : false,
+            passwordEdit: dataJson?.manage?.passwordEdit || '',
+            passwordView: dataJson?.manage?.passwordView || '',
+            http: dataJson?.manage?.http || 'http://localhost:3000',
         }
     }
 
     if (result.log.lifeDays <= 0) result.log.lifeDays = 1
     if (result.task.maxThreads <= 0) result.task.maxThreads = 1
-    if (!result.console.allowApi) result.console.allowUi = false
+    if (!result.manage.allowApi) result.manage.allowUi = false
 
     if (JSON.stringify(result, null, 4) !== dataRaw) {
         fs.writeFileSync(fullFileName, JSON.stringify(result, null, 4), 'utf8')

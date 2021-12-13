@@ -2,7 +2,7 @@ import { reactive } from "vue"
 import { notify } from "./dialog"
 import { state as StateToken } from "./token"
 import axios from "axios"
-import { TPost, TReply } from "../../../src/console"
+import { TPost, TReply } from "../../../src/api"
 import { goto } from "./router"
 
 type TResponse = { status: number; data: TReply }

@@ -2,7 +2,7 @@ import { reactive } from "vue"
 import { state as stateRest, clearQueue } from "./rest"
 import { sendCore } from "./rest"
 import { goto } from "./router"
-import { TReplySignin } from "../../../src/console"
+import { TReplySignin } from "../../../src/api"
 import { notify } from "./dialog"
 
 const callbacksOnSetToken: ((prev: string, current: string) => void)[] = []

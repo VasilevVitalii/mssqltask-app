@@ -8,7 +8,7 @@ import * as storeMssql from './depotMssql'
 import * as storeTask from './depotTask'
 import { Go as depotGo } from './depot'
 import { Go as mssqltaskGo, TMssqlTask } from './mssqltask'
-import { Go as consoleGo } from './console'
+import { Go as apiGo } from './api'
 
 const loggerManager = LoggerManagerCreate()
 loggerManager.onError(error => {
@@ -66,5 +66,5 @@ export function Go(currentPath: string) {
 
     depotGo()
     mssqltaskGo()
-    consoleGo()
+    apiGo()
 }

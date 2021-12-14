@@ -41,8 +41,8 @@
     "homepage": "https://github.com/VasilevVitalii/mssqltask-app#readme",
     "devDependencies": {
         "@types/node": "16.11.12",
-        "@typescript-eslint/eslint-plugin": "5.6.0",
-        "@typescript-eslint/parser": "5.6.0",
+        "@typescript-eslint/eslint-plugin": "5.7.0",
+        "@typescript-eslint/parser": "5.7.0",
         "adm-zip": "^0.5.9",
         "eslint": "8.4.1",
         "npm-check-updates": "^12.0.3",
@@ -50,11 +50,11 @@
         "prettier": "2.5.1",
         "resedit": "^1.4.1",
         "ts-node": "10.4.0",
-        "typescript": "4.5.3",
+        "typescript": "4.5.4",
         "vv-template-nodebackend": "^0.0.14"
     },
     "dependencies": {
-        "backdepot": "^0.1.0",
+        "backdepot": "^0.1.1",
         "mssqldriver": "^0.0.9",
         "mssqltask": "^0.0.10",
         "vv-common": "^0.0.7",

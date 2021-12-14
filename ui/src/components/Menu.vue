@@ -1,5 +1,5 @@
 <template>
-    <q-toolbar class="text-white bg-primary" v-show="$route.path === '/workflow'">
+    <q-toolbar class="text-white bg-primary" v-show="$route.path === '/workflow'" style="height: 50px">
         <q-btn flat class="noactive" @click="routerGoto('u-welcome')">home</q-btn>
         <q-separator class="noactive" color="white" vertical style="margin: 10px"></q-separator>
         <q-btn flat :class="{ noactive: stateRouter.currentWorkflow !== 'w-dashboard' }" @click="routerGoto('w-dashboard')">dashboard</q-btn>

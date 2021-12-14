@@ -8,6 +8,7 @@ import { TUpsert } from './depot'
 export type TDepotMssql = {
     path: string,
     file: string,
+    title: string,
     instance: string,
     login: string,
     password: string,
@@ -68,6 +69,7 @@ function getFromStorage(row: TypeStateRow): TDepotMssql {
     return {
         path: row.path,
         file: row.file,
+        title: vv.toString(row.data?.title) || '',
         instance: vv.toString(row.data?.instance) || '',
         login: vv.toString(row.data?.login) || '',
         password: vv.toString(row.data?.password) || '',
@@ -79,6 +81,7 @@ function example(): TDepotMssql {
     return {
         path: undefined,
         file: undefined,
+        title: 'example mssql',
         instance: 'myserver/mysqlinstance',
         login: 'sa',
         password: 'password for sa',

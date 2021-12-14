@@ -7,17 +7,26 @@
             hide-bottom
             v-model:pagination="pagination"
             separator="none"
+            class="my-table-mssql"
             :rows-per-page-options="[0]"
             :virtual-scroll-sticky-size-start="48"
             row-key="idx"
             :rows="state.mssqls"
             :columns="[
                 {
+                    name: 'title',
+                    label: 'title',
+                    field: 'title',
+                    sortable: true,
+                    style: 'width: 200px',
+                    align: 'left'
+                },
+                {
                     name: 'instance',
                     label: 'instance',
                     field: 'instance',
                     sortable: true,
-                    style: 'width: 250px',
+                    style: 'width: 200px',
                     align: 'left'
                 },
                 { name: 'login', label: 'login', field: 'login', sortable: true, align: 'left', style: 'width: 100px' },
@@ -27,11 +36,14 @@
             ]">
             <template v-slot:body="props">
                 <q-tr :props="props">
+                    <q-td key="title" :props="props">
+                        <q-input dense v-model="props.row.edit.title" borderless placeholder="enter title"> </q-input>
+                    </q-td>
                     <q-td key="instance" :props="props">
-                        <q-input dense v-model="props.row.edit.instance" borderless> </q-input>
+                        <q-input dense v-model="props.row.edit.instance" borderless placeholder="enter instance"> </q-input>
                     </q-td>
                     <q-td key="login" :props="props">
-                        <q-input dense v-model="props.row.edit.login" borderless> </q-input>
+                        <q-input dense v-model="props.row.edit.login" borderless placeholder="enter login"> </q-input>
                     </q-td>
                     <q-td key="password" :props="props">
                         <q-btn
@@ -117,6 +129,7 @@ export default defineComponent({
             const cloneItem = state.newMssql()
             cloneItem.edit = JSON.parse(JSON.stringify(parentItem.edit))
             cloneItem.edit.instance = `${cloneItem.edit.instance} - clone`
+            cloneItem.edit.title = `${cloneItem.edit.title} - clone`
             cloneItem.edit.path = ""
             cloneItem.edit.file = ""
             state.mssqls.push(cloneItem)
@@ -166,3 +179,15 @@ export default defineComponent({
     }
 })
 </script>
+<style lang="sass">
+.my-table-mssql
+    height: calc(100vh - 50px - 50px - 30px - 10px)
+    .q-table__top,
+    thead tr:first-child th
+        background-color: white
+    thead tr th
+        position: sticky
+        z-index: 1
+    thead tr:first-child th
+        top: 0
+</style>

@@ -1,12 +1,12 @@
 <template>
     <div>
-        <div v-show="currentWorkflow === 'w-dashboard'">
+        <div v-show="state.currentWorkflow === 'w-dashboard'">
             <ComponentDashboard />
         </div>
-        <div v-show="currentWorkflow === 'w-history'">
+        <div v-show="state.currentWorkflow === 'w-history'">
             <ComponentHistory />
         </div>
-        <div v-show="currentWorkflow === 'w-edit'">
+        <div v-show="state.currentWorkflow === 'w-edit'">
             <ComponentEdit />
         </div>
     </div>
@@ -24,7 +24,7 @@ export default {
         ComponentEdit
     },
     setup() {
-        return { currentWorkflow: state.currentWorkflow }
+        return { state }
     }
 }
 </script>

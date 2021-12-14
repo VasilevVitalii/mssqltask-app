@@ -53,8 +53,10 @@ export default {
         let pointEdit = ref("mssql")
 
         const saveItems = async () => {
-            state.delete(() => {
-                state.change(() => {
+            state.delete(success => {
+                if (!success) return
+                state.change(success => {
+                    if (!success) return
                     state.load()
                 })
             })

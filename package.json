@@ -54,7 +54,7 @@
         "vv-template-nodebackend": "^0.0.14"
     },
     "dependencies": {
-        "backdepot": "^0.1.1",
+        "backdepot": "^0.1.2",
         "mssqldriver": "^0.0.9",
         "mssqltask": "^0.0.10",
         "vv-common": "^0.0.7",

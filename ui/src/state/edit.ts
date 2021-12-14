@@ -49,7 +49,7 @@ export const state = reactive({
             }
         )
     },
-    delete: function (callback?: () => void) {
+    delete: function (callback?: (success: boolean) => void) {
         if (this.buzy) return
         this.buzy = true
         send(
@@ -69,15 +69,15 @@ export const state = reactive({
                         })
                 }
             },
-            () => {
+            result => {
                 this.buzy = false
                 if (callback) {
-                    callback()
+                    callback(result ? true : false)
                 }
             }
         )
     },
-    change: function (callback?: () => void) {
+    change: function (callback?: (success: boolean) => void) {
         if (this.buzy) return
         this.buzy = true
         send(
@@ -97,10 +97,10 @@ export const state = reactive({
                         })
                 }
             },
-            () => {
+            result => {
                 this.buzy = false
                 if (callback) {
-                    callback()
+                    callback(result ? true : false)
                 }
             }
         )

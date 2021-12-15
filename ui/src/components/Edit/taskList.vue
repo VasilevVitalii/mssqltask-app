@@ -97,9 +97,6 @@ q-td
                                 style="margin: 2px 5px 0px 0px">
                                 <q-list dense style="width: 200px">
                                     <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdaySun" label="sunday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
                                         <q-checkbox v-model="props.row.edit.metronom.weekdayMon" label="monday" />
                                     </q-item>
                                     <q-item class="metronom-list">
@@ -116,6 +113,9 @@ q-td
                                     </q-item>
                                     <q-item class="metronom-list">
                                         <q-checkbox v-model="props.row.edit.metronom.weekdaySat" label="saturday" />
+                                    </q-item>
+                                    <q-item class="metronom-list">
+                                        <q-checkbox v-model="props.row.edit.metronom.weekdaySun" label="sunday" />
                                     </q-item>
                                     <q-item class="metronom-list">
                                         <q-btn-toggle
@@ -142,34 +142,86 @@ q-td
                         </div>
                     </q-td>
                     <q-td key="queries" :props="props">
-                        <!-- <q-btn
-                            flat
-                            dense
-                            size="sm"
-                            color="primary"
-                            :label="props.row.edit.queries.some(f => f.trim().length > 0) ? 'change' : 'set'"
-                            style="margin: 2px 0px 0px 0px" /> -->
                         <q-btn-dropdown
+                            @focus="currentQueryIdx = props.row.edit.queries.length > 0 ? 0 : -1"
                             flat
                             dense
                             size="sm"
                             color="primary"
                             :label="props.row.edit.queries.some(f => f.trim().length > 0) ? 'change' : 'set'"
                             style="margin: 2px 5px 0px 0px">
-                            <!-- <q-list dense style="width: calc(100vw / 2); height: calc(100vh / 2)"> -->
-                            <q-toolbar style="width: calc(100vw / 2); height: calc(100vh / 2)">
-                                <q-tabs v-model="tab" shrink stretch>
-                                    <q-tab name="tab1" label="Tab 1" />
-                                    <q-tab name="tab2" label="Tab 2" />
-                                    <q-tab name="tab3" label="Tab 3" />
-                                </q-tabs>
-                                <q-space />
-                                <q-btn flat label="add" />
-                            </q-toolbar>
+                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
+                                <q-toolbar style="height: 50px; margin: 0px 0px 10px 0px">
+                                    <q-tabs v-model="currentQueryIdx" shrink stretch>
+                                        <q-tab v-for="(q, i) in props.row.edit.queries" :key="i" :name="i">
+                                            <div style="display: float">
+                                                query #{{ i }}
+                                                <q-btn
+                                                    style="margin: -2px 0px 0px 0px"
+                                                    flat
+                                                    dense
+                                                    size="sm"
+                                                    color="primary"
+                                                    icon="close"
+                                                    @click.stop="props.row.edit.queries = onDeleteQuery(props.row.edit.queries, i)" />
+                                            </div>
+                                        </q-tab>
+                                    </q-tabs>
+                                    <q-space />
+                                    <q-btn
+                                        flat
+                                        label="add"
+                                        @click=";[props.row.edit.queries.push(''), (currentQueryIdx = props.row.edit.queries.length - 1)]" />
+                                </q-toolbar>
+                                <textarea
+                                    v-model="props.row.edit.queries[currentQueryIdx]"
+                                    spellcheck="false"
+                                    style="
+                                        width: 100%;
+                                        height: calc(100% - 60px);
+                                        resize: none;
+                                        overflow-y: scroll;
+                                        overflow-x: scroll;
+                                        border: none;
+                                        outline: none;
+                                        white-space: nowrap;
+                                    "></textarea>
+                            </div>
                         </q-btn-dropdown>
                     </q-td>
                     <q-td key="mssqls" :props="props">
-                        <q-btn flat dense size="sm" color="primary" :label="'link (' + props.row.mates().length + ')'" style="margin: 2px 0px 0px 0px" />
+                        <q-btn-dropdown
+                            @focus="freeMssqlBuild(props.row.edit.mssqls.tags, props.row.edit.mssqls.instances)"
+                            flat
+                            dense
+                            size="sm"
+                            color="primary"
+                            :label="'link (' + props.row.mates().length + ')'"
+                            style="margin: 2px 0px 0px 0px">
+                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden; margin: 10px">
+                                <q-chip clickable> Add tag or instance </q-chip>
+                                <q-select
+                                    @focus="console.log('focus')"
+                                    filled
+                                    v-model="model"
+                                    use-input
+                                    input-debounce="0"
+                                    :options="freeMssql"
+                                    @filter="freeMssqlFilter"
+                                    style="width: 250px" />
+                                TAGS
+                                <div v-for="(tag, tagIdx) in props.row.edit.mssqls.tags" :key="tagIdx">
+                                    <q-chip>
+                                        {{ tag }}
+                                    </q-chip>
+                                </div>
+                                <div v-for="(instance, instanceIdx) in props.row.edit.mssqls.instances" :key="instanceIdx">
+                                    <q-chip>
+                                        {{ instance }}
+                                    </q-chip>
+                                </div>
+                            </div>
+                        </q-btn-dropdown>
                     </q-td>
                     <q-td key="state" :props="props">
                         <div style="display: flex; margin: 2px 0px 0px 0px">
@@ -206,11 +258,10 @@ import { send } from "@/core/rest"
 import { TReplyConnection } from "../../../../src/api"
 import { notify, promt } from "@/core/dialog"
 import { TypeMetronom } from "vv-metronom"
+import * as vv from "vv-common"
 
 export default defineComponent({
     setup() {
-        // const editItems = reactive([]) as { kind: "metronom" | "queries" | "mssqls"; item: TTaskEntity }[]
-
         const cloneItem = (idx: number) => {
             const parentItem = state.tasks[idx]
             const cloneItem = state.newTask()
@@ -221,24 +272,74 @@ export default defineComponent({
             state.tasks.push(cloneItem)
         }
 
-        // const addItem = (idx: number, kind: "metronom" | "queries" | "mssqls") => {
-        //     const item = state.tasks.find(f => f.idx === idx)
-        //     if (!item) return
-        //     console.log(editItems.length)
-        //     if (editItems.some(f => f.kind === kind && f.item === item)) return
-        //     editItems.push({ kind, item })
-        // }
+        let currentQueryIdx = ref(0)
+
+        const onDeleteQuery = (queries: string[], queryIdx: number): string[] => {
+            currentQueryIdx.value = 0
+            return queries.slice(0, queryIdx).concat(queries.slice(queryIdx + 1, queries.length))
+        }
+
+        const freeMssql: { label: string; value: string }[] = []
+
+        const freeMssqlBuild = (existsTag: string[], existsInstances: string[]): { label: string; value: string }[] => {
+            const result: { label: string; value: string }[] = []
+            state.mssqls.forEach(mssql => {
+                mssql.edit.tags.forEach(item => {
+                    if (!existsTag.some(f => vv.equal(f, item)) && !result.some(f => vv.equal(f.value, `t-${item}`))) {
+                        result.push({ value: `t-${item}`, label: item })
+                    }
+                })
+            })
+            state.mssqls.forEach(mssql => {
+                if (!existsInstances.some(f => vv.equal(f, mssql.edit.instance)) && !result.some(f => vv.equal(f.value, `i-${mssql.edit.instance}`))) {
+                    result.push({ value: `i-${mssql.edit.instance}`, label: mssql.edit.title || mssql.edit.instance })
+                }
+            })
+            return result
+        }
+
+        let freeMssqlFilterText = ref("")
+
+        const freeMssqlFilter = (val: any, update: any) => {
+            update(() => {
+                freeMssqlFilterText = val
+            })
+
+            // console.log(FreeMssql([], []))
+            // console.log(val)
+            // console.log(update)
+
+            // if (val === "") {
+            //     update(() => {
+            //         FreeMssqlFilterText
+            //         options.value = stringOptions
+
+            //         // here you have access to "ref" which
+            //         // is the Vue reference of the QSelect
+            //     })
+            //     return
+            // }
+
+            // update(() => {
+            //     const needle = val.toLowerCase()
+            //     options.value = stringOptions.filter(v => v.toLowerCase().indexOf(needle) > -1)
+            // })
+        }
 
         return {
+            console,
             pagination: ref({
                 rowsPerPage: 0
             }),
+            currentQueryIdx,
             state,
             cloneItem,
             editMetronomTask: undefined as TypeMetronom | undefined,
-            splitterModel: ref(50)
-            //editItems,
-            //addItem
+            onDeleteQuery,
+            freeMssql,
+            freeMssqlBuild,
+            freeMssqlFilter,
+            freeMssqlFilterText
         }
     }
 })
@@ -254,4 +355,6 @@ export default defineComponent({
         z-index: 1
     thead tr:first-child th
         top: 0
+.metronom-list
+    margin: 0px 20px 0px 20px
 </style>

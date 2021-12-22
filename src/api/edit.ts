@@ -95,10 +95,15 @@ export function Change(data: TPostEditChange, callback: (replyBox: TReplyBox) =>
         })
 
         const mssqlNeedFile = (data.data?.mssqls || []).filter(f => !f.file)
+        const taskNeedFile = (data.data?.tasks || []).filter(f => !f.file)
         const prefix = vv.dateFormat(new Date(), 'yyyymmddhhmissmsec')
         mssqlNeedFile.forEach((item, idx) => {
             item.path = ""
-            item.file = `${prefix}-${idx}-${vv.guid().replace(/-/g, '')}.json`
+            item.file = `mssql-${prefix}-${idx}-${vv.guid().replace(/-/g, '')}.json`
+        })
+        taskNeedFile.forEach((item, idx) => {
+            item.path = ""
+            item.file = `task-${prefix}-${idx}-${vv.guid().replace(/-/g, '')}.json`
         })
         env.depot.app.set([
             {action: 'insert', state: 'mssql', rows: (data.data?.mssqls || []).map(m => { return {path: m.path, file: m.file, data: {...m, path: undefined, file: undefined} }})},

@@ -18,7 +18,7 @@ q-td
                     name: 'key',
                     label: 'uniq key',
                     sortable: true,
-                    style: 'width: 150px',
+                    style: 'width: 200px',
                     align: 'left'
                 },
                 {
@@ -29,7 +29,7 @@ q-td
                 },
                 {
                     name: 'allowSave',
-                    label: 'save msg & rows',
+                    label: 'enabled / save msg / save rows',
                     style: 'width: 100px',
                     align: 'left'
                 },
@@ -51,199 +51,52 @@ q-td
                     style: 'width: 100px',
                     align: 'left'
                 },
-                { name: 'state', style: 'width: 350px' }
+                { name: 'commands', style: 'width: 350px' }
             ]">
             <template v-slot:body="props">
                 <q-tr :props="props">
                     <q-td key="key" :props="props">
-                        <q-input dense v-model="props.row.edit.key" borderless placeholder="enter key"> </q-input>
+                        <q-input dense v-model="props.row.item.state.key" borderless placeholder="enter key" />
                     </q-td>
                     <q-td key="title" :props="props">
-                        <q-input dense v-model="props.row.edit.title" borderless placeholder="enter title"> </q-input>
+                        <q-input dense v-model="props.row.item.state.title" borderless placeholder="enter title"> </q-input>
                     </q-td>
                     <q-td key="allowSave" :props="props">
-                        <q-checkbox v-model="props.row.edit.allowMessages" />
-                        <q-checkbox v-model="props.row.edit.allowRows" />
+                        <q-checkbox v-model="props.row.item.state.allowExec" />
+                        <q-checkbox v-model="props.row.item.state.allowMessages" />
+                        <q-checkbox v-model="props.row.item.state.allowRows" />
                     </q-td>
                     <q-td key="metronom" :props="props">
-                        <div style="display: flex">
-                            <q-btn-dropdown flat dense size="sm" color="primary" :label="props.row.edit.metronom.kind" style="margin: 2px 5px 0px 0px">
-                                <q-list>
-                                    <q-item clickable v-close-popup @click="props.row.edit.metronom.kind = 'cron'">
-                                        <q-item-section>
-                                            <q-item-label>cron</q-item-label>
-                                        </q-item-section>
-                                    </q-item>
-                                    <q-item clickable v-close-popup @click="props.row.edit.metronom.kind = 'custom'">
-                                        <q-item-section>
-                                            <q-item-label>custom</q-item-label>
-                                        </q-item-section>
-                                    </q-item>
-                                </q-list>
-                            </q-btn-dropdown>
-                            <q-input
-                                dense
-                                v-model="props.row.edit.metronom.cron"
-                                v-show="props.row.edit.metronom.kind === 'cron'"
-                                borderless
-                                placeholder="enter cron" />
-                            <q-btn-dropdown
-                                v-show="props.row.edit.metronom.kind === 'custom'"
-                                flat
-                                dense
-                                size="sm"
-                                color="primary"
-                                label="change"
-                                style="margin: 2px 5px 0px 0px">
-                                <q-list dense style="width: 200px">
-                                    <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdayMon" label="monday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdayTue" label="tuesday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdayWed" label="wednesday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdayThu" label="thursday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdayFri" label="friday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdaySat" label="saturday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
-                                        <q-checkbox v-model="props.row.edit.metronom.weekdaySun" label="sunday" />
-                                    </q-item>
-                                    <q-item class="metronom-list">
-                                        <q-btn-toggle
-                                            unelevated
-                                            dense
-                                            v-model="props.row.edit.metronom.periodicity"
-                                            :options="[
-                                                { label: 'every', value: 'every' },
-                                                { label: 'once', value: 'once' }
-                                            ]" />
-                                    </q-item>
-                                    <q-item>
-                                        <q-input
-                                            style="margin: 10px 0px 10px 0px"
-                                            dense
-                                            v-model="props.row.edit.metronom.number"
-                                            outlined
-                                            square
-                                            :label="props.row.edit.metronom.periodicity === 'every' ? 'period in min' : 'mins after midnight'">
-                                        </q-input>
-                                    </q-item>
-                                </q-list>
-                            </q-btn-dropdown>
-                        </div>
+                        <ComponentTaskItemMetronom :item="props.row" />
                     </q-td>
                     <q-td key="queries" :props="props">
-                        <q-btn-dropdown
-                            @focus="currentQueryIdx = props.row.edit.queries.length > 0 ? 0 : -1"
-                            flat
-                            dense
-                            size="sm"
-                            color="primary"
-                            :label="props.row.edit.queries.some(f => f.trim().length > 0) ? 'change' : 'set'"
-                            style="margin: 2px 5px 0px 0px">
-                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
-                                <q-toolbar style="height: 50px; margin: 0px 0px 10px 0px">
-                                    <q-tabs v-model="currentQueryIdx" shrink stretch>
-                                        <q-tab v-for="(q, i) in props.row.edit.queries" :key="i" :name="i">
-                                            <div style="display: float">
-                                                query #{{ i }}
-                                                <q-btn
-                                                    style="margin: -2px 0px 0px 0px"
-                                                    flat
-                                                    dense
-                                                    size="sm"
-                                                    color="primary"
-                                                    icon="close"
-                                                    @click.stop="props.row.edit.queries = onDeleteQuery(props.row.edit.queries, i)" />
-                                            </div>
-                                        </q-tab>
-                                    </q-tabs>
-                                    <q-space />
-                                    <q-btn
-                                        flat
-                                        label="add"
-                                        @click=";[props.row.edit.queries.push(''), (currentQueryIdx = props.row.edit.queries.length - 1)]" />
-                                </q-toolbar>
-                                <textarea
-                                    v-model="props.row.edit.queries[currentQueryIdx]"
-                                    spellcheck="false"
-                                    style="
-                                        width: 100%;
-                                        height: calc(100% - 60px);
-                                        resize: none;
-                                        overflow-y: scroll;
-                                        overflow-x: scroll;
-                                        border: none;
-                                        outline: none;
-                                        white-space: nowrap;
-                                    "></textarea>
-                            </div>
-                        </q-btn-dropdown>
+                        <ComponentTaskItemQueries :item="props.row" />
                     </q-td>
                     <q-td key="mssqls" :props="props">
-                        <q-btn-dropdown
-                            @focus="freeMssqlBuild(props.row.edit.mssqls.tags, props.row.edit.mssqls.instances)"
-                            flat
-                            dense
-                            size="sm"
-                            color="primary"
-                            :label="'link (' + props.row.mates().length + ')'"
-                            style="margin: 2px 0px 0px 0px">
-                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden; margin: 10px">
-                                <q-chip clickable> Add tag or instance </q-chip>
-                                <q-select
-                                    @focus="console.log('focus')"
-                                    filled
-                                    v-model="model"
-                                    use-input
-                                    input-debounce="0"
-                                    :options="freeMssql"
-                                    @filter="freeMssqlFilter"
-                                    style="width: 250px" />
-                                TAGS
-                                <div v-for="(tag, tagIdx) in props.row.edit.mssqls.tags" :key="tagIdx">
-                                    <q-chip>
-                                        {{ tag }}
-                                    </q-chip>
-                                </div>
-                                <div v-for="(instance, instanceIdx) in props.row.edit.mssqls.instances" :key="instanceIdx">
-                                    <q-chip>
-                                        {{ instance }}
-                                    </q-chip>
-                                </div>
-                            </div>
-                        </q-btn-dropdown>
+                        <ComponentTaskItemMssqls :item="props.row" />
                     </q-td>
-                    <q-td key="state" :props="props">
+                    <q-td key="commands" :props="props">
                         <div style="display: flex; margin: 2px 0px 0px 0px">
-                            <div v-show="!props.row.del && props.row.upd()" style="display: flex">
-                                <q-btn flat dense size="sm" color="primary" @click="props.row.edit = JSON.parse(JSON.stringify(props.row.load))"
-                                    >undo change</q-btn
-                                >
+                            <div v-show="!props.row.isDel && !props.row.isNew && props.row.item.getUpdProps().length > 0" style="display: flex">
+                                <q-btn flat dense size="sm" color="primary" @click="props.row.item.undo()" label="undo change" />
                                 <q-separator vertical style="margin: 0px 5px 0px 5px"></q-separator>
                             </div>
-                            <div v-show="props.row.new()" style="display: flex">
-                                <q-btn flat dense size="sm" color="primary" @click="state.mssqls = state.mssqls.filter(f => f.idx !== props.row.idx)"
-                                    >undo add</q-btn
-                                >
+                            <div v-show="props.row.isNew" style="display: flex">
+                                <q-btn
+                                    flat
+                                    dense
+                                    size="sm"
+                                    color="primary"
+                                    @click="state.tasks = state.tasks.filter(f => f.idx !== props.row.idx)"
+                                    label="undo add" />
                                 <q-separator vertical style="margin: 0px 5px 0px 5px"></q-separator>
                             </div>
-                            <div v-show="!props.row.new()" style="display: flex">
-                                <q-btn flat dense size="sm" color="primary" v-show="props.row.del" @click="props.row.del = false">undo delete</q-btn>
-                                <q-btn flat dense size="sm" color="primary" v-show="!props.row.del" @click="props.row.del = true">delete</q-btn>
+                            <div v-show="!props.row.isNew" style="display: flex">
+                                <q-btn flat dense size="sm" color="primary" v-show="props.row.isDel" @click="props.row.isDel = false" label="undo delete" />
+                                <q-btn flat dense size="sm" color="primary" v-show="!props.row.isDel" @click="props.row.isDel = true" label="delete" />
                                 <q-separator vertical style="margin: 0px 5px 0px 5px"></q-separator>
                             </div>
-
-                            <q-btn flat dense size="sm" color="primary" @click="cloneItem(props.row.idx)">clone</q-btn>
+                            <q-btn flat dense size="sm" color="primary" @click="state.addTask(props.row)" label="clone" />
                         </div>
                     </q-td>
                 </q-tr>
@@ -252,94 +105,26 @@ q-td
     </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue"
-import { state, TTaskEntity } from "@/state/edit"
-import { send } from "@/core/rest"
-import { TReplyConnection } from "../../../../src/api"
-import { notify, promt } from "@/core/dialog"
-import { TypeMetronom } from "vv-metronom"
-import * as vv from "vv-common"
+import { defineComponent, ref } from "vue"
+import { state } from "@/state/edit"
+
+import ComponentTaskItemMetronom from "./taskItemMetronom.vue"
+import ComponentTaskItemQueries from "./taskItemQueries.vue"
+import ComponentTaskItemMssqls from "./taskItemMssqls.vue"
 
 export default defineComponent({
+    components: {
+        ComponentTaskItemMetronom,
+        ComponentTaskItemQueries,
+        ComponentTaskItemMssqls
+    },
     setup() {
-        const cloneItem = (idx: number) => {
-            const parentItem = state.tasks[idx]
-            const cloneItem = state.newTask()
-            cloneItem.edit = JSON.parse(JSON.stringify(parentItem.edit))
-            cloneItem.edit.title = `${cloneItem.edit.title} - clone`
-            cloneItem.edit.path = ""
-            cloneItem.edit.file = ""
-            state.tasks.push(cloneItem)
-        }
-
-        let currentQueryIdx = ref(0)
-
-        const onDeleteQuery = (queries: string[], queryIdx: number): string[] => {
-            currentQueryIdx.value = 0
-            return queries.slice(0, queryIdx).concat(queries.slice(queryIdx + 1, queries.length))
-        }
-
-        const freeMssql: { label: string; value: string }[] = []
-
-        const freeMssqlBuild = (existsTag: string[], existsInstances: string[]): { label: string; value: string }[] => {
-            const result: { label: string; value: string }[] = []
-            state.mssqls.forEach(mssql => {
-                mssql.edit.tags.forEach(item => {
-                    if (!existsTag.some(f => vv.equal(f, item)) && !result.some(f => vv.equal(f.value, `t-${item}`))) {
-                        result.push({ value: `t-${item}`, label: item })
-                    }
-                })
-            })
-            state.mssqls.forEach(mssql => {
-                if (!existsInstances.some(f => vv.equal(f, mssql.edit.instance)) && !result.some(f => vv.equal(f.value, `i-${mssql.edit.instance}`))) {
-                    result.push({ value: `i-${mssql.edit.instance}`, label: mssql.edit.title || mssql.edit.instance })
-                }
-            })
-            return result
-        }
-
-        let freeMssqlFilterText = ref("")
-
-        const freeMssqlFilter = (val: any, update: any) => {
-            update(() => {
-                freeMssqlFilterText = val
-            })
-
-            // console.log(FreeMssql([], []))
-            // console.log(val)
-            // console.log(update)
-
-            // if (val === "") {
-            //     update(() => {
-            //         FreeMssqlFilterText
-            //         options.value = stringOptions
-
-            //         // here you have access to "ref" which
-            //         // is the Vue reference of the QSelect
-            //     })
-            //     return
-            // }
-
-            // update(() => {
-            //     const needle = val.toLowerCase()
-            //     options.value = stringOptions.filter(v => v.toLowerCase().indexOf(needle) > -1)
-            // })
-        }
-
         return {
             console,
             pagination: ref({
                 rowsPerPage: 0
             }),
-            currentQueryIdx,
-            state,
-            cloneItem,
-            editMetronomTask: undefined as TypeMetronom | undefined,
-            onDeleteQuery,
-            freeMssql,
-            freeMssqlBuild,
-            freeMssqlFilter,
-            freeMssqlFilterText
+            state
         }
     }
 })
@@ -355,6 +140,4 @@ export default defineComponent({
         z-index: 1
     thead tr:first-child th
         top: 0
-.metronom-list
-    margin: 0px 20px 0px 20px
 </style>

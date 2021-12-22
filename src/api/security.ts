@@ -16,9 +16,11 @@ const postAccessLevelCheck: TPostAccessLevelCheck[] = [
     {kind: 'edit-load', level: 'view'},
     {kind: 'edit-delete', level: 'edit'},
     {kind: 'edit-change', level: 'edit'},
+    {kind: 'history-service-log', level: 'view'},
+    {kind: 'history-service-log-item', level: 'view'},
 ]
 
-export function Create(password: string): TReplyBox {
+export function CreateToken(password: string): TReplyBox {
     let accessLevel: string = undefined
     if (env.options.manage.passwordEdit === password) {
         accessLevel = 'edit'
@@ -56,7 +58,7 @@ export function Create(password: string): TReplyBox {
     }
 }
 
-export function Check(post: TPost): string {
+export function CheckToken(post: TPost): string {
     if (!post || !post.kind) {
         return `Incorrect password request`
     }

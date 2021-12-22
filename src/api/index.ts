@@ -1,8 +1,9 @@
 import { env } from './../app'
 import { Create as CreateHttpGate, TRequest } from 'vv-httpgate'
-import * as apiSignin from './signin'
+import * as apiSecurity from './security'
 import * as apiEdit from './edit'
 import * as apiTestConnection from './connection'
+import * as apiServiceLog from './serviceLog'
 
 import { TDepotMssql } from './../depotMssql'
 import { TDepotTask } from './../depotTask'
@@ -13,7 +14,9 @@ export type TPostConnection = {kind: 'test-connection', token: string, data: {ms
 export type TPostEditLoad = {kind: 'edit-load', token: string}
 export type TPostEditDelete = {kind: 'edit-delete', token: string, data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
 export type TPostEditChange = {kind: 'edit-change', token: string, data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
-export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange
+export type TPostHistoryServiceLog = {kind: 'history-service-log', token: string, data?: {dd1: string, dd2: string}}
+export type TPostHistoryServiceLogItem = {kind: 'history-service-log-item', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
+export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange | TPostHistoryServiceLog | TPostHistoryServiceLogItem
 
 export type TReplyUnknown = {kind: 'unknown'}
 export type TReplySignin = {kind: 'signin', data?: {token: string}}
@@ -21,7 +24,9 @@ export type TReplyConnection = {kind: 'test-connection', data?: {mssqls: TDepotM
 export type TReplyEditLoad = {kind: 'edit-load', data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
 export type TReplyEditDelete = {kind: 'edit-delete'}
 export type TReplyEditChange = {kind: 'edit-change'}
-export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange)
+export type TReplyHistoryServiceLog = {kind: 'history-service-log', data?: {files: apiServiceLog.TFileHistoryServiceLog[]}}
+export type TReplyHistoryServiceLogItem = {kind: 'history-service-log-item', data?: {text: string}}
+export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange | TReplyHistoryServiceLog | TReplyHistoryServiceLogItem)
 export type TReplyBox = {statusCode: number, reply: TReply}
 
 export function Go() {
@@ -51,7 +56,7 @@ export function Go() {
                 return
             }
 
-            const denyAccess = apiSignin.Check(post)
+            const denyAccess = apiSecurity.CheckToken(post)
             if (denyAccess) {
                 sendReplyBox (request, {
                     statusCode: 403,
@@ -64,7 +69,7 @@ export function Go() {
             }
 
             if (post?.kind === 'signin') {
-                sendReplyBox(request, apiSignin.Create(post?.data?.password))
+                sendReplyBox(request, apiSecurity.CreateToken(post?.data?.password))
                 return
             }
 
@@ -91,6 +96,20 @@ export function Go() {
 
             if (post?.kind === 'edit-change') {
                 apiEdit.Change(post, replyBox => {
+                    sendReplyBox(request, replyBox)
+                })
+                return
+            }
+
+            if (post?.kind === 'history-service-log') {
+                apiServiceLog.LoadList(post, replyBox => {
+                    sendReplyBox(request, replyBox)
+                })
+                return
+            }
+
+            if (post?.kind === 'history-service-log-item') {
+                apiServiceLog.LoadText(post, replyBox => {
                     sendReplyBox(request, replyBox)
                 })
                 return

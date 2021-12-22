@@ -13,6 +13,7 @@ export type TDepotTask = {
     title: string,
     metronom: TypeMetronom,
     queries: string[],
+    allowExec: boolean,
     allowRows: boolean,
     allowMessages: boolean,
     mssqls: {
@@ -106,6 +107,7 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
         title: vv.nz(vv.toString(row.data?.key), '').trim(),
         metronom: metronom,
         queries: vv.toArray(row.data?.queries) || [],
+        allowExec: vv.toBool(row.data?.allowRows) || true,
         allowRows: vv.toBool(row.data?.allowRows) || true,
         allowMessages: vv.toBool(row.data?.allowMessages) || true,
         mssqls: {
@@ -123,6 +125,7 @@ function example1(): TDepotTask {
         title: 'example 1',
         metronom: {kind: 'cron', cron: '0 */1 * * * *'},
         queries: ['SELECT * FROM sys.objects'],
+        allowExec: true,
         allowRows: true,
         allowMessages: true,
         mssqls: {
@@ -151,6 +154,7 @@ function example2(): TDepotTask {
             periodicity: 'every'
         },
         queries: ['SELECT * FROM sys.objects'],
+        allowExec: true,
         allowRows: true,
         allowMessages: true,
         mssqls: {

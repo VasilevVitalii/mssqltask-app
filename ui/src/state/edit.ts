@@ -3,8 +3,243 @@ import { TDepotMssql } from "../../../src/depotMssql"
 import { TDepotTask } from "../../../src/depotTask"
 import { send } from "@/core/rest"
 import { TReplyEditLoad } from "../../../src/api"
-import * as vv from "vv-common"
+import * as ve from "vv-entity"
 
+export type TMssql = {
+    idx: number
+    isDel: boolean
+    isNew: boolean
+    buzyTestConnection: boolean
+    lastTestConnectionSuccess: boolean | undefined
+    item: ve.TEntity<TDepotMssql>
+}
+
+export type TTask = {
+    idx: number
+    isDel: boolean
+    isNew: boolean
+    item: ve.TEntity<TDepotTask>
+}
+
+const emptyMssql: TDepotMssql = {
+    path: "",
+    file: "",
+    title: "",
+    instance: "",
+    login: "",
+    password: "",
+    tags: []
+}
+
+const emptyTask: TDepotTask = {
+    path: "",
+    file: "",
+    key: "",
+    title: "",
+    metronom: {
+        kind: "cron",
+        cron: "0 */1 * * * *"
+    },
+    queries: [],
+    allowExec: false,
+    allowRows: false,
+    allowMessages: false,
+    mssqls: {
+        instances: [],
+        tags: []
+    }
+}
+
+export const factoryMssql = ve.CreateFactory(emptyMssql)
+export const factoryTask = ve.CreateFactory(emptyTask)
+
+export function Load(callback: (mssqls: TMssql[], tasks: TTask[]) => void) {
+    send(
+        {
+            kind: "edit-load",
+            token: ""
+        },
+        result => {
+            const r = result as TReplyEditLoad
+            let mssqls: TMssql[] = []
+            let tasks: TTask[] = []
+            if (r) {
+                mssqls = (r.data?.mssqls || []).map((m, idx) => {
+                    return {
+                        idx: idx,
+                        isDel: false,
+                        isNew: false,
+                        buzyTestConnection: false,
+                        lastTestConnectionSuccess: undefined,
+                        item: factoryMssql.create(m)
+                    }
+                })
+                tasks = (r.data?.tasks || []).map((m, idx) => {
+                    return {
+                        idx: idx,
+                        isDel: false,
+                        isNew: false,
+                        item: factoryTask.create(m)
+                    }
+                })
+            }
+            callback(mssqls, tasks)
+        }
+    )
+}
+
+export function Save(mssqls: TMssql[], tasks: TTask[], callback: (success: boolean) => void) {
+    const deletedMssqls = mssqls
+        .filter(f => f.isDel === true && f.item.state.file)
+        .map(m => {
+            return m.item.state
+        })
+    const deletedTasks = tasks
+        .filter(f => f.isDel === true && f.item.state.file)
+        .map(m => {
+            return m.item.state
+        })
+    const changedMssqls = mssqls
+        .filter(f => f.isNew || f.item.getUpdProps().length > 0)
+        .map(m => {
+            return m.item.state
+        })
+    const changedTasks = tasks
+        .filter(f => f.isNew || f.item.getUpdProps().length > 0)
+        .map(m => {
+            return m.item.state
+        })
+
+    send(
+        {
+            kind: "edit-delete",
+            token: "",
+            data: {
+                mssqls: deletedMssqls,
+                tasks: deletedTasks
+            }
+        },
+        result => {
+            if (!result) {
+                callback(false)
+                return
+            }
+
+            send(
+                {
+                    kind: "edit-change",
+                    token: "",
+                    data: {
+                        mssqls: changedMssqls,
+                        tasks: changedTasks
+                    }
+                },
+                result => {
+                    callback(result ? true : false)
+                }
+            )
+        }
+    )
+}
+
+export function AddMssql(mssqls: TMssql[], source?: TMssql) {
+    let idx = 0
+    mssqls.forEach(item => {
+        if (item.idx > idx) {
+            idx = item.idx
+        }
+    })
+
+    const newItem = factoryMssql.create(source ? source.item : undefined)
+    if (source) {
+        newItem.state.path = ""
+        newItem.state.file = ""
+        newItem.state.title = `${newItem.state.title} clone`
+    }
+
+    mssqls.push({
+        idx: idx + 1,
+        isDel: false,
+        isNew: true,
+        buzyTestConnection: false,
+        lastTestConnectionSuccess: undefined,
+        item: newItem
+    })
+}
+
+export function AddTask(tasks: TTask[], source?: TTask) {
+    let idx = 0
+    tasks.forEach(item => {
+        if (item.idx > idx) {
+            idx = item.idx
+        }
+    })
+
+    const newItem = factoryTask.create(source ? source.item : undefined)
+    if (source) {
+        newItem.state.path = ""
+        newItem.state.file = ""
+        newItem.state.key = `${newItem.state.key} clone`
+        newItem.state.title = `${newItem.state.title} clone`
+    }
+
+    tasks.push({
+        idx: idx + 1,
+        isDel: false,
+        isNew: true,
+        item: newItem
+    })
+}
+
+export const state = reactive({
+    loadedInit: false,
+    buzy: false,
+    mssqls: [] as TMssql[],
+    tasks: [] as TTask[],
+    load: function (callback?: () => void) {
+        if (this.buzy) {
+            if (callback) callback()
+            return
+        }
+        this.buzy = true
+        Load((mssqls, tasks) => {
+            this.mssqls = mssqls
+            this.tasks = tasks
+            this.loadedInit = true
+            this.buzy = false
+            if (callback) callback()
+        })
+    },
+    save: function (callback?: () => void) {
+        if (this.buzy) {
+            if (callback) callback()
+            return
+        }
+        this.buzy = true
+        Save(this.mssqls, this.tasks, success => {
+            if (!success) {
+                this.buzy = false
+                if (callback) callback()
+                return
+            }
+            Load((mssqls, tasks) => {
+                this.mssqls = mssqls
+                this.tasks = tasks
+                this.loadedInit = true
+                this.buzy = false
+                if (callback) callback()
+            })
+        })
+    },
+    addMssql: function (source?: TMssql) {
+        AddMssql(this.mssqls, source)
+    },
+    addTask: function (source?: TTask) {
+        AddTask(this.tasks, source)
+    }
+})
+
+/*
 type TEntity = { idx: number; del: boolean; upd: () => boolean; new: () => boolean }
 
 export type TMssqlEntity = TEntity & {
@@ -172,11 +407,12 @@ function taskEntity(idx: number, load: TDepotTask | undefined, edit: TDepotTask 
         file: "",
         key: "",
         title: "",
+        allowExec: false,
         allowMessages: false,
         allowRows: false,
         metronom: {
             kind: "cron",
-            cron: "0 */1 * * * *"
+            cron: "0 0 * * * *"
         },
         mssqls: {
             instances: [],
@@ -226,3 +462,4 @@ function taskEntity(idx: number, load: TDepotTask | undefined, edit: TDepotTask 
         }
     }
 }
+*/

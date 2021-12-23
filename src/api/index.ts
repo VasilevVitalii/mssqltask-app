@@ -16,7 +16,8 @@ export type TPostEditDelete = {kind: 'edit-delete', token: string, data?: {mssql
 export type TPostEditChange = {kind: 'edit-change', token: string, data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
 export type TPostHistoryServiceLog = {kind: 'history-service-log', token: string, data?: {dd1: string, dd2: string}}
 export type TPostHistoryServiceLogItem = {kind: 'history-service-log-item', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
-export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange | TPostHistoryServiceLog | TPostHistoryServiceLogItem
+export type TPostHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
+export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange | TPostHistoryServiceLog | TPostHistoryServiceLogItem | TPostHistoryServiceLogItemDownload
 
 export type TReplyUnknown = {kind: 'unknown'}
 export type TReplySignin = {kind: 'signin', data?: {token: string}}
@@ -26,7 +27,8 @@ export type TReplyEditDelete = {kind: 'edit-delete'}
 export type TReplyEditChange = {kind: 'edit-change'}
 export type TReplyHistoryServiceLog = {kind: 'history-service-log', data?: {files: apiServiceLog.TFileHistoryServiceLog[]}}
 export type TReplyHistoryServiceLogItem = {kind: 'history-service-log-item', data?: {text: string}}
-export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange | TReplyHistoryServiceLog | TReplyHistoryServiceLogItem)
+export type TReplyHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download'}
+export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange | TReplyHistoryServiceLog | TReplyHistoryServiceLogItem | TReplyHistoryServiceLogItemDownload)
 export type TReplyBox = {statusCode: number, reply: TReply}
 
 export function Go() {
@@ -111,6 +113,32 @@ export function Go() {
             if (post?.kind === 'history-service-log-item') {
                 apiServiceLog.LoadText(post, replyBox => {
                     sendReplyBox(request, replyBox)
+                })
+                return
+            }
+
+            if (post?.kind === 'history-service-log-item-download') {
+                const fullFileName = apiServiceLog.GetLogFullFileName(post.data?.dd, post.data?.kind)
+                if (!fullFileName) {
+                    sendReplyBox(request, {
+                        statusCode: 400,
+                        reply: {
+                            kind: 'history-service-log-item-download',
+                            error: 'empty data.dd or data.kind'
+                        }
+                    })
+                    return
+                }
+                request.replyFile({fullFileName: fullFileName}, error => {
+                    if (error) {
+                        sendReplyBox(request, {
+                            statusCode: 500,
+                            reply: {
+                                kind: 'history-service-log-item-download',
+                                error: error.message
+                            }
+                        })
+                    }
                 })
                 return
             }

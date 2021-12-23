@@ -1,5 +1,5 @@
 import { env } from '../app'
-import { TReplyBox, TPostHistoryServiceLog, TPostHistoryServiceLogItem } from './index'
+import { TReplyBox, TPostHistoryServiceLog, TPostHistoryServiceLogItem, TPostHistoryServiceLogItemDownload } from './index'
 import * as vv from 'vv-common'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -69,10 +69,9 @@ export function LoadList(data: TPostHistoryServiceLog, callback: (replyBox: TRep
 }
 
 export function LoadText(data: TPostHistoryServiceLogItem, callback: (replyBox: TReplyBox) => void) {
-    const dd = vv.toDate(data.data?.dd)
-    const kind = data.data?.kind
+    const fullFileName = GetLogFullFileName(data.data?.dd, data.data?.kind)
 
-    if (!dd || !kind) {
+    if (!fullFileName) {
         callback({
             statusCode: 400,
             reply: {
@@ -83,7 +82,6 @@ export function LoadText(data: TPostHistoryServiceLogItem, callback: (replyBox: 
         return
     }
 
-    const fullFileName = path.join(env.options.log.path, `${kind}_${vv.dateFormat(dd, 'yyyymmdd')}.txt`)
     fs.readFile(fullFileName, 'utf-8', (error, data) => {
         if (error) {
             callback({
@@ -105,4 +103,17 @@ export function LoadText(data: TPostHistoryServiceLogItem, callback: (replyBox: 
             }
         })
     })
+}
+
+export function Download(data: TPostHistoryServiceLogItemDownload, callback: (replyBox: TReplyBox) => void) {
+
+
+
+}
+
+export function GetLogFullFileName(dd: string, kind: 'error' | 'debug' | 'trace'): string {
+    if (!kind) return undefined
+    const d = vv.toDate(dd)
+    if (!d) return undefined
+    return path.join(env.options.log.path, `${kind}_${vv.dateFormat(d, 'yyyymmdd')}.txt`)
 }

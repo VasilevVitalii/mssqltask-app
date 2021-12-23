@@ -4,15 +4,8 @@ import { send } from "@/core/rest"
 import { TReplyHistoryServiceLog, TReplyHistoryServiceLogItem } from "./../../../src/api"
 import { TFileHistoryServiceLog } from "./../../../src/api/serviceLog"
 
-//https://stackoverflow.com/questions/11944932/how-to-download-a-file-with-node-js-without-using-third-party-libraries?rq=1
-
-type TFile = {
+export type TFile = {
     state: TFileHistoryServiceLog
-    buzy: boolean
-    allowReload: boolean
-    textError?: string | undefined
-    textDebug?: string | undefined
-    textTrace?: string | undefined
 }
 
 export function Load(d1: Date, d2: Date, callback: (files: TFileHistoryServiceLog[]) => void) {
@@ -32,7 +25,7 @@ export function Load(d1: Date, d2: Date, callback: (files: TFileHistoryServiceLo
     )
 }
 
-export function Loadtext(d: Date, kind: "error" | "debug" | "trace", callback: (text: string) => void) {
+export function LoadText(d: Date, kind: "error" | "debug" | "trace", callback: (text: string) => void) {
     send(
         {
             kind: "history-service-log-item",
@@ -49,12 +42,29 @@ export function Loadtext(d: Date, kind: "error" | "debug" | "trace", callback: (
     )
 }
 
+export function Download(d: Date, kind: "error" | "debug" | "trace", callback: (blob: Blob, filename: string) => void) {
+    send(
+        {
+            kind: "history-service-log-item-download",
+            token: "",
+            data: {
+                dd: vv.dateFormat(d, "yyyymmdd"),
+                kind: kind
+            }
+        },
+        (result, headers) => {
+            callback(result, headers ? headers["content-disposition"].split("filename=")[1] : "unknownFile")
+        }
+    )
+}
+
 export const state = reactive({
     loadedInit: false,
     buzy: false,
     files: [] as TFile[],
     text: {
         item: undefined as TFile | undefined,
+        text: "",
         kind: "error" as "error" | "debug" | "trace"
     },
     load: function (d1: Date, d2: Date, callback?: () => void) {
@@ -62,19 +72,13 @@ export const state = reactive({
             if (callback) callback()
             return
         }
-        if (this.files.some(f => f.buzy)) {
-            if (callback) callback()
-            return
-        }
         this.buzy = true
         this.text.item = undefined
         Load(d1, d2, files => {
-            const now = vv.dateFormat(new Date(), "yyyymmdd")
             this.files = files.map(m => {
                 return {
                     state: m,
-                    buzy: false,
-                    allowReload: vv.dateFormat(vv.toDate(m.dd) || new Date(2000, 1, 1), "yyyymmdd") === now
+                    buzy: false
                 }
             })
             this.loadedInit = true
@@ -82,8 +86,8 @@ export const state = reactive({
             if (callback) callback()
         })
     },
-    reload: function (item: TFile, callback?: () => void) {
-        if (this.buzy || item.buzy) {
+    loadText: function (item: TFile, kind: "error" | "debug" | "trace", callback?: () => void) {
+        if (this.buzy) {
             if (callback) callback()
             return
         }
@@ -92,40 +96,27 @@ export const state = reactive({
             if (callback) callback()
             return
         }
-        item.buzy = true
-        Load(d, d, files => {
-            const fnd = files.find(f => f.dd === item.state.dd)
-            if (fnd) {
-                item.state = fnd
-                item.textError = undefined
-                item.textDebug = undefined
-                item.textTrace = undefined
-            }
-            item.buzy = false
+        this.buzy = true
+        LoadText(d, kind, text => {
+            this.text.text = text
+            this.text.kind = kind
+            this.text.item = item
+            this.buzy = false
             if (callback) callback()
         })
     },
-    loadText: function (item: TFile, kind: "error" | "debug" | "trace", callback?: () => void) {
-        if (this.buzy || item.buzy) {
-            if (callback) callback()
+    download: function (item: TFile, kind: "error" | "debug" | "trace", callback: (blob: Blob | undefined, fileName: string | undefined) => void) {
+        if (this.buzy) {
+            if (callback) callback(undefined, undefined)
             return
         }
         const d = vv.toDate(item.state.dd)
         if (!d) {
-            if (callback) callback()
+            if (callback) callback(undefined, undefined)
             return
         }
-        item.buzy = true
-        Loadtext(d, kind, text => {
-            if (kind === "error") {
-                item.textError = text
-            } else if (kind === "debug") {
-                item.textDebug = text
-            } else if (kind === "trace") {
-                item.textTrace = text
-            }
-            item.buzy = false
-            if (callback) callback()
+        Download(d, kind, (blob, fileName) => {
+            if (callback) callback(blob, fileName)
         })
     }
 })

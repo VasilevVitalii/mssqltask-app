@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>Component - under constraction - dashboard</h1>
+        <h5>Dashboard is under constraction</h5>
     </div>
 </template>
 <script lang="ts">

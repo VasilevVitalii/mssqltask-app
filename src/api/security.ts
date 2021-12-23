@@ -18,6 +18,7 @@ const postAccessLevelCheck: TPostAccessLevelCheck[] = [
     {kind: 'edit-change', level: 'edit'},
     {kind: 'history-service-log', level: 'view'},
     {kind: 'history-service-log-item', level: 'view'},
+    {kind: 'history-service-log-item-download', level: 'view'},
 ]
 
 export function CreateToken(password: string): TReplyBox {

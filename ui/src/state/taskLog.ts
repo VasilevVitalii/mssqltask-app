@@ -1,17 +1,13 @@
 import { reactive } from "vue"
 import * as vv from "vv-common"
 import { send } from "@/core/rest"
-import { TReplyHistoryServiceLog, TReplyHistoryServiceLogItem } from "./../../../src/api"
-import { TFileHistoryServiceLog } from "./../../../src/api/serviceLog"
+import { TReplyHistoryTaskLog } from "./../../../src/api"
+import { TFileHistoryTaskLog } from "./../../../src/api/taskLog"
 
-// export type TServiceDay = {
-//     state: TFileHistoryServiceLog
-// }
-
-export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryServiceLog[]) => void) {
+export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryTaskLog[]) => void) {
     send(
         {
-            kind: "history-service-log",
+            kind: "history-task-log",
             token: "",
             data: {
                 dd1: vv.dateFormat(d1, "yyyymmdd"),
@@ -19,68 +15,68 @@ export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryServiceLo
             }
         },
         result => {
-            const r = result as TReplyHistoryServiceLog
-            callback(r?.data?.days || [])
+            const r = result as TReplyHistoryTaskLog
+            callback(r?.data?.tasks || [])
         }
     )
 }
 
-export function LoadText(d: Date, kind: "error" | "debug" | "trace", callback: (text: string) => void) {
-    send(
-        {
-            kind: "history-service-log-item",
-            token: "",
-            data: {
-                dd: vv.dateFormat(d, "yyyymmdd"),
-                kind: kind
-            }
-        },
-        result => {
-            const r = result as TReplyHistoryServiceLogItem
-            callback(r?.data?.text || "EMPTY FILE")
-        }
-    )
-}
+// export function LoadText(d: Date, kind: "error" | "debug" | "trace", callback: (text: string) => void) {
+//     send(
+//         {
+//             kind: "history-service-log-item",
+//             token: "",
+//             data: {
+//                 dd: vv.dateFormat(d, "yyyymmdd"),
+//                 kind: kind
+//             }
+//         },
+//         result => {
+//             const r = result as TReplyHistoryServiceLogItem
+//             callback(r?.data?.text || "EMPTY FILE")
+//         }
+//     )
+// }
 
-export function Download(d: Date, kind: "error" | "debug" | "trace", callback: (blob: Blob, filename: string) => void) {
-    send(
-        {
-            kind: "history-service-log-item-download",
-            token: "",
-            data: {
-                dd: vv.dateFormat(d, "yyyymmdd"),
-                kind: kind
-            }
-        },
-        (result, headers) => {
-            callback(result, headers ? headers["content-disposition"].split("filename=")[1] : "unknownFile")
-        }
-    )
-}
+// export function Download(d: Date, kind: "error" | "debug" | "trace", callback: (blob: Blob, filename: string) => void) {
+//     send(
+//         {
+//             kind: "history-service-log-item-download",
+//             token: "",
+//             data: {
+//                 dd: vv.dateFormat(d, "yyyymmdd"),
+//                 kind: kind
+//             }
+//         },
+//         (result, headers) => {
+//             callback(result, headers ? headers["content-disposition"].split("filename=")[1] : "unknownFile")
+//         }
+//     )
+// }
 
 export const state = reactive({
     loadedInit: false,
     buzy: false,
-    days: [] as TFileHistoryServiceLog[],
-    text: {
-        item: undefined as TFileHistoryServiceLog | undefined,
-        text: "",
-        kind: "error" as "error" | "debug" | "trace"
-    },
+    tasks: [] as TFileHistoryTaskLog[],
+    // text: {
+    //     item: undefined as TFileHistoryServiceLog | undefined,
+    //     text: "",
+    //     kind: "error" as "error" | "debug" | "trace"
+    // },
     load: function (d1: Date, d2: Date, callback?: () => void) {
         if (this.buzy) {
             if (callback) callback()
             return
         }
         this.buzy = true
-        this.text.item = undefined
-        Load(d1, d2, days => {
-            this.days = days
+        //this.text.item = undefined
+        Load(d1, d2, tasks => {
+            this.tasks = tasks
             this.loadedInit = true
             this.buzy = false
             if (callback) callback()
         })
-    },
+    } /*,
     loadText: function (item: TFileHistoryServiceLog, kind: "error" | "debug" | "trace", callback?: () => void) {
         if (this.buzy) {
             if (callback) callback()
@@ -117,5 +113,5 @@ export const state = reactive({
         Download(d, kind, (blob, fileName) => {
             if (callback) callback(blob, fileName)
         })
-    }
+    }*/
 })

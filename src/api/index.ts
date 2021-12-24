@@ -4,6 +4,7 @@ import * as apiSecurity from './security'
 import * as apiEdit from './edit'
 import * as apiTestConnection from './connection'
 import * as apiServiceLog from './serviceLog'
+import * as apiTaskLog from './taskLog'
 
 import { TDepotMssql } from './../depotMssql'
 import { TDepotTask } from './../depotTask'
@@ -17,7 +18,11 @@ export type TPostEditChange = {kind: 'edit-change', token: string, data?: {mssql
 export type TPostHistoryServiceLog = {kind: 'history-service-log', token: string, data?: {dd1: string, dd2: string}}
 export type TPostHistoryServiceLogItem = {kind: 'history-service-log-item', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
 export type TPostHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
-export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange | TPostHistoryServiceLog | TPostHistoryServiceLogItem | TPostHistoryServiceLogItemDownload
+export type TPostHistoryTaskLog = {kind: 'history-task-log', token: string, data?: {dd1: string, dd2: string}}
+
+export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange |
+    TPostHistoryServiceLog | TPostHistoryServiceLogItem | TPostHistoryServiceLogItemDownload |
+    TPostHistoryTaskLog
 
 export type TReplyUnknown = {kind: 'unknown'}
 export type TReplySignin = {kind: 'signin', data?: {token: string}}
@@ -25,10 +30,16 @@ export type TReplyConnection = {kind: 'test-connection', data?: {mssqls: TDepotM
 export type TReplyEditLoad = {kind: 'edit-load', data?: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
 export type TReplyEditDelete = {kind: 'edit-delete'}
 export type TReplyEditChange = {kind: 'edit-change'}
-export type TReplyHistoryServiceLog = {kind: 'history-service-log', data?: {files: apiServiceLog.TFileHistoryServiceLog[]}}
+export type TReplyHistoryServiceLog = {kind: 'history-service-log', data?: {days: apiServiceLog.TFileHistoryServiceLog[]}}
 export type TReplyHistoryServiceLogItem = {kind: 'history-service-log-item', data?: {text: string}}
 export type TReplyHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download'}
-export type TReply = {error?: string} & (TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange | TReplyHistoryServiceLog | TReplyHistoryServiceLogItem | TReplyHistoryServiceLogItemDownload)
+export type TReplyHistoryTaskLog = {kind: 'history-task-log', data?: {tasks: apiTaskLog.TFileHistoryTaskLog[]}}
+
+export type TReply = {error?: string} & (
+    TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange |
+    TReplyHistoryServiceLog | TReplyHistoryServiceLogItem | TReplyHistoryServiceLogItemDownload |
+    TReplyHistoryTaskLog
+    )
 export type TReplyBox = {statusCode: number, reply: TReply}
 
 export function Go() {
@@ -139,6 +150,13 @@ export function Go() {
                             }
                         })
                     }
+                })
+                return
+            }
+
+            if (post?.kind === 'history-task-log') {
+                apiTaskLog.LoadList(post, replyBox => {
+                    sendReplyBox(request, replyBox)
                 })
                 return
             }

@@ -1,5 +1,5 @@
 import { env } from '../app'
-import { TReplyBox, TPostHistoryServiceLog, TPostHistoryServiceLogItem, TPostHistoryServiceLogItemDownload } from './index'
+import { TReplyBox, TPostHistoryServiceLog, TPostHistoryServiceLogItem } from './index'
 import * as vv from 'vv-common'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -19,7 +19,7 @@ export function LoadList(data: TPostHistoryServiceLog, callback: (replyBox: TRep
         })
         return
     }
-    vv.dir(env.options.log.path, {mode: 'files'}, (error, result) => {
+    vv.dir(env.options.log.path, {mode: 'files', deep: 1}, (error, result) => {
         if (error) {
             callback({
                 statusCode: 500,
@@ -30,7 +30,7 @@ export function LoadList(data: TPostHistoryServiceLog, callback: (replyBox: TRep
             })
             return
         }
-        const files: TFileHistoryServiceLog[] = []
+        const days: TFileHistoryServiceLog[] = []
         result.forEach(item => {
             const fileName = (item.file || '').toLowerCase()
             if (path.parse(fileName).ext !== '.txt') return
@@ -39,10 +39,10 @@ export function LoadList(data: TPostHistoryServiceLog, callback: (replyBox: TRep
             const dateS = fileName.substring(6, 14)
             const date = vv.toDate(dateS)
             if (!date) return
-            let f = files.find(f => f.dd === dateS)
+            let f = days.find(f => f.dd === dateS)
             if (!f) {
                 f = {dd: dateS, sizeError: undefined, sizeDebug: undefined, sizeTrace: undefined}
-                files.push(f)
+                days.push(f)
             }
             if (prefix === 'error_') {
                 f.sizeError = item.fsstat.size
@@ -57,7 +57,7 @@ export function LoadList(data: TPostHistoryServiceLog, callback: (replyBox: TRep
             reply: {
                 kind: 'history-service-log',
                 data: {
-                    files: files.sort((a,b) => {
+                    days: days.sort((a,b) => {
                         if (a.dd > b.dd) return -1
                         if (a.dd < b.dd) return 1
                         return 0
@@ -103,12 +103,6 @@ export function LoadText(data: TPostHistoryServiceLogItem, callback: (replyBox: 
             }
         })
     })
-}
-
-export function Download(data: TPostHistoryServiceLogItemDownload, callback: (replyBox: TReplyBox) => void) {
-
-
-
 }
 
 export function GetLogFullFileName(dd: string, kind: 'error' | 'debug' | 'trace'): string {

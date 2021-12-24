@@ -57,7 +57,7 @@
         "backdepot": "^0.1.2",
         "mssqldriver": "^0.0.9",
         "mssqltask": "^0.0.10",
-        "vv-common": "^0.0.7",
+        "vv-common": "^0.0.8",
         "vv-httpgate": "^0.0.8",
         "vv-jwt": "^0.0.4",
         "vv-logger": "^0.0.4"

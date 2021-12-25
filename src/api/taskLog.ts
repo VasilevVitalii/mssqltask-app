@@ -4,7 +4,7 @@ import * as vv from 'vv-common'
 import * as path from 'path'
 import * as fs from 'fs'
 
-export type TFileHistoryTaskLog = {dd: string, tasks: string[]}
+export type TFileHistoryTaskLog = {task: string, dds: string[]}
 
 export function LoadList(data: TPostHistoryTaskLog, callback: (replyBox: TReplyBox) => void) {
     const dd1 = vv.toDate(data.data?.dd1)
@@ -19,6 +19,14 @@ export function LoadList(data: TPostHistoryTaskLog, callback: (replyBox: TReplyB
         })
         return
     }
+
+    const truePaths = [] as string[]
+    let d = dd1
+    while (d <= dd2) {
+        truePaths.push(vv.dateFormat(d, 'yyyymmdd'))
+        d = vv.dateAdd(d, 'day', 1)
+    }
+
     vv.dir(env.options.task.path, {mode: 'paths', deep: 2}, (error, result) => {
         if (error) {
             callback({
@@ -32,27 +40,32 @@ export function LoadList(data: TPostHistoryTaskLog, callback: (replyBox: TReplyB
         }
         const tasks: TFileHistoryTaskLog[] = []
         result.forEach(item => {
-            const fileName = (item.file || '').toLowerCase()
-            
-            
-            // if (path.parse(fileName).ext !== '.txt') return
-            // const prefix = fileName.substring(0, 6) as 'error_' | 'debug_' | 'trace_'
-            // if (prefix !== 'error_' && prefix !== 'debug_' && prefix !== 'trace_') return
-            // const dateS = fileName.substring(6, 14)
-            // const date = vv.toDate(dateS)
-            // if (!date) return
-            // let f = days.find(f => f.dd === dateS)
-            // if (!f) {
-            //     f = {dd: dateS, sizeError: undefined, sizeDebug: undefined, sizeTrace: undefined}
-            //     days.push(f)
-            // }
-            // if (prefix === 'error_') {
-            //     f.sizeError = item.fsstat.size
-            // } else if (prefix === 'debug_') {
-            //     f.sizeDebug = item.fsstat.size
-            // } else if (prefix === 'trace_') {
-            //     f.sizeTrace = item.fsstat.size
-            // }
+            const p = path.relative(env.options.task.path, item.path)
+            if (p.length < 9) return
+            const pd = p.substring(0, 8)
+            if (!truePaths.includes(pd)) return
+            const task = p.substring(8, p.length).replace(/\\/g, '').replace(/\//g, '').trim()
+            if (task.length <= 0) return
+            let fnd = tasks.find(f => f.task === task)
+            if (!fnd) {
+                fnd = {task: task, dds: []}
+                tasks.push(fnd)
+            }
+            if (!fnd.dds.includes(pd)) {
+                fnd.dds.push(pd)
+            }
+        })
+        tasks.forEach(t => {
+            t.dds.sort((a,b) => {
+                if (a > b) return -1
+                if (a < b) return 1
+                return 0
+            })
+        })
+        tasks.sort((a, b) => {
+            if (a.task > b.task) return 1
+            if (a.task < b.task) return -1
+            return 0
         })
         callback({
             statusCode: 200,

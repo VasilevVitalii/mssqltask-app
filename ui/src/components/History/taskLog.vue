@@ -76,7 +76,7 @@
                         },
                         {
                             name: 'result',
-                            label: 'result (servers total / success/ error)',
+                            label: 'result by servers',
                             field: 'result',
                             style: 'width: 200px',
                             align: 'left'
@@ -97,7 +97,16 @@
                                 <div v-if="props.row.result">{{ props.row.file }}</div>
                             </q-td>
                             <q-td key="result" :props="props">
-                                <div v-if="props.row.result">{{ props.row.file }}</div>
+                                <div v-if="props.row.result">
+                                <q-chip v-if="props.row.countExecSuccess > 0">
+                                    <q-avatar color="positive" text-color="white">{{props.row.countExecSuccess}}</q-avatar>
+                                    Success
+                                </q-chip>
+                                <q-chip v-if="props.row.countExecError > 0">
+                                    <q-avatar color="negative" text-color="white">{{props.row.countExecError}}</q-avatar>
+                                    Error
+                                </q-chip>
+                                </div>
                             </q-td>
                         </q-tr>
                     </template>

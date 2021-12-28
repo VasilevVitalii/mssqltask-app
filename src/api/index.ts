@@ -9,6 +9,7 @@ import * as apiTaskLog from './taskLog'
 import { TDepotMssql } from './../depotMssql'
 import { TDepotTask } from './../depotTask'
 import { TServerInfo } from 'mssqldriver'
+import path from 'path'
 
 export type TPostSignin = {kind: 'signin', data: {password: string}}
 export type TPostConnection = {kind: 'test-connection', token: string, data: {mssqls: TDepotMssql[]}}
@@ -20,10 +21,11 @@ export type TPostHistoryServiceLogItem = {kind: 'history-service-log-item', toke
 export type TPostHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
 export type TPostHistoryTaskLog = {kind: 'history-task-log', token: string, data?: {dd1: string, dd2: string}}
 export type TPostHistoryTaskLogTickets = {kind: 'history-task-log-tickets', token: string, data?: {task: string, dd: string}}
+export type TPostHistoryTaskLogTicketDownload = {kind: 'history-task-log-ticket-download', token: string, data?: {task: string, dd: string, file: string}}
 
 export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange |
     TPostHistoryServiceLog | TPostHistoryServiceLogItem | TPostHistoryServiceLogItemDownload |
-    TPostHistoryTaskLog | TPostHistoryTaskLogTickets
+    TPostHistoryTaskLog | TPostHistoryTaskLogTickets | TPostHistoryTaskLogTicketDownload
 
 export type TReplyUnknown = {kind: 'unknown'}
 export type TReplySignin = {kind: 'signin', data?: {token: string}}
@@ -36,11 +38,12 @@ export type TReplyHistoryServiceLogItem = {kind: 'history-service-log-item', dat
 export type TReplyHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download'}
 export type TReplyHistoryTaskLog = {kind: 'history-task-log', data?: {tasks: apiTaskLog.TFileHistoryTaskLog[]}}
 export type TReplyHistoryTaskLogTickets = {kind: 'history-task-log-tickets', data?: {tickets: apiTaskLog.TFileHistoryTaskLogTickets[]}}
+export type TReplyHistoryTaskLogTicketDownload  = {kind: 'history-task-log-ticket-download'}
 
 export type TReply = {error?: string} & (
     TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange |
     TReplyHistoryServiceLog | TReplyHistoryServiceLogItem | TReplyHistoryServiceLogItemDownload |
-    TReplyHistoryTaskLog | TReplyHistoryTaskLogTickets
+    TReplyHistoryTaskLog | TReplyHistoryTaskLogTickets | TReplyHistoryTaskLogTicketDownload
     )
 export type TReplyBox = {statusCode: number, reply: TReply}
 
@@ -166,6 +169,22 @@ export function Go() {
             if (post?.kind === 'history-task-log-tickets') {
                 apiTaskLog.LoadTickets(post, replyBox => {
                     sendReplyBox(request, replyBox)
+                })
+                return
+            }
+
+            if (post?.kind === 'history-task-log-ticket-download') {
+                const fullFileName = path.join(env.options.task.path, post.data?.dd || 'X', post.data?.task || 'X', post.data?.file || 'X')
+                request.replyFile({fullFileName: fullFileName}, error => {
+                    if (error) {
+                        sendReplyBox(request, {
+                            statusCode: 500,
+                            reply: {
+                                kind: 'history-task-log-ticket-download',
+                                error: error.message
+                            }
+                        })
+                    }
                 })
                 return
             }

@@ -80,7 +80,7 @@ export function sendCore(data: TPost, callback: (error: Error | undefined, respo
         method: "POST",
         headers: { "Content-Type": "application/json; charset=UTF-8" },
         data: JSON.stringify(data),
-        responseType: data.kind === "history-service-log-item-download" ? "blob" : undefined
+        responseType: data.kind.indexOf("download") >= 0 ? "blob" : undefined
     })
         .then(function (response) {
             callback(undefined, { status: response.status || 400, data: response.data }, response?.headers)

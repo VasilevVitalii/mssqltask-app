@@ -56,8 +56,8 @@
     "dependencies": {
         "backdepot": "^0.1.2",
         "mssqldriver": "^0.0.9",
-        "mssqltask": "^0.1.2",
-        "vv-common": "^0.0.8",
+        "mssqltask": "^0.1.3",
+        "vv-common": "^0.1.0",
         "vv-httpgate": "^0.0.8",
         "vv-jwt": "^0.0.4",
         "vv-logger": "^0.0.4"

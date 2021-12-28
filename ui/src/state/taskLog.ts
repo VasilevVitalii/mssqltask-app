@@ -4,7 +4,7 @@ import { send } from "@/core/rest"
 import { TReplyHistoryTaskLog, TReplyHistoryTaskLogTickets } from "./../../../src/api"
 import { TFileHistoryTaskLog, TFileHistoryTaskLogTickets } from "./../../../src/api/taskLog"
 
-type TTickets = TFileHistoryTaskLogTickets & { duration: number; durationText: string }
+type TTickets = TFileHistoryTaskLogTickets & { duration: number; durationText: string; countExecSuccess: number; countExecError: number }
 
 export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryTaskLog[]) => void) {
     send(
@@ -113,50 +113,37 @@ export const state = reactive({
                 task: task,
                 d: dd,
                 list: tickets.map(m => {
-                    return { ...m, ...duration(m.result?.dateStop, m.result?.dateStart) }
+                    return {
+                        ...m,
+                        ...duration(m.result?.dateStop, m.result?.dateStart),
+                        countExecSuccess: m.result?.servers.filter(f => !f.execError).length || 0,
+                        countExecError: m.result?.servers.filter(f => f.execError).length || 0,
+                    }
                 })
             }
             if (callback) callback()
         })
-    }
-    /*,
-    loadText: function (item: TFileHistoryServiceLog, kind: "error" | "debug" | "trace", callback?: () => void) {
-        if (this.buzy) {
-            if (callback) callback()
-            return
-        }
-        const d = vv.toDate(item.dd)
-        if (!d) {
-            if (callback) callback()
-            return
-        }
-        this.buzy = true
-        LoadText(d, kind, text => {
-            this.text.text = text
-            this.text.kind = kind
-            this.text.item = item
-            this.buzy = false
-            if (callback) callback()
-        })
     },
-    download: function (
-        item: TFileHistoryServiceLog,
-        kind: "error" | "debug" | "trace",
-        callback: (blob: Blob | undefined, fileName: string | undefined) => void
-    ) {
-        if (this.buzy) {
-            if (callback) callback(undefined, undefined)
+    download: function (file: string, callback: (blob: Blob | undefined, filename: string) => void) {
+        if (!this.tickets.d || !this.tickets.task) {
+            callback(undefined, '')
             return
         }
-        const d = vv.toDate(item.dd)
-        if (!d) {
-            if (callback) callback(undefined, undefined)
-            return
-        }
-        Download(d, kind, (blob, fileName) => {
-            if (callback) callback(blob, fileName)
-        })
-    }*/
+        send(
+            {
+                kind: "history-task-log-ticket-download",
+                token: "",
+                data: {
+                    dd: vv.dateFormat(this.tickets.d, 'yyyymmdd'),
+                    task: this.tickets.task?.task,
+                    file: file
+                }
+            },
+            (result, headers) => {
+                callback(result, headers ? headers["content-disposition"].split("filename=")[1] : "unknownFile")
+            }
+        )
+    }
 })
 
 function duration(dateStop: string, dateStart: string): { duration: number; durationText: string } {
@@ -177,26 +164,33 @@ function duration(dateStop: string, dateStart: string): { duration: number; dura
     }
 
     result.duration = msec
-
-    const borderMsec = 1000 * 5 //5 sec
-    const borderSec = 1000 * 60 //1 min
-    const borderMin = 1000 * 60 * 60 //1 hour
-    const borderHour = 3600000 * 10 //10 hour
-
-    if (msec < borderMsec) {
-        result.durationText = `${msec} msec`
-    } else if (msec < borderSec) {
-        result.durationText = `${Math.round(msec / 1000)} sec`
-    } else if (msec < borderMin) {
-        result.durationText = `${Math.round(msec / 1000 / 60)} min`
-    } else if (msec <= borderHour) {
-        const hours = Math.floor(msec / 1000 / 60 / 60)
-        const mins = Math.round((msec - hours * 1000 * 60 * 60) / 1000 / 60)
-        result.durationText = `${hours} hour ${mins} min`
+    const parts = vv.dateParts(msec)
+    if (parts.day > 0) {
+        if (parts.minute > 30) parts.hour++
+        result.durationText = `${with0(parts.day, 2)} day ${with0(parts.hour, 2)} hour`
+    } else if (parts.hour > 0) {
+        if (parts.second > 30) parts.minute++
+        result.durationText = `${with0(parts.hour, 2)} hour ${with0(parts.minute, 2)} min`
+    } else if (parts.minute > 5) {
+        if (parts.second > 30) parts.minute++
+        result.durationText = `${with0(parts.minute, 2)} min`
+    } else if (parts.minute > 0) {
+        if (parts.millisecond > 500) parts.second++
+        result.durationText = `${with0(parts.minute, 2)} min ${with0(parts.second, 2)} sec`
+    } else if (parts.second > 5) {
+        if (parts.millisecond > 500) parts.second++
+        result.durationText = `${with0(parts.second, 2)} sec`
+    } else if (parts.second > 0) {
+        result.durationText = `${with0(parts.second, 2)} sec ${with0(parts.millisecond, 3)} msec`
     } else {
-        const days = Math.floor(msec / 1000 / 60 / 60 / 24)
-        const hours = Math.round((msec - days * 1000 * 60 * 60 * 24) / 1000 / 60 / 60)
-        result.durationText = `${days} day ${hours} hour`
+        result.durationText = `${with0(parts.millisecond, 3)} msec`
     }
+
     return result
+}
+
+function with0(s: string | number, maxLen: number): string {
+    const ss = typeof s === 'string' ? s : s.toString()
+    if (ss.length >= maxLen) return ss
+    return `${ss.padStart(maxLen, '0')}`
 }

@@ -19,10 +19,11 @@ export type TPostHistoryServiceLog = {kind: 'history-service-log', token: string
 export type TPostHistoryServiceLogItem = {kind: 'history-service-log-item', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
 export type TPostHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download', token: string, data?: {dd: string, kind: 'error' | 'debug' | 'trace'}}
 export type TPostHistoryTaskLog = {kind: 'history-task-log', token: string, data?: {dd1: string, dd2: string}}
+export type TPostHistoryTaskLogTickets = {kind: 'history-task-log-tickets', token: string, data?: {task: string, dd: string}}
 
 export type TPost = TPostSignin | TPostConnection | TPostEditLoad |  TPostEditDelete | TPostEditChange |
     TPostHistoryServiceLog | TPostHistoryServiceLogItem | TPostHistoryServiceLogItemDownload |
-    TPostHistoryTaskLog
+    TPostHistoryTaskLog | TPostHistoryTaskLogTickets
 
 export type TReplyUnknown = {kind: 'unknown'}
 export type TReplySignin = {kind: 'signin', data?: {token: string}}
@@ -34,11 +35,12 @@ export type TReplyHistoryServiceLog = {kind: 'history-service-log', data?: {days
 export type TReplyHistoryServiceLogItem = {kind: 'history-service-log-item', data?: {text: string}}
 export type TReplyHistoryServiceLogItemDownload = {kind: 'history-service-log-item-download'}
 export type TReplyHistoryTaskLog = {kind: 'history-task-log', data?: {tasks: apiTaskLog.TFileHistoryTaskLog[]}}
+export type TReplyHistoryTaskLogTickets = {kind: 'history-task-log-tickets', data?: {tickets: apiTaskLog.TFileHistoryTaskLogTickets[]}}
 
 export type TReply = {error?: string} & (
     TReplyUnknown | TReplySignin | TReplyConnection | TReplyEditLoad | TReplyEditDelete | TReplyEditChange |
     TReplyHistoryServiceLog | TReplyHistoryServiceLogItem | TReplyHistoryServiceLogItemDownload |
-    TReplyHistoryTaskLog
+    TReplyHistoryTaskLog | TReplyHistoryTaskLogTickets
     )
 export type TReplyBox = {statusCode: number, reply: TReply}
 
@@ -156,6 +158,13 @@ export function Go() {
 
             if (post?.kind === 'history-task-log') {
                 apiTaskLog.LoadList(post, replyBox => {
+                    sendReplyBox(request, replyBox)
+                })
+                return
+            }
+
+            if (post?.kind === 'history-task-log-tickets') {
+                apiTaskLog.LoadTickets(post, replyBox => {
                     sendReplyBox(request, replyBox)
                 })
                 return

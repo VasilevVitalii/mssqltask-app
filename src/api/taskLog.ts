@@ -1,10 +1,17 @@
 import { env } from '../app'
-import { TReplyBox, TPostHistoryTaskLog } from './index'
+import { TReplyBox, TPostHistoryTaskLog, TPostHistoryTaskLogTickets } from './index'
 import * as vv from 'vv-common'
 import * as path from 'path'
 import * as fs from 'fs'
+import { TTicketResult } from 'mssqltask'
 
 export type TFileHistoryTaskLog = {task: string, dds: string[]}
+export type TFileHistoryTaskLogTickets = {
+    idx: number,
+    file: string,
+    errorRead: string,
+    result: TTicketResult
+}
 
 export function LoadList(data: TPostHistoryTaskLog, callback: (replyBox: TReplyBox) => void) {
     const dd1 = vv.toDate(data.data?.dd1)
@@ -79,3 +86,75 @@ export function LoadList(data: TPostHistoryTaskLog, callback: (replyBox: TReplyB
     })
 }
 
+export function LoadTickets(data: TPostHistoryTaskLogTickets, callback: (replyBox: TReplyBox) => void) {
+    const task = data.data?.task
+    const dd = vv.toDate(data.data?.dd)
+    if (!task || !dd) {
+        callback({
+            statusCode: 400,
+            reply: {
+                kind: 'history-task-log-tickets',
+                error: 'empty data.task or data.dd'
+            }
+        })
+        return
+    }
+
+    const d = vv.dateFormat(dd, 'yyyymmdd')
+    const p = path.join(env.options.task.path, d, task)
+    const fileMask = new RegExp(`t.${task}.${d}.[0-9]*.json`,'gi')
+
+    vv.dir(p, {mode: 'files', deep: 1}, (error, result) => {
+        if (error) {
+            callback({
+                statusCode: 500,
+                reply: {
+                    kind: 'history-task-log-tickets',
+                    error: error.message
+                }
+            })
+            return
+        }
+        const files = result.filter(f => f.file && f.file.match(fileMask)).map(m => { return path.join(m.path, m.file) })
+        const tickets = [] as TFileHistoryTaskLogTickets[]
+        readTickets(files, 0, tickets, () => {
+            callback({
+                statusCode: 200,
+                reply: {
+                    kind: 'history-task-log-tickets',
+                    data: {
+                        tickets: tickets
+                    }
+                }
+            })
+        })
+    })
+}
+
+function readTickets(files: string[], idx: number, tickets: TFileHistoryTaskLogTickets[], callback: () => void) {
+    if (idx >= files.length) {
+        callback()
+        return
+    }
+    const f = files[idx]
+    const ticket: TFileHistoryTaskLogTickets = {
+        idx: idx,
+        file: path.parse(f).base,
+        errorRead: '',
+        result: undefined
+    }
+    tickets.push(ticket)
+    fs.readFile(f, 'utf-8', (error, raw) => {
+        if (error) {
+            ticket.errorRead = error.message
+        } else {
+            try {
+                ticket.result = JSON.parse(raw)
+            } catch (error) {
+                ticket.errorRead = (error as Error).message
+            }
+        }
+        idx++
+        readTickets(files, idx, tickets, callback)
+    })
+}

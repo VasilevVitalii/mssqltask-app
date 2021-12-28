@@ -10,11 +10,11 @@
                             <q-item-label>task log</q-item-label>
                         </q-item-section>
                     </q-item>
-                    <q-item clickable v-close-popup @click="pointEdit = 'task performance'">
+                    <!-- <q-item clickable v-close-popup @click="pointEdit = 'task performance'">
                         <q-item-section>
                             <q-item-label>task performance</q-item-label>
                         </q-item-section>
-                    </q-item>
+                    </q-item> -->
                     <q-item clickable v-close-popup @click="pointEdit = 'service log'">
                         <q-item-section>
                             <q-item-label>service log</q-item-label>

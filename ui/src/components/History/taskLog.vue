@@ -68,7 +68,7 @@
                         },
                         {
                             name: 'file',
-                            label: 'file',
+                            label: 'ticket',
                             field: 'file',
                             sortable: true,
                             style: 'width: 200px',
@@ -94,18 +94,134 @@
                                 <div v-if="props.row.result">{{ props.row.durationText }}</div>
                             </q-td>
                             <q-td key="file" :props="props">
-                                <div v-if="props.row.result">{{ props.row.file }}</div>
+                                <q-btn flat dense size="sm" color="primary" :label="props.row.file" @click="download('ticket', '', props.row.file)" />
                             </q-td>
                             <q-td key="result" :props="props">
                                 <div v-if="props.row.result">
-                                <q-chip v-if="props.row.countExecSuccess > 0">
-                                    <q-avatar color="positive" text-color="white">{{props.row.countExecSuccess}}</q-avatar>
-                                    Success
-                                </q-chip>
-                                <q-chip v-if="props.row.countExecError > 0">
-                                    <q-avatar color="negative" text-color="white">{{props.row.countExecError}}</q-avatar>
-                                    Error
-                                </q-chip>
+                                    <q-btn-dropdown
+                                        v-if="props.row.countExecSuccess > 0"
+                                        flat
+                                        dense
+                                        size="sm"
+                                        color="primary"
+                                        :label="'success (' + props.row.countExecSuccess + ')'">
+                                        <div style="width: calc(100vw / 1.5); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
+                                            <q-table
+                                                flat
+                                                square
+                                                virtual-scroll
+                                                hide-bottom
+                                                v-model:pagination="paginationSuccess"
+                                                separator="none"
+                                                class="my-table-mssql"
+                                                :rows-per-page-options="[0]"
+                                                :virtual-scroll-sticky-size-start="48"
+                                                row-key="idx"
+                                                :rows="props.row.result.servers.filter(f => !f.execError)"
+                                                :columns="[
+                                                    {
+                                                        name: 'instance',
+                                                        label: 'instance',
+                                                        field: 'instance',
+                                                        sortable: true,
+                                                        style: 'width: 200px',
+                                                        align: 'left'
+                                                    },
+                                                    {
+                                                        name: 'execSpId',
+                                                        label: 'execSpId',
+                                                        field: 'execSpId',
+                                                        sortable: true,
+                                                        style: 'width: 200px',
+                                                        align: 'left'
+                                                    },
+                                                    {
+                                                        name: 'execDurationMsec',
+                                                        label: 'exec duration (msec)',
+                                                        field: 'execDurationMsec',
+                                                        sortable: true,
+                                                        style: 'width: 200px',
+                                                        align: 'left'
+                                                    },
+                                                    {
+                                                        name: 'countRows',
+                                                        label: 'rows',
+                                                        field: 'countRows',
+                                                        sortable: true,
+                                                        style: 'width: 200px',
+                                                        align: 'left'
+                                                    },
+                                                    {
+                                                        name: 'countMessages',
+                                                        label: 'messages',
+                                                        field: 'countMessages',
+                                                        style: 'width: 200px',
+                                                        align: 'left'
+                                                    }
+                                                ]">
+                                                <template v-slot:body="props2">
+                                                    <q-tr :props="props2">
+                                                        <q-td key="instance" :props="props2">
+                                                            {{ props2.row.instance }}
+                                                        </q-td>
+                                                        <q-td key="execSpId" :props="props2">
+                                                            {{ props2.row.execSpId }}
+                                                        </q-td>
+                                                        <q-td key="execDurationMsec" :props="props2">
+                                                            {{ props2.row.execDurationMsec }}
+                                                        </q-td>
+                                                        <q-td key="countRows" :props="props2">
+                                                            <q-btn v-if="props2.row.countRows > 0" flat dense size="sm" color="primary" :label="'download (' + props2.row.countRows + ')'" @click="download('row', props2.row.idxs, props.row.file)" />
+                                                        </q-td>
+                                                        <q-td key="countMessages" :props="props2">
+                                                            <q-btn v-if="props2.row.countMessages > 0" flat dense size="sm" color="primary" :label="'download (' + props2.row.countMessages + ')'" @click="download('msg', props2.row.idxs, props.row.file)" />
+                                                        </q-td>
+                                                    </q-tr>
+                                                </template>
+                                            </q-table>
+                                        </div>
+                                    </q-btn-dropdown>
+                                    <q-btn-dropdown
+                                        v-if="props.row.countExecError > 0"
+                                        flat
+                                        dense
+                                        size="sm"
+                                        color="negative"
+                                        :label="'error (' + props.row.countExecError + ')'">
+                                        <div style="width: calc(100vw / 1.5); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
+                                        <q-table
+                                                flat
+                                                square
+                                                virtual-scroll
+                                                hide-bottom
+                                                v-model:pagination="paginationSuccess"
+                                                separator="none"
+                                                class="my-table-mssql"
+                                                :rows-per-page-options="[0]"
+                                                :virtual-scroll-sticky-size-start="48"
+                                                row-key="idx"
+                                                :rows="props.row.result.servers.filter(f => f.execError)"
+                                                :columns="[
+                                                    {
+                                                        name: 'instance',
+                                                        label: 'instance',
+                                                        field: 'instance',
+                                                        sortable: true,
+                                                        style: 'width: 200px',
+                                                        align: 'left'
+                                                    },
+                                                    {
+                                                        name: 'execError',
+                                                        label: 'error',
+                                                        field: 'execError',
+                                                        sortable: true,
+                                                        style: 'width: 200px',
+                                                        align: 'left'
+                                                    }
+                                                ]">
+                                            </q-table>
+                                        </div>
+                                    </q-btn-dropdown>
                                 </div>
                             </q-td>
                         </q-tr>
@@ -139,11 +255,25 @@ export default {
             return dateFormat(toDate(d) || new Date(2000, 1, 1), "hh:mi:ss.msec")
         }
 
+        const download = (kind: "ticket" | "row" | "msg", idxs: string, tiketFileName: string) => {
+            state.download(kind, idxs, tiketFileName, (blob, fileName) => {
+                if (!blob || !fileName) return
+                const link = document.createElement("a")
+                link.href = window.URL.createObjectURL(blob)
+                link.download = fileName
+                link.click()
+            })
+        }
+
         return {
             state,
             dFormat,
             tFormat,
+            download,
             pagination: ref({
+                rowsPerPage: 0
+            }),
+            paginationSuccess: ref({
                 rowsPerPage: 0
             })
         }

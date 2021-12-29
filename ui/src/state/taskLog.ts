@@ -4,7 +4,7 @@ import { send } from "@/core/rest"
 import { TReplyHistoryTaskLog, TReplyHistoryTaskLogTickets } from "./../../../src/api"
 import { TFileHistoryTaskLog, TFileHistoryTaskLogTickets } from "./../../../src/api/taskLog"
 
-type TTickets = TFileHistoryTaskLogTickets & { duration: number; durationText: string; countExecSuccess: number; countExecError: number }
+type TTickets = TFileHistoryTaskLogTickets & { duration: number; durationText: string; countExecSuccess: number; countExecError: number; existsRow: boolean; existsMsg: boolean}
 
 export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryTaskLog[]) => void) {
     send(
@@ -118,25 +118,29 @@ export const state = reactive({
                         ...duration(m.result?.dateStop, m.result?.dateStart),
                         countExecSuccess: m.result?.servers.filter(f => !f.execError).length || 0,
                         countExecError: m.result?.servers.filter(f => f.execError).length || 0,
+                        existsRow: m.result?.servers.some(f => f.countRows > 0),
+                        existsMsg: m.result?.servers.some(f => f.countMessages > 0),
                     }
                 })
             }
             if (callback) callback()
         })
     },
-    download: function (file: string, callback: (blob: Blob | undefined, filename: string) => void) {
+    download: function (kind: "ticket" | "row" | "msg", idxs: string, tiketFileName: string, callback: (blob: Blob | undefined, filename: string) => void) {
         if (!this.tickets.d || !this.tickets.task) {
-            callback(undefined, '')
+            callback(undefined, "")
             return
         }
         send(
             {
-                kind: "history-task-log-ticket-download",
+                kind: "history-task-log-file-download",
                 token: "",
                 data: {
-                    dd: vv.dateFormat(this.tickets.d, 'yyyymmdd'),
+                    kind: kind,
+                    idxs: idxs,
+                    dd: vv.dateFormat(this.tickets.d, "yyyymmdd"),
                     task: this.tickets.task?.task,
-                    file: file
+                    tiketFileName: tiketFileName
                 }
             },
             (result, headers) => {
@@ -190,7 +194,7 @@ function duration(dateStop: string, dateStart: string): { duration: number; dura
 }
 
 function with0(s: string | number, maxLen: number): string {
-    const ss = typeof s === 'string' ? s : s.toString()
+    const ss = typeof s === "string" ? s : s.toString()
     if (ss.length >= maxLen) return ss
-    return `${ss.padStart(maxLen, '0')}`
+    return `${ss.padStart(maxLen, "0")}`
 }

@@ -40,39 +40,6 @@ export function LoadTickets(task: string, d: Date, callback: (items: TFileHistor
     )
 }
 
-// export function LoadText(d: Date, kind: "error" | "debug" | "trace", callback: (text: string) => void) {
-//     send(
-//         {
-//             kind: "history-service-log-item",
-//             token: "",
-//             data: {
-//                 dd: vv.dateFormat(d, "yyyymmdd"),
-//                 kind: kind
-//             }
-//         },
-//         result => {
-//             const r = result as TReplyHistoryServiceLogItem
-//             callback(r?.data?.text || "EMPTY FILE")
-//         }
-//     )
-// }
-
-// export function Download(d: Date, kind: "error" | "debug" | "trace", callback: (blob: Blob, filename: string) => void) {
-//     send(
-//         {
-//             kind: "history-service-log-item-download",
-//             token: "",
-//             data: {
-//                 dd: vv.dateFormat(d, "yyyymmdd"),
-//                 kind: kind
-//             }
-//         },
-//         (result, headers) => {
-//             callback(result, headers ? headers["content-disposition"].split("filename=")[1] : "unknownFile")
-//         }
-//     )
-// }
-
 export const state = reactive({
     loadedInit: false,
     buzy: false,

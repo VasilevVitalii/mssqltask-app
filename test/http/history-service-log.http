@@ -1,0 +1,8 @@
+POST http://localhost:3000 HTTP/1.1
+content-type: application/json
+
+{
+    "kind":"history-service-log",
+    "token":"eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJhZGRpdGlvbmFsIjp7ImFjY2Vzc0xldmVsIjoidmlldyJ9LCJpc3MiOiJtc3NxbHRhc2stYXBwIiwiaWF0IjoxNjQxODI0OTU2NzgzLCJleHAiOjE2NDE5MTEzNTY3ODN9.0fqWI3/NPVSuqo5bnKLTuG7hhImSHjkY1/3FPrtyEjA=",
+    "data":{"dd1":"20211212","dd2":"20220111"}
+}

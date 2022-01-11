@@ -14,6 +14,7 @@
 import { defineComponent } from "vue"
 import { goto as routerGoto, state as stateRouter } from "@/core/router"
 import { setToken, state as stateToken } from "@/core/token"
+import { state as stateTaskLog } from "@/state/taskLog"
 
 export default defineComponent({
     setup() {

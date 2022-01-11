@@ -1,3 +1,5 @@
+import path from 'path'
+import * as vv from 'vv-common'
 import { env } from './../app'
 import { Create as CreateHttpGate, TRequest } from 'vv-httpgate'
 import * as apiSecurity from './security'
@@ -5,11 +7,9 @@ import * as apiEdit from './edit'
 import * as apiTestConnection from './connection'
 import * as apiServiceLog from './serviceLog'
 import * as apiTaskLog from './taskLog'
-
 import { TDepotMssql } from './../depotMssql'
 import { TDepotTask } from './../depotTask'
 import { TServerInfo } from 'mssqldriver'
-import path from 'path'
 
 export type TPostSignin = {kind: 'signin', data: {password: string}}
 export type TPostConnection = {kind: 'test-connection', token: string, data: {mssqls: TDepotMssql[]}}
@@ -55,16 +55,20 @@ export function Go() {
         env.logger.error('API', error)
     })
     httpGate.onRequest(request => {
+        const traceKey = env.options.log.allowTrace === true ? vv.guid().replace(/-/g,'').concat(vv.dateFormat(new Date(), 'ssmsec')) : ''
+
         if (request.method === 'GET') {
             console.log('not yet')
             return
         }
         if (request.method === 'POST') {
+            env.logger.trace(`API - request #${traceKey}`, request.data)
+
             let post: TPost = undefined
             try {
                 post = JSON.parse(request.data)
             } catch (error) {
-                sendReplyBox (request, {
+                sendReplyBox (request, traceKey, {
                     statusCode: 400,
                     reply: {
                         kind: 'unknown',
@@ -76,7 +80,7 @@ export function Go() {
 
             const denyAccess = apiSecurity.CheckToken(post)
             if (denyAccess) {
-                sendReplyBox (request, {
+                sendReplyBox (request, traceKey, {
                     statusCode: 403,
                     reply: {
                         kind: post?.kind,
@@ -87,88 +91,68 @@ export function Go() {
             }
 
             if (post?.kind === 'signin') {
-                sendReplyBox(request, apiSecurity.CreateToken(post?.data?.password))
+                sendReplyBox(request, traceKey, apiSecurity.CreateToken(post?.data?.password))
                 return
             }
 
             if (post?.kind === 'test-connection') {
                 apiTestConnection.Test(post, replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
 
             if (post?.kind === 'edit-load') {
                 apiEdit.Load(replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
 
             if (post?.kind === 'edit-delete') {
                 apiEdit.Delete(post, replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
 
             if (post?.kind === 'edit-change') {
                 apiEdit.Change(post, replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
 
             if (post?.kind === 'history-service-log') {
                 apiServiceLog.LoadList(post, replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
 
             if (post?.kind === 'history-service-log-item') {
                 apiServiceLog.LoadText(post, replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
 
             if (post?.kind === 'history-service-log-item-download') {
                 const fullFileName = apiServiceLog.GetLogFullFileName(post.data?.dd, post.data?.kind)
-                if (!fullFileName) {
-                    sendReplyBox(request, {
-                        statusCode: 400,
-                        reply: {
-                            kind: 'history-service-log-item-download',
-                            error: 'empty data.dd or data.kind'
-                        }
-                    })
-                    return
-                }
-                request.replyFile({fullFileName: fullFileName}, error => {
-                    if (error) {
-                        sendReplyBox(request, {
-                            statusCode: 500,
-                            reply: {
-                                kind: 'history-service-log-item-download',
-                                error: error.message
-                            }
-                        })
-                    }
-                })
+                sendReplyFile(request, traceKey, fullFileName, post.kind)
                 return
             }
 
             if (post?.kind === 'history-task-log') {
                 apiTaskLog.LoadList(post, replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
 
             if (post?.kind === 'history-task-log-tickets') {
                 apiTaskLog.LoadTickets(post, replyBox => {
-                    sendReplyBox(request, replyBox)
+                    sendReplyBox(request, traceKey, replyBox)
                 })
                 return
             }
@@ -186,21 +170,12 @@ export function Go() {
                     filePath = path.join(filePath, 'msg')
                     fileName = 'm.'.concat(fileName.substring(2, fileName.length))
                 }
-                request.replyFile({fullFileName: path.join(filePath, fileName)}, error => {
-                    if (error) {
-                        sendReplyBox(request, {
-                            statusCode: 500,
-                            reply: {
-                                kind: 'history-task-log-file-download',
-                                error: error.message
-                            }
-                        })
-                    }
-                })
+                const fullFileName = path.join(filePath, fileName)
+                sendReplyFile(request, traceKey, fullFileName, post.kind)
                 return
             }
 
-            sendReplyBox (request, {
+            sendReplyBox (request, traceKey, {
                 statusCode: 400,
                 reply: {
                     kind: 'unknown',
@@ -228,11 +203,39 @@ export function Go() {
     })
 }
 
-function sendReplyBox(request: TRequest, replyBox: TReplyBox): void {
+function sendReplyBox(request: TRequest, traceKey: string, replyBox: TReplyBox): void {
     request.replySetHeader('content-type', 'application/json; charset=UTF-8')
     if (replyBox && replyBox.statusCode) {
         request.reply(replyBox.statusCode, replyBox.reply)
     } else {
         request.reply(500, {kind: 'unknown', error: 'unknown post data'} as TReply)
     }
+    env.logger.trace(`API - reply #${traceKey}`, replyBox)
 }
+
+function sendReplyFile(request: TRequest, traceKey: string, fullFileName: string, kind: string): void {
+    if (!fullFileName) {
+        sendReplyBox(request, traceKey, {
+            statusCode: 400,
+            reply: {
+                kind: kind as any,
+                error: `cant't create file name from input params`
+            }
+        })
+        return
+    }
+    request.replyFile({fullFileName: fullFileName}, error => {
+        if (error) {
+            sendReplyBox(request, traceKey, {
+                statusCode: 500,
+                reply: {
+                    kind: kind as any,
+                    error: error.message
+                }
+            })
+        } else {
+            env.logger.trace(`API - reply #${traceKey} file`, fullFileName)
+        }
+    })
+}
+

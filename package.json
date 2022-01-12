@@ -60,6 +60,6 @@
         "vv-common": "^0.1.0",
         "vv-httpgate": "^0.0.8",
         "vv-jwt": "^0.0.4",
-        "vv-logger": "^0.0.5"
+        "vv-logger": "^0.1.0"
     }
 }

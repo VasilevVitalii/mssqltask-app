@@ -20,37 +20,37 @@ export function Go() {
         ]
     }, error => {
         if (error) {
-            env.logger.error(`on init DEPOT`, error)
+            env.logger.errorExt(`on init DEPOT`, error)
         }
     })
     env.depot.app.callback.onError(error => {
-        env.logger.error(`DEPOT`, error)
+        env.logger.errorExt(`DEPOT`, error)
     })
     if (env.options.log.allowTrace) {
         env.depot.app.callback.onDebug(debug => {
-            env.logger.trace(`DEPOT - ${debug}`)
+            env.logger.traceExt('depot', debug)
         })
         env.depot.app.callback.onTrace(trace => {
-            env.logger.trace(`DEPOT - ${trace}`)
+            env.logger.traceExt('depot', trace)
         })
     }
     env.depot.app.callback.onStateComplete(() => {
         depotMssql.Load(env.depot.app, env.depot.mssql.list, env.options.data.pathMssql, (error, isCreateExample, countLoaded) => {
             if (error) {
-                env.logger.error('DEPOT', error)
+                env.logger.errorExt('DEPOT', error)
             } else {
                 env.depot.mssql.isInit = true
                 env.depot.mssql.isChange = true
-                env.logger.debug(`DEPOT mssql - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
+                env.logger.debugExt('depot', `mssql - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
             }
         })
         depotTask.Load(env.depot.app, env.depot.task.list, env.options.data.pathTask, (error, isCreateExample, countLoaded) => {
             if (error) {
-                env.logger.error('DEPOT', error)
+                env.logger.errorExt('DEPOT', error)
             } else {
                 env.depot.task.isInit = true
                 env.depot.task.isChange = true
-                env.logger.debug(`DEPOT task - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
+                env.logger.debugExt('depot', `task - load ${countLoaded} item(s)${isCreateExample ? ', create example file(s)' : ''}`)
             }
         })
     })
@@ -58,11 +58,11 @@ export function Go() {
         states.forEach(state => {
             if (state.state === 'mssql') {
                 const stat = depotMssql.Upsert(state.rows, state.action, env.depot.mssql.list)
-                env.logger.debug(`DEPOT mssql - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
+                env.logger.debugExt('depot', `mssql - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
                 env.depot.mssql.isChange = true
             } else if (state.state === 'task') {
                 const stat = depotTask.Upsert(state.rows, state.action, env.depot.task.list)
-                env.logger.debug(`DEPOT task - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
+                env.logger.debugExt('depot', `task - delete ${stat.delete} item(s), update ${stat.update} item(s), insert ${stat.insert} item(s)`)
                 env.depot.task.isChange = true
             }
         })
@@ -102,7 +102,7 @@ function refresh() {
                     if (!vv.equal(itemA.instance, itemB.instance)) continue
                     if (env.depot.mssql.badList.some(f => vv.equal(f, itemA.instance))) continue
                     env.depot.mssql.badList.push(itemA.instance)
-                    env.logger.error(`DEPOT mssql - ignore "${itemA.instance}", because it occurs more than once`)
+                    env.logger.errorExt('depot', `mssql - ignore "${itemA.instance}", because it occurs more than once`)
                 }
             }
         }
@@ -118,25 +118,25 @@ function refresh() {
 
                 if (vv.isEmpty(itemA.key) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
                     env.depot.task.badList.push(itemA.key)
-                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has an empty key`)
+                    env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it has an empty key`)
                     needCheckDoubles = false
                 }
 
                 if (itemA.key.length > 50 && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
                     env.depot.task.badList.push(itemA.key)
-                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has a key with length more 50 chars`)
+                    env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it has a key with length more 50 chars`)
                     needCheckDoubles = false
                 }
 
                 if (!(new RegExp(/^[a-zA-Z0-9-_]+$/g)).test(itemA.key) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
                     env.depot.task.badList.push(itemA.key)
-                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has a key with illegal chars, legal chars - "a-z", "A-Z", "0-9", "_", "-"`)
+                    env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it has a key with illegal chars, legal chars - "a-z", "A-Z", "0-9", "_", "-"`)
                     needCheckDoubles = false
                 }
 
                 if (vv.isEmpty(itemA.queries.join('')) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
                     env.depot.task.badList.push(itemA.key)
-                    env.logger.error(`DEPOT task - ignore "${itemA.key}", because it has an empty query list`)
+                    env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it has an empty query list`)
                     needCheckDoubles = false
                 }
 
@@ -146,7 +146,7 @@ function refresh() {
                         if (!vv.equal(itemA.key, itemB.key)) continue
                         if (env.depot.task.badList.some(f => vv.equal(f, itemA.key))) continue
                         env.depot.task.badList.push(itemA.key)
-                        env.logger.error(`DEPOT task - ignore "${itemA.key}", because it occurs more than once`)
+                        env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it occurs more than once`)
                     }
                 }
 

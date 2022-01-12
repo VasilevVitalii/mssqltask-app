@@ -58,11 +58,11 @@ export function Go(currentPath: string) {
     const packageJsonRaw = packageJsonPath ? fs.readFileSync(packageJsonPath, 'utf8') : '{}'
     const packageJson = vv.PackajeJsonParse(packageJsonRaw)
 
-    env.logger.debug(`APP - start${packageJson.version ? ', version '.concat(packageJson.version) : ''}`)
-    env.logger.debug(`APP - log.path "${env.options.log.path}"`)
-    env.logger.debug(`APP - data.pathMssql "${env.options.data.pathMssql}"`)
-    env.logger.debug(`APP - data.pathTask "${env.options.data.pathTask}"`)
-    env.logger.debug(`APP - task.path "${env.options.task.path}"`)
+    env.logger.debugExt('app', `start${packageJson.version ? ', version '.concat(packageJson.version) : ''}`)
+    env.logger.debugExt('app', `log.path "${env.options.log.path}"`)
+    env.logger.debugExt('app', `data.pathMssql "${env.options.data.pathMssql}"`)
+    env.logger.debugExt('app', `data.pathTask "${env.options.data.pathTask}"`)
+    env.logger.debugExt('app', `task.path "${env.options.task.path}"`)
 
     depotGo()
     mssqltaskGo()

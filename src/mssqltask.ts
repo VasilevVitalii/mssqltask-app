@@ -37,7 +37,7 @@ export function Go() {
             let needIgnore = false
             if (item.mssqls.length <= 0) {
                 needIgnore = true
-                env.logger.error(`MSSQLTASK - ignore "${item.task.key}", because it has an empty server list`)
+                env.logger.errorExt('mssqltask', `ignore "${item.task.key}", because it has an empty server list`)
             }
             if (needIgnore) {
                 list.splice(i, 1)
@@ -53,7 +53,7 @@ export function Go() {
                 const itemJson = JSON.stringify(item)
                 if (itemJson !== JSON.stringify(fnd.source)) {
                     const submsg = fnd.source.task.key === item.task.key ? `"${fnd.source.task.key}"` : `"${fnd.source.task.key}" -> "${item.task.key}"`
-                    env.logger.debug(`MSSQLTASK - shift ${submsg}`)
+                    env.logger.debugExt('mssqltask', `shift ${submsg}`)
                     fnd.shift = JSON.parse(itemJson)
                     fnd.mssqltask.finish()
                 }
@@ -99,7 +99,7 @@ function createCore(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) : mssqltas
     })
     res.maxWorkersSet(env.options.task.maxThreads)
     res.onError(error => {
-        env.logger.error('MSSQLTASK core', error)
+        env.logger.errorExt('MSSQLTASK core', error)
     })
     return res
 }
@@ -130,7 +130,7 @@ function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
             item.sucessStory.unshift(countBad === 0 ? 'full' : countOk === 0 ? 'none' : 'part')
             if (item.sucessStory.length > SUCCESS_STORY_LENGTH) item.sucessStory.splice(SUCCESS_STORY_LENGTH, 1)
         } else if (state.kind === 'finish') {
-            env.logger.debug(`MSSQLTASK - finish "${item.source.task.key}"`)
+            env.logger.debugExt('mssqltask', `finish "${item.source.task.key}"`)
             item.needRemove = true
             if (item.shift) {
                 addAndStart(item.shift)
@@ -138,7 +138,7 @@ function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
         }
     })
 
-    env.logger.debug(`MSSQLTASK - start "${item.source.task.key}"`)
+    env.logger.debugExt('mssqltask', `start "${item.source.task.key}"`)
     item.mssqltask.start()
 }
 

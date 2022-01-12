@@ -52,7 +52,7 @@ export function Go() {
 
     const httpGate = CreateHttpGate({url: env.options.manage.http})
     httpGate.onError(error => {
-        env.logger.error('API', error)
+        env.logger.errorExt('API', error)
     })
     httpGate.onRequest(request => {
         const traceKey = env.options.log.allowTrace === true ? vv.guid().replace(/-/g,'').concat(vv.dateFormat(new Date(), 'ssmsec')) : ''
@@ -62,7 +62,7 @@ export function Go() {
             return
         }
         if (request.method === 'POST') {
-            env.logger.trace(`API - request #${traceKey}`, request.data)
+            env.logger.traceExt(`API - request #${traceKey}`, request.data)
 
             let post: TPost = undefined
             try {
@@ -198,7 +198,7 @@ export function Go() {
     })
     httpGate.start(addr => {
         if (addr) {
-            env.logger.debug(`API - start at http://${addr.url}:${addr.port}`)
+            env.logger.debugExt('api', `start at http://${addr.url}:${addr.port}`)
         }
     })
 }
@@ -210,7 +210,7 @@ function sendReplyBox(request: TRequest, traceKey: string, replyBox: TReplyBox):
     } else {
         request.reply(500, {kind: 'unknown', error: 'unknown post data'} as TReply)
     }
-    env.logger.trace(`API - reply #${traceKey}`, replyBox)
+    env.logger.traceExt('api', `reply #${traceKey}`, replyBox)
 }
 
 function sendReplyFile(request: TRequest, traceKey: string, fullFileName: string, kind: string): void {
@@ -234,7 +234,7 @@ function sendReplyFile(request: TRequest, traceKey: string, fullFileName: string
                 }
             })
         } else {
-            env.logger.trace(`API - reply #${traceKey} file`, fullFileName)
+            env.logger.traceExt(`API - reply #${traceKey} file`, fullFileName)
         }
     })
 }

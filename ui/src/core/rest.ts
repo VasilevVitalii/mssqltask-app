@@ -12,7 +12,8 @@ type TQueueItem = { data: TPost; callback: (result: any | undefined, headers?: A
 const queue: TQueueItem[] = []
 
 export const state = reactive({
-    accessAllow: true
+    accessAllow: true,
+    queue: [] as TQueueItem[]
 })
 
 export function clearQueue() {
@@ -23,6 +24,9 @@ export function clearQueue() {
 
 export function send(data: TPost, callback: (result: any | undefined, headers?: AxiosResponseHeaders) => void) {
     queue.push({ data, callback })
+    if (!state.accessAllow) {
+        goto("u-signin")
+    }
 }
 
 let timer = setTimeout(async function tick() {

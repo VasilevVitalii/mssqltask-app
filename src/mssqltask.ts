@@ -37,7 +37,7 @@ export function Go() {
             let needIgnore = false
             if (item.mssqls.length <= 0) {
                 needIgnore = true
-                env.logger.errorExt('mssqltask', `ignore "${item.task.key}", because it has an empty server list`)
+                env.logger.errorExt('task', `ignore "${item.task.key}", because it has an empty server list`)
             }
             if (needIgnore) {
                 list.splice(i, 1)
@@ -53,7 +53,7 @@ export function Go() {
                 const itemJson = JSON.stringify(item)
                 if (itemJson !== JSON.stringify(fnd.source)) {
                     const submsg = fnd.source.task.key === item.task.key ? `"${fnd.source.task.key}"` : `"${fnd.source.task.key}" -> "${item.task.key}"`
-                    env.logger.debugExt('mssqltask', `shift ${submsg}`)
+                    env.logger.debugExt('task', `shift ${submsg}`)
                     fnd.shift = JSON.parse(itemJson)
                     fnd.mssqltask.finish()
                 }
@@ -90,11 +90,9 @@ function createCore(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) : mssqltas
         queries: depot.task.queries,
         servers: depot.mssqls,
         processResult: {
-            allowCallbackRows: depot.task.allowRows,
-            allowCallbackMessages: depot.task.allowMessages,
             pathSaveTickets: env.options.task.path,
-            pathSaveRows: env.options.task.path,
-            pathSaveMessages: env.options.task.path,
+            pathSaveRows: depot.task.allowRows === true ? env.options.task.path : undefined,
+            pathSaveMessages: depot.task.allowMessages === true ? env.options.task.path : undefined,
         }
     })
     res.maxWorkersSet(env.options.task.maxThreads)
@@ -120,17 +118,19 @@ function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
         if (state.kind === 'start') {
             item.state = 'work'
             item.usedWorkers = state.usedWorkers
+            env.logger.traceExt('task', `process "${item.source.task.key}"`)
             setMaxWorkers()
         } else if (state.kind === 'stop') {
             item.state = 'idle'
             item.usedWorkers = 0
+            env.logger.traceExt('task', `idle "${item.source.task.key}"`)
             setMaxWorkers()
             const countOk = state.ticket.servers.filter(f => !f.execError).length
             const countBad = state.ticket.servers.filter(f => f.execError).length
             item.sucessStory.unshift(countBad === 0 ? 'full' : countOk === 0 ? 'none' : 'part')
             if (item.sucessStory.length > SUCCESS_STORY_LENGTH) item.sucessStory.splice(SUCCESS_STORY_LENGTH, 1)
         } else if (state.kind === 'finish') {
-            env.logger.debugExt('mssqltask', `finish "${item.source.task.key}"`)
+            env.logger.debugExt('task', `finish "${item.source.task.key}"`)
             item.needRemove = true
             if (item.shift) {
                 addAndStart(item.shift)
@@ -138,7 +138,7 @@ function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
         }
     })
 
-    env.logger.debugExt('mssqltask', `start "${item.source.task.key}"`)
+    env.logger.debugExt('task', `run "${item.source.task.key}"`)
     item.mssqltask.start()
 }
 

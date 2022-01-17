@@ -1,6 +1,6 @@
 import { reactive } from "vue"
 import { state as stateRest, clearQueue } from "./rest"
-import { sendCore } from "./rest"
+import { sendCore, state as stateCore } from "./rest"
 import { goto } from "./router"
 import { TReplySignin } from "../../../src/api"
 import { notify } from "./dialog"

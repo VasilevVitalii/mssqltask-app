@@ -70,7 +70,7 @@ function getFromStorage(row: TypeStateRow): TDepotMssql {
         path: row.path,
         file: row.file,
         title: vv.toString(row.data?.title) || '',
-        instance: vv.toString(row.data?.instance) || '',
+        instance: (vv.toString(row.data?.instance) || '').replace(/\\/g, '/'),
         login: vv.toString(row.data?.login) || '',
         password: vv.toString(row.data?.password) || '',
         tags: vv.toArray(row.data?.tags) || []

@@ -62,7 +62,7 @@ export function Go() {
             return
         }
         if (request.method === 'POST') {
-            env.logger.traceExt(`API - request #${traceKey}`, request.data)
+            env.logger.traceExt('api', `request #${traceKey}`, request.data)
 
             let post: TPost = undefined
             try {
@@ -205,12 +205,16 @@ export function Go() {
 
 function sendReplyBox(request: TRequest, traceKey: string, replyBox: TReplyBox): void {
     request.replySetHeader('content-type', 'application/json; charset=UTF-8')
+    env.logger.traceExt('api', `reply #${traceKey} begin`)
     if (replyBox && replyBox.statusCode) {
-        request.reply(replyBox.statusCode, replyBox.reply)
+        request.reply(replyBox.statusCode, replyBox.reply, () => {
+            env.logger.traceExt('api', `reply #${traceKey} end`, replyBox)
+        })
     } else {
-        request.reply(500, {kind: 'unknown', error: 'unknown post data'} as TReply)
+        request.reply(500, {kind: 'unknown', error: 'unknown post data'} as TReply, () => {
+            env.logger.traceExt('api', `reply #${traceKey} end`, replyBox)
+        })
     }
-    env.logger.traceExt('api', `reply #${traceKey}`, replyBox)
 }
 
 function sendReplyFile(request: TRequest, traceKey: string, fullFileName: string, kind: string): void {
@@ -234,7 +238,7 @@ function sendReplyFile(request: TRequest, traceKey: string, fullFileName: string
                 }
             })
         } else {
-            env.logger.traceExt(`API - reply #${traceKey} file`, fullFileName)
+            env.logger.traceExt('api', `reply #${traceKey} file`, fullFileName)
         }
     })
 }

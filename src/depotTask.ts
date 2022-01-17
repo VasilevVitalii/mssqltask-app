@@ -111,7 +111,7 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
         allowRows: vv.toBool(row.data?.allowRows) || true,
         allowMessages: vv.toBool(row.data?.allowMessages) || true,
         mssqls: {
-            instances: vv.toArray(row.data?.mssqls?.instances) || [],
+            instances: (vv.toArray(row.data?.mssqls?.instances) || []).map(m => { return (vv.toString(m) || '').replace(/\\/g, '/') } ),
             tags: vv.toArray(row.data?.mssqls?.tags) || []
         }
     }

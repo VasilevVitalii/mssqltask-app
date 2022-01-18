@@ -7,13 +7,18 @@ import { TTicketResult } from 'mssqltask'
 
 export type TFileHistoryTaskLog = {task: string, dds: string[]}
 export type TFileHistoryTaskLogTickets = {
-    idx: number,
+    d: string,
     file: string,
     errorRead: string,
     result: TTicketResult
 }
 
-export function LoadList(data: TPostHistoryTaskLog, callback: (replyBox: TReplyBox) => void) {
+type TFileHistoryTaskLogFile = {
+    d: string,
+    fullFileName: string
+}
+
+export function LoadTaskList(data: TPostHistoryTaskLog, callback: (replyBox: TReplyBox) => void) {
     const dd1 = vv.toDate(data.data?.dd1)
     const dd2 = vv.toDate(data.data?.dd2)
     if (!dd1 || !dd2) {
@@ -117,7 +122,7 @@ export function LoadTickets(data: TPostHistoryTaskLogTickets, callback: (replyBo
         }
         const files = result.filter(f => f.file && f.file.match(fileMask)).map(m => { return path.join(m.path, m.file) })
         const tickets = [] as TFileHistoryTaskLogTickets[]
-        readTickets(files, 0, tickets, () => {
+        readTickets(files.map(m => { return {d: d, fullFileName: m} }), 0, tickets, () => {
             callback({
                 statusCode: 200,
                 reply: {
@@ -131,20 +136,20 @@ export function LoadTickets(data: TPostHistoryTaskLogTickets, callback: (replyBo
     })
 }
 
-function readTickets(files: string[], idx: number, tickets: TFileHistoryTaskLogTickets[], callback: () => void) {
+function readTickets(files: TFileHistoryTaskLogFile[], idx: number, tickets: TFileHistoryTaskLogTickets[], callback: () => void) {
     if (idx >= files.length) {
         callback()
         return
     }
     const f = files[idx]
     const ticket: TFileHistoryTaskLogTickets = {
-        idx: idx,
-        file: path.parse(f).base,
+        d: f.d,
+        file: path.parse(f.fullFileName).base,
         errorRead: '',
         result: undefined
     }
     tickets.push(ticket)
-    fs.readFile(f, 'utf-8', (error, raw) => {
+    fs.readFile(f.fullFileName, 'utf-8', (error, raw) => {
         if (error) {
             ticket.errorRead = error.message
         } else {

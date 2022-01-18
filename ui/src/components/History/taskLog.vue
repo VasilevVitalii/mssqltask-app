@@ -129,7 +129,7 @@
                                                     },
                                                     {
                                                         name: 'execSpId',
-                                                        label: 'execSpId',
+                                                        label: 'exec spid',
                                                         field: 'execSpId',
                                                         sortable: true,
                                                         style: 'width: 200px',

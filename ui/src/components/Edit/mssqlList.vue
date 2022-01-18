@@ -35,7 +35,7 @@
                 { name: 'commands', style: 'width: 350px' }
             ]">
             <template v-slot:body="props">
-                <q-tr :props="props">
+                <q-tr :props="props" :class="!props.row.isDel && (props.row.isNew || props.row.item.getUpdProps().length > 0) ? 'bg-info' : props.row.isDel ? 'bg-warning' : ''">
                     <q-td key="instance" :props="props">
                         <q-input dense v-model="props.row.item.state.instance" borderless placeholder="enter instance"> </q-input>
                     </q-td>

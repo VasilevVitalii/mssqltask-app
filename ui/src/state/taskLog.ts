@@ -35,7 +35,13 @@ export function LoadTickets(task: string, d: Date, callback: (items: TFileHistor
         },
         result => {
             const r = result as TReplyHistoryTaskLogTickets
-            callback(r?.data?.tickets || [])
+            callback((r.data?.tickets || []).sort((a, b) => {
+                if (a.result.dateStart > b.result.dateStart) return -1
+                if (a.result.dateStart < b.result.dateStart) return 1
+                if (a.result.dateStop > b.result.dateStop) return -1
+                if (a.result.dateStop < b.result.dateStop) return 1
+                return 0
+            }))
         }
     )
 }

@@ -144,7 +144,7 @@ export function Go() {
             }
 
             if (post?.kind === 'history-task-log') {
-                apiTaskLog.LoadList(post, replyBox => {
+                apiTaskLog.LoadTaskList(post, replyBox => {
                     sendReplyBox(request, traceKey, replyBox)
                 })
                 return

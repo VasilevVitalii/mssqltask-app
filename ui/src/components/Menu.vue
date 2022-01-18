@@ -6,10 +6,8 @@
         <q-btn flat :class="{ noactive: stateRouter.currentWorkflow !== 'w-history' }" @click="routerGoto('w-history')">history</q-btn>
         <q-btn flat :class="{ noactive: stateRouter.currentWorkflow !== 'w-edit' }" @click="routerGoto('w-edit')">edit</q-btn>
         <q-space />
-        <div v-show="stateToken.token && stateToken.token.length > 0">
-            <q-separator class="noactive" color="white" vertical style="margin: 10px"></q-separator>
-            <q-btn flat class="noactive"  @click="signout()">sign out</q-btn>
-        </div>
+        <q-separator v-show="stateToken.token && stateToken.token.length > 0" class="noactive" color="white" vertical style="margin: 10px"></q-separator>
+        <q-btn v-show="stateToken.token && stateToken.token.length > 0" flat class="noactive"  @click="signout()">sign out</q-btn>
     </q-toolbar>
 </template>
 <script lang="ts">

@@ -35,7 +35,10 @@ export function Go() {
         for (let i = list.length - 1; i >= 0; i--) {
             const item = list[i]
             let needIgnore = false
-            if (item.mssqls.length <= 0) {
+            if (item.task.allowExec !== true) {
+                needIgnore = true
+                env.logger.debugExt('task', `ignore "${item.task.key}", because allowExec !== true`)
+            } else if (item.mssqls.length <= 0) {
                 needIgnore = true
                 env.logger.errorExt('task', `ignore "${item.task.key}", because it has an empty server list`)
             }
@@ -138,7 +141,7 @@ function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
         }
     })
 
-    env.logger.debugExt('task', `run "${item.source.task.key}"`)
+    env.logger.debugExt('task', `run "${item.source.task.key}" on ${item.source.mssqls.length} mssql server(s)`)
     item.mssqltask.start()
 }
 

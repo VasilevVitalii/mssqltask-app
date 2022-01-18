@@ -56,6 +56,7 @@ export function Upsert(rows: TStateRow[], action: string, list: TDepotTask[]): T
                 fnd.title = item.title
                 fnd.metronom = item.metronom
                 fnd.queries = item.queries
+                fnd.allowExec = item.allowExec
                 fnd.allowRows = item.allowRows
                 fnd.allowMessages = item.allowMessages
                 fnd.mssqls = item.mssqls
@@ -107,9 +108,9 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
         title: vv.nz(vv.toString(row.data?.key), '').trim(),
         metronom: metronom,
         queries: vv.toArray(row.data?.queries) || [],
-        allowExec: vv.toBool(row.data?.allowRows) || true,
-        allowRows: vv.toBool(row.data?.allowRows) || true,
-        allowMessages: vv.toBool(row.data?.allowMessages) || true,
+        allowExec: vv.nz(vv.toBool(row.data?.allowExec), true),
+        allowRows: vv.nz(vv.toBool(row.data?.allowRows), true),
+        allowMessages: vv.nz(vv.toBool(row.data?.allowMessages), true),
         mssqls: {
             instances: (vv.toArray(row.data?.mssqls?.instances) || []).map(m => { return (vv.toString(m) || '').replace(/\\/g, '/') } ),
             tags: vv.toArray(row.data?.mssqls?.tags) || []

@@ -29,6 +29,20 @@ function dirArtifacts() {
 }
 exports.dirArtifacts = dirArtifacts
 
+/** @returns {string} */
+function dirRootUi() {
+    return path.join(__dirname, "..", "ui")
+}
+exports.dirRootUi = dirRootUi
+
+/** @returns {string} */
+function dirDistUi() {
+    return path.join(__dirname, "..", "ui", "dist")
+}
+exports.dirDistUi = dirDistUi
+
+
+
 /**
  * @param {'win' | 'lin'} os
  * @returns {string}

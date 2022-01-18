@@ -58,7 +58,12 @@ export function Go() {
         const traceKey = env.options.log.allowTrace === true ? vv.guid().replace(/-/g,'').concat(vv.dateFormat(new Date(), 'ssmsec')) : ''
 
         if (request.method === 'GET') {
-            console.log('not yet')
+            vv.dir(path.join('..', __dirname), {deep: 3, mode: 'all'}, (error, result) => {
+                result.forEach(r => {
+                    console.log(`${r.path} -> ${r.file}`)
+                })
+            })
+            //console.log('not yet')
             return
         }
         if (request.method === 'POST') {

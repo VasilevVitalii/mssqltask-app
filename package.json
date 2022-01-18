@@ -12,10 +12,11 @@
         "precommit": "node ./.auto/precommit.js"
     },
     "pkg": {
-        "node_version": "14.17.6",
         "scripts": "dist/src/*.js",
         "assets": [
             "dist/src/package.json",
+            "dist/src/ui/*",
+            "dist/src/ui/**/*",
             "node_modules/vv-logger/dist/src/*.js",
             "node_modules/vv-logger/dist/src/**/.js",
             "node_modules/backdepot/dist/src/*.js",
@@ -25,8 +26,8 @@
             "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
         ],
         "targets": [
-            "node14-win-x64",
-            "node14-linux"
+            "win-x64",
+            "linux-x64"
         ]
     },
     "repository": {
@@ -40,9 +41,9 @@
     },
     "homepage": "https://github.com/VasilevVitalii/mssqltask-app#readme",
     "devDependencies": {
-        "@types/node": "17.0.9",
-        "@typescript-eslint/eslint-plugin": "5.9.1",
-        "@typescript-eslint/parser": "5.9.1",
+        "@types/node": "^17.0.9",
+        "@typescript-eslint/eslint-plugin": "5.10.0",
+        "@typescript-eslint/parser": "5.10.0",
         "adm-zip": "^0.5.9",
         "eslint": "8.7.0",
         "npm-check-updates": "^12.1.0",

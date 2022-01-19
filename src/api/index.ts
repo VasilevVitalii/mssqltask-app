@@ -1,7 +1,7 @@
 import path from 'path'
 import * as vv from 'vv-common'
 import { env } from './../app'
-import { Create as CreateHttpGate, TRequest } from 'vv-httpgate'
+import { Create as CreateHttpGate, TRequest, HelperContent } from 'vv-httpgate'
 import * as apiSecurity from './security'
 import * as apiEdit from './edit'
 import * as apiTestConnection from './connection'
@@ -46,9 +46,15 @@ export type TReply = {error?: string} & (
     TReplyHistoryTaskLog | TReplyHistoryTaskLogTickets | TReplyHistoryTaskLogFileDownload
     )
 export type TReplyBox = {statusCode: number, reply: TReply}
+type TUiCache = {path: string, data: any, errorRead: string, contentType: string}
 
 export function Go() {
     if (!env.options.manage.allowApi) return
+
+    let uiCache: TUiCache[] = undefined
+    if (env.options.manage.allowUi) {
+        loadUiToCache(result => { uiCache = result })
+    }
 
     const httpGate = CreateHttpGate({url: env.options.manage.http})
     httpGate.onError(error => {
@@ -58,12 +64,28 @@ export function Go() {
         const traceKey = env.options.log.allowTrace === true ? vv.guid().replace(/-/g,'').concat(vv.dateFormat(new Date(), 'ssmsec')) : ''
 
         if (request.method === 'GET') {
-            vv.dir(path.join('..', __dirname), {deep: 3, mode: 'all'}, (error, result) => {
-                result.forEach(r => {
-                    console.log(`${r.path} -> ${r.file}`)
-                })
-            })
-            //console.log('not yet')
+            if (!env.options.manage.allowUi) {
+                request.reply(500, `ui disabled`)
+                return
+            }
+            if (!uiCache) {
+                request.reply(500, `ui not loaded yet, please try again later`)
+                return
+            }
+            const fndPath = request.path === '/' ? '/index.html' : request.path
+            const fnd = uiCache.find(f => vv.equal(f.path, fndPath))
+            if (!fnd) {
+                request.reply(500, `resource "${request.path}" not found`)
+                return
+            }
+            if (fnd.errorRead) {
+                request.reply(500, `resource "${request.path}" loaded with error`)
+                return
+            }
+            if (fnd.contentType) {
+                request.replySetHeader('Content-Type', fnd.contentType)
+            }
+            request.reply(200, fnd.data)
             return
         }
         if (request.method === 'POST') {
@@ -203,7 +225,7 @@ export function Go() {
     })
     httpGate.start(addr => {
         if (addr) {
-            env.logger.debugExt('api', `start at http://${addr.url}:${addr.port}`)
+            env.logger.debugExt('api', `start at http://${addr.url}:${addr.port} (ui ${env.options.manage.allowUi ? 'enabled' : 'disabled'})` )
         }
     })
 }
@@ -248,3 +270,37 @@ function sendReplyFile(request: TRequest, traceKey: string, fullFileName: string
     })
 }
 
+function loadUiToCache(callback: (uiCache: TUiCache[]) => void) {
+    const p = path.join(__dirname, '..', 'ui')
+    vv.dir(p, {mode: 'files'}, (error, result) => {
+        if (error) {
+            env.logger.errorExt('api', `in load ui tp cache "${error.message}"`)
+            callback([])
+            return
+        }
+        vv.readFiles(result.map(m => { return path.join(m.path, m.file) }), {encoding: 'base64'}, files => {
+            const result: TUiCache[] = files.map(m => {return {
+                path: m.fullFileName.substring(p.length, m.fullFileName.length).replace(/\\/g, '/'),
+                data: m.data,
+                errorRead: m.errorRead,
+                contentType: undefined
+            }})
+            result.forEach(r => {
+                if (r.errorRead) {
+                    env.logger.errorExt('api', `in load file "${r.path}" = "${r.errorRead}"`)
+                    return
+                }
+                const content = HelperContent(r.data, path.parse(r.path).ext)
+                if (!content) {
+                    const errorContent = `unknown content for "${r.path}"`
+                    r.errorRead = errorContent
+                    env.logger.errorExt('api', errorContent)
+                    return
+                }
+                r.data = content.content
+                r.contentType = content.type
+            })
+            callback(result)
+        })
+    })
+}

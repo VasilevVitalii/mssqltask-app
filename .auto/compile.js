@@ -9,8 +9,14 @@ const vv = require('vv-common')
 
 //build ui
 fs.emptyDirSync(s.dirDistUi())
+
+const coreRestFullFileName = path.join(s.dirRootUi(), 'src', 'core', 'rest.ts')
+const coreRestText = fs.readFileSync(coreRestFullFileName, 'utf8')
+fs.writeFileSync(coreRestFullFileName, coreRestText.replace(`const replaceInCompileUrl = "http://localhost:3000"`, `const replaceInCompileUrl = window.location.protocol + '//' + window.location.host`) )
+
 execSync(`npm rebuild`, {cwd: s.dirRootUi() })
 execSync(`npm run build`, {cwd: s.dirRootUi() })
+fs.writeFileSync(coreRestFullFileName, coreRestText)
 
 //build backend
 fs.emptyDirSync(s.dirDist())
@@ -30,6 +36,7 @@ const icoFile = path.join(s.dirArtifacts(), 'logo.ico')
 const pjFile = path.join(s.dirDist(), 'package.json')
 const pj = vv.PackajeJsonParse(fs.readFileSync(pjFile, 'utf8'))
 const pjver = pj.version.split('.').map(m => { return parseInt(m) })
+
 
 let data = fs.readFileSync(exeFileWin)
 let exe = ResEdit.NtExecutable.from(data)

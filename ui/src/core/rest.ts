@@ -79,8 +79,12 @@ let timer = setTimeout(async function tick() {
 export function sendCore(data: TPost, callback: (error: Error | undefined, response: TResponse | undefined, headers: AxiosRequestHeaders | undefined) => void) {
     ;(data as any).token = StateToken.token.toString()
 
+    const replaceInCompileUrl = "http://localhost:3000"
+    //replaced by
+    //  window.location.protocol + '//' + window.location.host
+
     axios({
-        url: "http://localhost:3000",
+        url: replaceInCompileUrl,
         method: "POST",
         headers: { "Content-Type": "application/json; charset=UTF-8" },
         data: JSON.stringify(data),

@@ -1,6 +1,6 @@
 {
     "name": "mssqltask-app",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "description": "Tasks for many Microsoft SQL Servers",
     "main": "dist/src/index.js",
     "bin": "dist/src/index.js",
@@ -8,7 +8,7 @@
         "test": "node ./dist/test/index.js",
         "update": "npx npm-check-updates -u && npm i && npm audit fix && node ./node_modules/vv-template-nodebackend/index.js",
         "build": "tsc",
-        "compile": "tsc && npm rebuild && node ./.auto/compile.before.js && pkg . --out-path compile --compress GZip &&  node ./.auto/compile.after.js",
+        "compile": "node ./.auto/compile.js",
         "precommit": "node ./.auto/precommit.js"
     },
     "pkg": {
@@ -41,7 +41,7 @@
     },
     "homepage": "https://github.com/VasilevVitalii/mssqltask-app#readme",
     "devDependencies": {
-        "@types/node": "^17.0.9",
+        "@types/node": "^17.0.10",
         "@typescript-eslint/eslint-plugin": "5.10.0",
         "@typescript-eslint/parser": "5.10.0",
         "adm-zip": "^0.5.9",
@@ -58,8 +58,8 @@
         "backdepot": "^0.1.2",
         "mssqldriver": "^0.0.11",
         "mssqltask": "^0.2.1",
-        "vv-common": "^0.1.0",
-        "vv-httpgate": "^0.0.8",
+        "vv-common": "^0.1.1",
+        "vv-httpgate": "^0.1.0",
         "vv-jwt": "^0.0.4",
         "vv-logger": "^0.1.0"
     }

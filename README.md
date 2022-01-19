@@ -2,11 +2,13 @@
 Many tasks for many Microsoft SQL Servers.
 Can save queries results to JSON files (for example, to collect various statistics).
 ## 1. getting started
-From https://drive.google.com/drive/folders/13qF-zbjZE8DPyhU5-tyyxaRlpdqWNPjF?usp=sharing download app for windows or linux.
+From https://drive.google.com/drive/folders/13qF-zbjZE8DPyhU5-tyyxaRlpdqWNPjF?usp=sharing download this compiled app for windows or linux.
 Unzip and run. After first start app will create setting file **mssqltask-app.json** and directories **data**, **log**, **result**.
 In directory **data** app will create examples:
 * connecting to the server
 * tasks
+
+Additionally, the program contains web ui for editing tasks and viewing their performance. The **manage** section in the setting file is intended for its settings.
 
 Change examples (app does not need to be restarted). The results of the exec tasks will be in the **results** directory.
 ## 2. how it works
@@ -28,11 +30,18 @@ Stored in **mssqltask-app.json**. Always near with app. Default setting:
     "task": {
         "maxThreads": 20,
         "path": "result"
+    },
+    "manage": {
+        "allowApi": false,
+        "allowUi": false,
+        "passwordEdit": "",
+        "passwordView": "",
+        "http": "http://localhost:3000"
     }
 }
 ```
 ### 3.2. tasks setting
-App watch files in two directories (you enter data into these directories outside of this app):
+App watch files in two directories (you can edit data into these directories outside of this app or through the web ui)
 #### 3.2.1. connection store
 First directory contains connections to MS SQL Servers. One file - one connection. Example file:
 ```json

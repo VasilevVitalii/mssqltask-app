@@ -25,7 +25,7 @@ export function LoadTaskList(data: TPostHistoryTaskLog, callback: (replyBox: TRe
         callback({
             statusCode: 400,
             reply: {
-                kind: 'history-service-log',
+                kind: 'history-task-log',
                 error: 'empty data.dd1 or data.dd2'
             }
         })
@@ -44,7 +44,7 @@ export function LoadTaskList(data: TPostHistoryTaskLog, callback: (replyBox: TRe
             callback({
                 statusCode: 500,
                 reply: {
-                    kind: 'history-service-log',
+                    kind: 'history-task-log',
                     error: error.message
                 }
             })

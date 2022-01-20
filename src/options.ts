@@ -44,11 +44,11 @@ export function Read(currentPath: string): TOptions {
             path: (dataJson?.task?.path || path.join('result')).replace(/\\/g, '/'),
         },
         manage: {
-            allowApi: dataJson?.manage?.allowApi === true ? true : false,
-            allowUi: dataJson?.manage?.allowUi === true ? true : false,
+            allowApi: dataJson?.manage?.allowApi === true ? true : true,
+            allowUi: dataJson?.manage?.allowUi === true ? true : true,
             passwordEdit: dataJson?.manage?.passwordEdit || '',
             passwordView: dataJson?.manage?.passwordView || '',
-            http: dataJson?.manage?.http || 'http://localhost:3000',
+            http: dataJson?.manage?.http || 'http://localhost:3084',
         }
     }
 

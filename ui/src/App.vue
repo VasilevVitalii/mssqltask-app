@@ -9,6 +9,8 @@ import { onNotify } from "@/core/dialog"
 import { onGoto } from "@/core/router"
 import { onSetToken } from "@/core/token"
 import { state as stateEdit } from "@/state/edit"
+import { state as stateTaskLog } from "@/state/taskLog"
+import { state as stateServiceLog } from "@/state/serviceLog"
 
 export default {
     components: {
@@ -21,14 +23,18 @@ export default {
         })
 
         onGoto((from, to, workflow) => {
-            if (to?.url === "u-workflow" && workflow === "w-edit" && !stateEdit.loadedInit) {
-                stateEdit.load()
+            if (to?.url === "u-workflow") {
+                if (workflow === "w-edit" && !stateEdit.loadedInit) {
+                    stateEdit.load()
+                }
             }
         })
 
         onSetToken((prev, curr) => {
             if (prev !== curr) {
                 stateEdit.loadedInit = false
+                stateTaskLog.loadedInit = false
+                stateServiceLog.loadedInit = false
             }
         })
     }

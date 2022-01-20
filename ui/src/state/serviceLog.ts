@@ -4,11 +4,7 @@ import { send } from "@/core/rest"
 import { TReplyHistoryServiceLog, TReplyHistoryServiceLogItem } from "./../../../src/api"
 import { TFileHistoryServiceLog } from "./../../../src/api/serviceLog"
 
-// export type TServiceDay = {
-//     state: TFileHistoryServiceLog
-// }
-
-export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryServiceLog[]) => void) {
+function Load(d1: Date, d2: Date, callback: (items: TFileHistoryServiceLog[]) => void) {
     send(
         {
             kind: "history-service-log",
@@ -25,7 +21,7 @@ export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryServiceLo
     )
 }
 
-export function LoadText(d: Date, kind: "error" | "debug" | "trace", callback: (text: string) => void) {
+function LoadText(d: Date, kind: "error" | "debug" | "trace", callback: (text: string) => void) {
     send(
         {
             kind: "history-service-log-item",
@@ -42,7 +38,7 @@ export function LoadText(d: Date, kind: "error" | "debug" | "trace", callback: (
     )
 }
 
-export function Download(d: Date, kind: "error" | "debug" | "trace", callback: (blob: Blob, filename: string) => void) {
+function Download(d: Date, kind: "error" | "debug" | "trace", callback: (blob: Blob, filename: string) => void) {
     send(
         {
             kind: "history-service-log-item-download",
@@ -67,11 +63,13 @@ export const state = reactive({
         text: "",
         kind: "error" as "error" | "debug" | "trace"
     },
-    load: function (d1: Date, d2: Date, callback?: () => void) {
+    load: function (callback?: () => void) {
         if (this.buzy) {
             if (callback) callback()
             return
         }
+        const d2 = new Date()
+        const d1 = vv.dateAdd(d2, "day", -30) as Date
         this.buzy = true
         this.text.item = undefined
         Load(d1, d2, days => {

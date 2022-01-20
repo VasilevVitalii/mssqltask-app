@@ -32,11 +32,11 @@ Stored in **mssqltask-app.json**. Always near with app. Default setting:
         "path": "result"
     },
     "manage": {
-        "allowApi": false,
-        "allowUi": false,
+        "allowApi": true,
+        "allowUi": true,
         "passwordEdit": "",
         "passwordView": "",
-        "http": "http://localhost:3000"
+        "http": "http://localhost:3084"
     }
 }
 ```

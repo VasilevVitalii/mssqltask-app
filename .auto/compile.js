@@ -12,7 +12,7 @@ fs.emptyDirSync(s.dirDistUi())
 
 const coreRestFullFileName = path.join(s.dirRootUi(), 'src', 'core', 'rest.ts')
 const coreRestText = fs.readFileSync(coreRestFullFileName, 'utf8')
-fs.writeFileSync(coreRestFullFileName, coreRestText.replace(`const replaceInCompileUrl = "http://localhost:3000"`, `const replaceInCompileUrl = window.location.protocol + '//' + window.location.host`) )
+fs.writeFileSync(coreRestFullFileName, coreRestText.replace(`const replaceInCompileUrl = "http://localhost:3084"`, `const replaceInCompileUrl = window.location.protocol + '//' + window.location.host`) )
 
 execSync(`npm rebuild`, {cwd: s.dirRootUi() })
 execSync(`npm run build`, {cwd: s.dirRootUi() })

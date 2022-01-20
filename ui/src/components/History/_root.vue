@@ -5,16 +5,16 @@
             <q-space />
             <q-btn-dropdown flat color="primary" :label="'show ' + pointEdit">
                 <q-list>
+                    <q-item clickable v-close-popup @click="pointEdit = 'task state'">
+                        <q-item-section>
+                            <q-item-label>task state</q-item-label>
+                        </q-item-section>
+                    </q-item>
                     <q-item clickable v-close-popup @click="pointEdit = 'task log'">
                         <q-item-section>
                             <q-item-label>task log</q-item-label>
                         </q-item-section>
                     </q-item>
-                    <!-- <q-item clickable v-close-popup @click="pointEdit = 'task performance'">
-                        <q-item-section>
-                            <q-item-label>task performance</q-item-label>
-                        </q-item-section>
-                    </q-item> -->
                     <q-item clickable v-close-popup @click="pointEdit = 'service log'">
                         <q-item-section>
                             <q-item-label>service log</q-item-label>
@@ -23,8 +23,8 @@
                 </q-list>
             </q-btn-dropdown>
         </q-toolbar>
+        <ComponentTaskState v-show="pointEdit === 'task state'" />
         <ComponentTaskLog v-show="pointEdit === 'task log'" />
-        <ComponentTaskPerformance v-show="pointEdit === 'task performance'" />
         <ComponentServiceLog v-show="pointEdit === 'service log'" />
     </div>
 </template>
@@ -32,7 +32,7 @@
 import { ref } from "vue"
 import ComponentServiceLog from "./serviceLog.vue"
 import ComponentTaskLog from "./taskLog.vue"
-import ComponentTaskPerformance from "./taskPerformance.vue"
+import ComponentTaskState from "./taskState.vue"
 
 import { state as serviceLogState } from "@/state/serviceLog"
 import { state as taskLogState } from "@/state/taskLog"
@@ -42,28 +42,22 @@ export default {
     components: {
         ComponentServiceLog,
         ComponentTaskLog,
-        ComponentTaskPerformance
+        ComponentTaskState
     },
     setup() {
-        let pointEdit = ref("task log")
+        let pointEdit = ref("task state")
 
         const load = () => {
-            if (pointEdit.value === "task log") {
-                const dd2 = new Date()
-                const dd1 = vv.dateAdd(dd2, "day", -30) as Date
-                taskLogState.load(dd1, dd2)
-            } else if (pointEdit.value === "task performance") {
-                console.log("under constraction")
+            if (pointEdit.value === "task log" || pointEdit.value === "task state") {
+                taskLogState.load()
             } else if (pointEdit.value === "service log") {
-                const dd2 = new Date()
-                const dd1 = vv.dateAdd(dd2, "day", -30) as Date
-                serviceLogState.load(dd1, dd2)
+                serviceLogState.load()
             }
         }
 
         const loadButtonName = (): string => {
             if (pointEdit.value === "service log" && !serviceLogState.loadedInit) return "load"
-            if (pointEdit.value === "task log" && !taskLogState.loadedInit) return "load"
+            if ((pointEdit.value === "task log" || pointEdit.value === "task state") && !taskLogState.loadedInit) return "load"
             return "reload"
         }
 

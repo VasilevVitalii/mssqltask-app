@@ -6,7 +6,7 @@ import { TFileHistoryTaskLog, TFileHistoryTaskLogTickets } from "./../../../src/
 
 type TTickets = TFileHistoryTaskLogTickets & { duration: number; durationText: string; countExecSuccess: number; countExecError: number; existsRow: boolean; existsMsg: boolean}
 
-export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryTaskLog[]) => void) {
+function Load(d1: Date, d2: Date, callback: (items: TFileHistoryTaskLog[]) => void) {
     send(
         {
             kind: "history-task-log",
@@ -23,7 +23,7 @@ export function Load(d1: Date, d2: Date, callback: (items: TFileHistoryTaskLog[]
     )
 }
 
-export function LoadTickets(task: string, d: Date, callback: (items: TFileHistoryTaskLogTickets[]) => void) {
+function LoadTickets(task: string, d: Date, callback: (items: TFileHistoryTaskLogTickets[]) => void) {
     send(
         {
             kind: "history-task-log-tickets",
@@ -50,16 +50,19 @@ export const state = reactive({
     loadedInit: false,
     buzy: false,
     tasks: [] as TFileHistoryTaskLog[],
+    dayTasks: [] as string[],
     tickets: {
         task: undefined as TFileHistoryTaskLog | undefined,
         d: undefined as Date | undefined,
         list: [] as TTickets[]
     },
-    load: function (d1: Date, d2: Date, callback?: () => void) {
+    load: function (callback?: () => void) {
         if (this.buzy) {
             if (callback) callback()
             return
         }
+        const d2 = new Date()
+        const d1 = vv.dateAdd(d2, "day", -30) as Date
         this.buzy = true
         this.tickets = {
             task: undefined,

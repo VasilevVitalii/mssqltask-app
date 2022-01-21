@@ -46,12 +46,12 @@
         "@typescript-eslint/parser": "5.10.0",
         "adm-zip": "^0.5.9",
         "eslint": "8.7.0",
-        "npm-check-updates": "^12.1.0",
+        "npm-check-updates": "^12.2.0",
         "pkg": "^5.5.2",
         "prettier": "2.5.1",
         "resedit": "^1.5.0",
         "ts-node": "10.4.0",
-        "typescript": "4.5.4",
+        "typescript": "4.5.5",
         "vv-template-nodebackend": "^0.0.14"
     },
     "dependencies": {
@@ -60,7 +60,7 @@
         "mssqltask": "^0.2.1",
         "vv-common": "^0.1.1",
         "vv-httpgate": "^0.1.0",
-        "vv-jwt": "^0.0.4",
+        "vv-jwt": "^0.0.5",
         "vv-logger": "^0.1.0"
     }
 }

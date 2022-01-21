@@ -1,12 +1,11 @@
 import { env } from './../app'
 import { Create as CreateHttpGate } from 'vv-httpgate'
 import * as onGet from './onGet'
+import * as onPost from './onPost'
 
 export function Go() {
     if (!env.options.manage.allowApi) return
-    if (env.options.manage.allowUi) {
-        onGet.Prepare()
-    }
+    if (env.options.manage.allowUi) onGet.Prepare()
 
     const httpGate = CreateHttpGate({url: env.options.manage.http})
 
@@ -20,7 +19,7 @@ export function Go() {
             return
         }
         if (request.method === 'POST') {
-            onGet.Handler(request)
+            onPost.Handler(request)
             return
         }
 

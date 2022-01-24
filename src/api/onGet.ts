@@ -11,7 +11,7 @@ export function Prepare() {
     const p = path.join(__dirname, '..', 'ui')
     vv.dir(p, {mode: 'files'}, (error, result) => {
         if (error) {
-            env.logger.errorExt('api', `in load ui tp cache "${error.message}"`)
+            env.logger.errorExt('api', `in load ui to cache "${error.message}"`)
             return
         }
         vv.readFiles(result.map(m => { return path.join(m.path, m.file) }), {encoding: 'base64'}, files => {

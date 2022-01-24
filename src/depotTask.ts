@@ -105,7 +105,7 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
         path: row.path,
         file: row.file,
         key: vv.nz(vv.toString(row.data?.key), '').trim(),
-        title: vv.nz(vv.toString(row.data?.key), '').trim(),
+        title: vv.nz(vv.toString(row.data?.title), '').trim(),
         metronom: metronom,
         queries: vv.toArray(row.data?.queries) || [],
         allowExec: vv.nz(vv.toBool(row.data?.allowExec), true),

@@ -1,0 +1,11 @@
+POST http://localhost:3000 HTTP/1.1
+content-type: application/json
+
+{
+    "kind": "historyTaskItemView",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJhZGRpdGlvbmFsIjp7ImFjY2Vzc0xldmVsIjoiZWRpdCJ9LCJpc3MiOiJtc3NxbHRhc2stYXBwIiwiaWF0IjoxNjQzMTAxOTM2NDk5LCJleHAiOjE2NDMxODgzMzY0OTl9.eV0PIZ6l8JtYhz+y/RDfH7fz1vUs1+Mcrqo07EwC1o8=",
+    "type": "ticket",
+    "pathTicket": "20211221/task3",
+    "fileTicket": "t.task3.20211221.174600048.json",
+    "serverIdxs": "000"
+}

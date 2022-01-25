@@ -12,7 +12,7 @@ export function OnPostHistoryServiceList(requestData: TPost, callback: (statusCo
         callback(400, 'empty d1 or d2')
         return
     }
-    const reply: TReplyHistoryServiceList = {items: []}
+    const reply: TReplyHistoryServiceList = {files: []}
 
     vv.dir(env.options.log.path, {deep: 1, mode: 'files'}, (error, files) => {
         if (error) {
@@ -30,11 +30,11 @@ export function OnPostHistoryServiceList(requestData: TPost, callback: (statusCo
 
             const filePrefix = (file.file.substring(0, 6) || '').toLowerCase() as 'error_' | 'debug_' | 'trace_'
             if (filePrefix === 'error_') {
-                reply.items.push({type: 'error', d: vv.dateFormat(fileDate, 'yyyymmdd'), fileName: file.file, size: file.fsstat.size})
+                reply.files.push({type: 'error', d: vv.dateFormat(fileDate, 'yyyymmdd'), file: file.file, size: file.fsstat.size})
             } else if (filePrefix === 'trace_') {
-                reply.items.push({type: 'trace', d: vv.dateFormat(fileDate, 'yyyymmdd'), fileName: file.file, size: file.fsstat.size})
+                reply.files.push({type: 'trace', d: vv.dateFormat(fileDate, 'yyyymmdd'), file: file.file, size: file.fsstat.size})
             } else if (filePrefix === 'debug_') {
-                reply.items.push({type: 'debug', d: vv.dateFormat(fileDate, 'yyyymmdd'), fileName: file.file, size: file.fsstat.size})
+                reply.files.push({type: 'debug', d: vv.dateFormat(fileDate, 'yyyymmdd'), file: file.file, size: file.fsstat.size})
             }
         })
 
@@ -44,10 +44,10 @@ export function OnPostHistoryServiceList(requestData: TPost, callback: (statusCo
 
 export function OnPostHistoryServiceItemView(requestData: TPost, callback: (statusCode: number, message: TReply | string) => void) {
     const rd = requestData as TPostHistoryServiceItemView
-    const fullFileName = path.join(env.options.log.path, rd.fileName)
+    const fullFileName = path.join(env.options.log.path, rd.file)
     fs.readFile(fullFileName, 'utf8', (error, data) => {
         if (error) {
-            callback(500, `error read file ${rd.fileName}`)
+            callback(500, `error read file ${rd.file}`)
             return
         }
         callback(200, {text: data} as TReplyHistoryServiceItemView)
@@ -56,6 +56,6 @@ export function OnPostHistoryServiceItemView(requestData: TPost, callback: (stat
 
 export function OnPostHistoryServiceItemDownload(requestData: TPost, callback: (fullFileName: string) => void) {
     const rd = requestData as TPostHistoryServiceItemDownload
-    const fullFileName = path.join(env.options.log.path, rd.fileName)
+    const fullFileName = path.join(env.options.log.path, rd.file)
     callback(fullFileName)
 }

@@ -1,0 +1,110 @@
+POST http://localhost:3000 HTTP/1.1
+content-type: application/json
+
+{
+    "kind": "depotSave",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJhZGRpdGlvbmFsIjp7ImFjY2Vzc0xldmVsIjoiZWRpdCJ9LCJpc3MiOiJtc3NxbHRhc2stYXBwIiwiaWF0IjoxNjQzMTAxOTM2NDk5LCJleHAiOjE2NDMxODgzMzY0OTl9.eV0PIZ6l8JtYhz+y/RDfH7fz1vUs1+Mcrqo07EwC1o8=",
+    "upsert": {
+        "mssqls": [
+            {
+            "path": "",
+            "file": "20211221174009626-0-7FE98372FB80E286D93B7DEC315ADD13.json",
+            "title": "local",
+            "instance": "./EXPRESS2017",
+            "login": "sa",
+            "tags": []
+            },
+            {
+            "path": "",
+            "file": "20211221174503100-0-B681B895EEF4ED304613DB8A517F698A.json",
+            "title": "unknown",
+            "instance": "unknown",
+            "login": "sasasa!",
+            "tags": []
+            }
+        ],
+        "tasks": [
+            {
+            "path": "",
+            "file": "20211221174503100-0-3F0882EAAAD18C8016CF318E29584699.json",
+            "key": "task1",
+            "title": "task1!!!",
+            "metronom": {
+                "kind": "custom",
+                "weekdaySun": true,
+                "weekdayMon": true,
+                "weekdayTue": true,
+                "weekdayWed": true,
+                "weekdayThu": true,
+                "weekdayFri": true,
+                "weekdaySat": true,
+                "periodMinutes": 2,
+                "periodicity": "every"
+            },
+            "queries": [
+                "SELECT * FROM sys.objects"
+            ],
+            "allowExec": true,
+            "allowRows": true,
+            "allowMessages": true,
+            "mssqls": {
+                "instances": [
+                "./EXPRESS2017",
+                "unknown"
+                ],
+                "tags": []
+            }
+            },
+            {
+            "path": "",
+            "file": "20211221174503100-1-2219A737BF3A289A4DCCE1C1107A343A.json",
+            "key": "task2",
+            "title": "task2",
+            "metronom": {
+                "kind": "cron",
+                "cron": "0 */1 * * * *"
+            },
+            "queries": [
+                "SELECT * FROM sys.objects",
+                "SELECT * FROM sys.syscolumns",
+                "PRINT 'HELLO FROM TASK1'"
+            ],
+            "allowExec": true,
+            "allowRows": true,
+            "allowMessages": true,
+            "mssqls": {
+                "instances": [
+                "./EXPRESS2017",
+                "unknown"
+                ],
+                "tags": []
+            }
+            },
+            {
+            "path": "",
+            "file": "20211221174503100-2-142CD7CFA09501A2D9F4DF884C658CE4.json",
+            "key": "task3",
+            "title": "task3",
+            "metronom": {
+                "kind": "cron",
+                "cron": "0 */1 * * * *"
+            },
+            "queries": [
+                "SELECT * FROM sys.objects\n",
+                "SELECT 1/0",
+                "SELECT * FROM sys.objects"
+            ],
+            "allowExec": true,
+            "allowRows": true,
+            "allowMessages": true,
+            "mssqls": {
+                "instances": [
+                "./EXPRESS2017",
+                "unknown"
+                ],
+                "tags": []
+            }
+            }
+        ]
+    }
+}

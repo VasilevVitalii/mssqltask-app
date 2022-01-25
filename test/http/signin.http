@@ -3,7 +3,5 @@ content-type: application/json
 
 {
     "kind": "signin",
-    "data": {
-        "password": "123"
-    }
+    "password": "456"
 }

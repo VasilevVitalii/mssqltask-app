@@ -8,7 +8,7 @@ import { TDepotMssql } from './../depotMssql'
 import { TDepotTask } from './../depotTask'
 import { OnPostDepotLoad, OnPostDepotSave } from './onPostDepot'
 import { OnPostHistoryServiceList, OnPostHistoryServiceItemDownload, OnPostHistoryServiceItemView } from './onPostHistoryService'
-import { OnPostHistoryTaskList } from './onPostHistoryTask'
+import { OnPostHistoryTaskList, OnPostHistoryTaskDay, OnPostHistoryTaskItemView, OnPostHistoryTaskItemDownload } from './onPostHistoryTask'
 
 export enum EPostKind {
     signin = 'signin',
@@ -19,6 +19,8 @@ export enum EPostKind {
     historyServiceItemDownload = 'historyServiceItemDownload',
     historyTaskList = 'historyTaskList',
     historyTaskDay = 'historyTaskDay',
+    historyTaskItemView = 'historyTaskItemView',
+    historyTaskItemDownload = 'historyTaskItemDownload',
     //historyTaskItemDownload = 'historyTaskItemDownload',
 }
 
@@ -35,21 +37,29 @@ export type TReplyDepotSave = TReplyDepotLoad
 
 export type THistoryServiceItemType = 'trace' | 'debug' | 'error'
 export type TPostHistoryServiceList = {kind: EPostKind.historyServiceList, token: string, d1: string, d2: string}
-export type TReplyHistoryServiceList = {items: {type: THistoryServiceItemType, d: string, fileName: string, size: number}[]}
+export type TReplyHistoryServiceList = {files: {type: THistoryServiceItemType, d: string, file: string, size: number}[]}
 
-export type TPostHistoryServiceItemView = {kind: EPostKind.historyServiceItemView, token: string, fileName: string }
+export type TPostHistoryServiceItemView = {kind: EPostKind.historyServiceItemView, token: string, file: string }
 export type TReplyHistoryServiceItemView = {text: string}
 
-export type TPostHistoryServiceItemDownload = {kind: EPostKind.historyServiceItemDownload, token: string, fileName: string }
+export type TPostHistoryServiceItemDownload = {kind: EPostKind.historyServiceItemDownload, token: string, file: string }
 
 export type TPostHistoryTaskList = {kind: EPostKind.historyTaskList, token: string, d1: string, d2: string }
-export type TReplyHistoryTaskList = {items: {d: string, task: string}[]}
+export type TReplyHistoryTaskList = {map: {d: string, task: string}[]}
 
 export type TPostHistoryTaskDay = {kind: EPostKind.historyTaskList, token: string, d: string, task: string }
-export type TReplyHistoryTaskDay = {items: {ticketFile: string, ticketData: TTicketResult}[]}
+export type TReplyHistoryTaskDay = {files: {path: string, file: string, data: TTicketResult}[]}
 
-export type TPost = TPostSignin | TPostDepotLoad | TPostDepotSave | TPostHistoryServiceList | TPostHistoryServiceItemView | TPostHistoryServiceItemDownload | TPostHistoryTaskList
-export type TReply = TReplySignin | TReplyDepotLoad | TReplyDepotSave | TReplyHistoryServiceList | TReplyHistoryServiceItemView | TReplyHistoryTaskList
+export type THistoryTaskItemType = 'ticket' | 'row' | 'msg'
+export type TPostHistoryTaskItemView = {kind: EPostKind.historyTaskItemView, token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
+export type TReplyHistoryTaskItemView = {text: string}
+
+export type TPostHistoryTaskItemDownload = {kind: EPostKind.historyTaskItemDownload, token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
+
+
+
+export type TPost = TPostSignin | TPostDepotLoad | TPostDepotSave | TPostHistoryServiceList | TPostHistoryServiceItemView | TPostHistoryServiceItemDownload | TPostHistoryTaskList | TPostHistoryTaskDay | TPostHistoryTaskItemView | TPostHistoryTaskItemDownload
+export type TReply = TReplySignin | TReplyDepotLoad | TReplyDepotSave | TReplyHistoryServiceList | TReplyHistoryServiceItemView | TReplyHistoryTaskList | TReplyHistoryTaskDay | TReplyHistoryTaskItemView
 
 const jwtManager = CreateJwtManager({
     secret: 'mssqltask-app-secret',
@@ -72,7 +82,9 @@ const handlerRules: THandlerRule[] = [
     {kind: EPostKind.historyServiceItemView, level: 'view', handler: OnPostHistoryServiceItemView, handlerDownload: undefined },
     {kind: EPostKind.historyServiceItemDownload, level: 'view', handler: undefined, handlerDownload: OnPostHistoryServiceItemDownload },
     {kind: EPostKind.historyTaskList, level: 'view', handler: OnPostHistoryTaskList, handlerDownload: undefined },
-    {kind: EPostKind.historyTaskDay, level: 'view', handler: undefined, handlerDownload: undefined },
+    {kind: EPostKind.historyTaskDay, level: 'view', handler: OnPostHistoryTaskDay, handlerDownload: undefined },
+    {kind: EPostKind.historyTaskItemView, level: 'view', handler: OnPostHistoryTaskItemView, handlerDownload: undefined },
+    {kind: EPostKind.historyTaskItemDownload, level: 'view', handler: undefined, handlerDownload: OnPostHistoryTaskItemDownload },
 ]
 
 export function Handler(request: TRequest) {
@@ -91,9 +103,9 @@ export function Handler(request: TRequest) {
         send(request, traceKey, 500, `unknown kind = ${requestData.kind}`)
         return
     }
-    const deny = checkToken(requestData, handlerRule.level)
-    if (deny) {
-        send(request, traceKey, 403, deny)
+    const denyText = checkToken(requestData, handlerRule.level)
+    if (denyText) {
+        send(request, traceKey, 403, denyText)
         return
     }
     if (!handlerRule.handler && !handlerRule.handlerDownload) {
@@ -143,7 +155,6 @@ function sendFile(request: TRequest, traceKey: string, fullFileName: string) {
         }
     })
 }
-
 
 function checkToken(post: TPost, needAccessLevel: TAccessLevel): string {
     if (!needAccessLevel) {

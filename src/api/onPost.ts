@@ -56,8 +56,6 @@ export type TReplyHistoryTaskItemView = {text: string}
 
 export type TPostHistoryTaskItemDownload = {kind: EPostKind.historyTaskItemDownload, token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
 
-
-
 export type TPost = TPostSignin | TPostDepotLoad | TPostDepotSave | TPostHistoryServiceList | TPostHistoryServiceItemView | TPostHistoryServiceItemDownload | TPostHistoryTaskList | TPostHistoryTaskDay | TPostHistoryTaskItemView | TPostHistoryTaskItemDownload
 export type TReply = TReplySignin | TReplyDepotLoad | TReplyDepotSave | TReplyHistoryServiceList | TReplyHistoryServiceItemView | TReplyHistoryTaskList | TReplyHistoryTaskDay | TReplyHistoryTaskItemView
 

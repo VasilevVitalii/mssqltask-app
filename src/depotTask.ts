@@ -7,8 +7,8 @@ import { TStateRow } from 'backdepot/dist/src/index.env'
 import { TUpsert } from './depot'
 
 export type TDepotTask = {
-    path: string,
-    file: string,
+    path: string | undefined,
+    file: string | undefined,
     key: string,
     title: string,
     metronom: TypeMetronom,
@@ -22,7 +22,7 @@ export type TDepotTask = {
     }
 }
 
-export function Load(depot: IApp, list: TDepotTask[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
+export function Load(depot: IApp, list: TDepotTask[], dataPath: string, callback: (error: Error | undefined, isCreateExample: boolean, countLoaded: number) => void) {
     depot.get.obtain([{state: 'task'}], (error, states) => {
         if (error) {
             callback(error, false, 0)
@@ -78,7 +78,7 @@ export function Upsert(rows: TStateRow[], action: string, list: TDepotTask[]): T
 }
 
 function getFromStorage(row: TypeStateRow): TDepotTask {
-    let metronom = undefined as TypeMetronom
+    let metronom: TypeMetronom | undefined = undefined
     if (row.data?.metronom?.kind === 'cron') {
         metronom = {
             kind: 'cron',
@@ -106,7 +106,7 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
         file: row.file,
         key: vv.nz(vv.toString(row.data?.key), '').trim(),
         title: vv.nz(vv.toString(row.data?.title), '').trim(),
-        metronom: metronom,
+        metronom: metronom as TypeMetronom,
         queries: vv.toArray(row.data?.queries) || [],
         allowExec: vv.nz(vv.toBool(row.data?.allowExec), true),
         allowRows: vv.nz(vv.toBool(row.data?.allowRows), true),

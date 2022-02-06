@@ -12,7 +12,7 @@ export type TMssqlTask = {
     usedWorkers: number,
     state: ('idle' | 'work' | 'stop'),
     needRemove: boolean,
-    shift: {task: TDepotTask, mssqls: TDepotMssql[]},
+    shift: {task: TDepotTask, mssqls: TDepotMssql[]} | undefined,
     sucessStory: ('full' | 'part' | 'none')[]
 }
 

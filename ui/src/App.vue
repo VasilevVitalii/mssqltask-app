@@ -1,20 +1,21 @@
 <template>
-    <Menu></Menu>
+    <MainMenu v-show="router.currentRoute.value.path !== '/'"></MainMenu>
     <router-view />
 </template>
 <script lang="ts">
-import Menu from "@/components/Menu.vue"
+import MainMenu from "@/components/MainMenu.vue"
 import { useQuasar } from "quasar"
 import { onNotify } from "@/core/dialog"
-import { onGoto } from "@/core/router"
-import { onSetToken } from "@/core/token"
-import { state as stateEdit } from "@/state/edit"
-import { state as stateTaskLog } from "@/state/taskLog"
-import { state as stateServiceLog } from "@/state/serviceLog"
+import * as route from "@/core/router"
+// import { onGoto } from "@/core/router"
+// import { onSetToken } from "@/core/token"
+// import { state as stateEdit } from "@/state/edit"
+// import { state as stateTaskLog } from "@/state/taskLog"
+// import { state as stateServiceLog } from "@/state/serviceLog"
 
 export default {
     components: {
-        Menu
+        MainMenu
     },
     setup() {
         const $q = useQuasar()
@@ -22,21 +23,31 @@ export default {
             $q.notify(notify)
         })
 
-        onGoto((from, to, workflow) => {
-            if (to?.url === "u-workflow") {
-                if (workflow === "w-edit" && !stateEdit.loadedInit) {
-                    stateEdit.load()
-                }
-            }
-        })
+        return {
+            router: route.router
+        }
 
-        onSetToken((prev, curr) => {
-            if (prev !== curr) {
-                stateEdit.loadedInit = false
-                stateTaskLog.loadedInit = false
-                stateServiceLog.loadedInit = false
-            }
-        })
+        // onGoto((from, to, workflow) => {
+        //     if (to?.url === "u-workflow") {
+        //         if (workflow === "w-edit" && !stateEdit.loadedInit) {
+        //             stateEdit.load()
+        //         }
+        //     }
+        // })
+
+        // onSetToken((prev, curr) => {
+        //     if (prev !== curr) {
+        //         stateEdit.loadedInit = false
+        //         stateTaskLog.loadedInit = false
+        //         stateServiceLog.loadedInit = false
+        //     }
+        // })
     }
 }
 </script>
+<style lang="sass">
+.bg-negative-light
+    background-color: #C1001510
+.bg-positive-light
+    background-color: #21BA4510
+</style>

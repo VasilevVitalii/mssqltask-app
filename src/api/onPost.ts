@@ -6,58 +6,48 @@ import { TTicketResult } from 'mssqltask'
 import { env } from './../app'
 import { TDepotMssql } from './../depotMssql'
 import { TDepotTask } from './../depotTask'
-import { OnPostDepotLoad, OnPostDepotSave } from './onPostDepot'
+import { OnPostDepotLoad, OnPostDepotSave, OnPostDepotTestConnection } from './onPostDepot'
 import { OnPostHistoryServiceList, OnPostHistoryServiceItemDownload, OnPostHistoryServiceItemView } from './onPostHistoryService'
 import { OnPostHistoryTaskList, OnPostHistoryTaskDay, OnPostHistoryTaskItemView, OnPostHistoryTaskItemDownload } from './onPostHistoryTask'
 
-export enum EPostKind {
-    signin = 'signin',
-    depotLoad = 'depotLoad',
-    depotSave = 'depotSave',
-    historyServiceList = 'historyServiceList',
-    historyServiceItemView = 'historyServiceItemView',
-    historyServiceItemDownload = 'historyServiceItemDownload',
-    historyTaskList = 'historyTaskList',
-    historyTaskDay = 'historyTaskDay',
-    historyTaskItemView = 'historyTaskItemView',
-    historyTaskItemDownload = 'historyTaskItemDownload',
-    //historyTaskItemDownload = 'historyTaskItemDownload',
-}
-
 export type TFileMode = 'view' | 'download'
 
-export type TPostSignin = {kind: EPostKind.signin, password: string}
+export type TPostSignin = {kind: 'signin', password: string}
 export type TReplySignin = {token: string}
 
-export type TPostDepotLoad = {kind: EPostKind.depotLoad, token: string}
+export type TPostDepotLoad = {kind: 'depotLoad', token: string}
 export type TReplyDepotLoad = {mssqls: TDepotMssql[], tasks: TDepotTask[]}
 
-export type TPostDepotSave = {kind: EPostKind.depotSave, token: string, delete: {mssqls: {path: string, file: string}[], tasks: {path: string, file: string}[]}, upsert: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
+export type TPostDepotSave = {kind: 'depotSave', token: string, delete: {mssqls: {path: string, file: string}[], tasks: {path: string, file: string}[]}, upsert: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}
 export type TReplyDepotSave = TReplyDepotLoad
 
+export type TPostDepotTestConnection = {kind: 'depotTestConnection', token: string, instance: string, login: string, password: string, passwordFromDepot?: {path: string , file: string}}
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export type TReplyDepotTestConnection = {instance: string, login: string, result: boolean, resultText: string}
+
 export type THistoryServiceItemType = 'trace' | 'debug' | 'error'
-export type TPostHistoryServiceList = {kind: EPostKind.historyServiceList, token: string, d1: string, d2: string}
+export type TPostHistoryServiceList = {kind: 'historyServiceList', token: string, d1: string, d2: string}
 export type TReplyHistoryServiceList = {files: {type: THistoryServiceItemType, d: string, file: string, size: number}[]}
 
-export type TPostHistoryServiceItemView = {kind: EPostKind.historyServiceItemView, token: string, file: string }
+export type TPostHistoryServiceItemView = {kind: 'historyServiceItemView', token: string, file: string }
 export type TReplyHistoryServiceItemView = {text: string}
 
-export type TPostHistoryServiceItemDownload = {kind: EPostKind.historyServiceItemDownload, token: string, file: string }
+export type TPostHistoryServiceItemDownload = {kind: 'historyServiceItemDownload', token: string, file: string }
 
-export type TPostHistoryTaskList = {kind: EPostKind.historyTaskList, token: string, d1: string, d2: string }
+export type TPostHistoryTaskList = {kind: 'historyTaskList', token: string, d1: string, d2: string }
 export type TReplyHistoryTaskList = {map: {d: string, task: string}[]}
 
-export type TPostHistoryTaskDay = {kind: EPostKind.historyTaskList, token: string, d: string, task: string }
+export type TPostHistoryTaskDay = {kind: 'historyTaskDay', token: string, d: string, task: string }
 export type TReplyHistoryTaskDay = {files: {path: string, file: string, data: TTicketResult}[]}
 
 export type THistoryTaskItemType = 'ticket' | 'row' | 'msg'
-export type TPostHistoryTaskItemView = {kind: EPostKind.historyTaskItemView, token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
+export type TPostHistoryTaskItemView = {kind: 'historyTaskItemView', token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
 export type TReplyHistoryTaskItemView = {text: string}
 
-export type TPostHistoryTaskItemDownload = {kind: EPostKind.historyTaskItemDownload, token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
+export type TPostHistoryTaskItemDownload = {kind: 'historyTaskItemDownload', token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
 
-export type TPost = TPostSignin | TPostDepotLoad | TPostDepotSave | TPostHistoryServiceList | TPostHistoryServiceItemView | TPostHistoryServiceItemDownload | TPostHistoryTaskList | TPostHistoryTaskDay | TPostHistoryTaskItemView | TPostHistoryTaskItemDownload
-export type TReply = TReplySignin | TReplyDepotLoad | TReplyDepotSave | TReplyHistoryServiceList | TReplyHistoryServiceItemView | TReplyHistoryTaskList | TReplyHistoryTaskDay | TReplyHistoryTaskItemView
+export type TPost = TPostSignin | TPostDepotLoad | TPostDepotSave | TPostDepotTestConnection | TPostHistoryServiceList | TPostHistoryServiceItemView | TPostHistoryServiceItemDownload | TPostHistoryTaskList | TPostHistoryTaskDay | TPostHistoryTaskItemView | TPostHistoryTaskItemDownload
+export type TReply = TReplySignin | TReplyDepotLoad | TReplyDepotSave | TReplyDepotTestConnection | TReplyHistoryServiceList | TReplyHistoryServiceItemView | TReplyHistoryTaskList | TReplyHistoryTaskDay | TReplyHistoryTaskItemView
 
 const jwtManager = CreateJwtManager({
     secret: 'mssqltask-app-secret',
@@ -67,22 +57,23 @@ const jwtManager = CreateJwtManager({
 
 type TAccessLevel = 'edit' | 'view'
 type THandlerRule = {
-    kind: EPostKind,
+    kind: string,
     level: TAccessLevel,
     handler: (requestData: TPost, callback: (statusCode: number, message: TReply | string) => void) => void,
     handlerDownload: (requestData: TPost, callback: (fillFileName: string) => void) => void,
 }
 const handlerRules: THandlerRule[] = [
-    {kind: EPostKind.signin, level: undefined, handler: onSignin, handlerDownload: undefined },
-    {kind: EPostKind.depotLoad, level: 'view', handler: OnPostDepotLoad, handlerDownload: undefined },
-    {kind: EPostKind.depotSave, level: 'edit', handler: OnPostDepotSave, handlerDownload: undefined },
-    {kind: EPostKind.historyServiceList, level: 'view', handler: OnPostHistoryServiceList, handlerDownload: undefined },
-    {kind: EPostKind.historyServiceItemView, level: 'view', handler: OnPostHistoryServiceItemView, handlerDownload: undefined },
-    {kind: EPostKind.historyServiceItemDownload, level: 'view', handler: undefined, handlerDownload: OnPostHistoryServiceItemDownload },
-    {kind: EPostKind.historyTaskList, level: 'view', handler: OnPostHistoryTaskList, handlerDownload: undefined },
-    {kind: EPostKind.historyTaskDay, level: 'view', handler: OnPostHistoryTaskDay, handlerDownload: undefined },
-    {kind: EPostKind.historyTaskItemView, level: 'view', handler: OnPostHistoryTaskItemView, handlerDownload: undefined },
-    {kind: EPostKind.historyTaskItemDownload, level: 'view', handler: undefined, handlerDownload: OnPostHistoryTaskItemDownload },
+    {kind: 'signin', level: undefined, handler: onSignin, handlerDownload: undefined },
+    {kind: 'depotLoad', level: 'view', handler: OnPostDepotLoad, handlerDownload: undefined },
+    {kind: 'depotSave', level: 'edit', handler: OnPostDepotSave, handlerDownload: undefined },
+    {kind: 'depotTestConnection', level: 'edit', handler: OnPostDepotTestConnection, handlerDownload: undefined },
+    {kind: 'historyServiceList', level: 'view', handler: OnPostHistoryServiceList, handlerDownload: undefined },
+    {kind: 'historyServiceItemView', level: 'view', handler: OnPostHistoryServiceItemView, handlerDownload: undefined },
+    {kind: 'historyServiceItemDownload', level: 'view', handler: undefined, handlerDownload: OnPostHistoryServiceItemDownload },
+    {kind: 'historyTaskList', level: 'view', handler: OnPostHistoryTaskList, handlerDownload: undefined },
+    {kind: 'historyTaskDay', level: 'view', handler: OnPostHistoryTaskDay, handlerDownload: undefined },
+    {kind: 'historyTaskItemView', level: 'view', handler: OnPostHistoryTaskItemView, handlerDownload: undefined },
+    {kind: 'historyTaskItemDownload', level: 'view', handler: undefined, handlerDownload: OnPostHistoryTaskItemDownload },
 ]
 
 export function Handler(request: TRequest) {

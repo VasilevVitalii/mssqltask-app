@@ -6,8 +6,8 @@ import { TStateRow } from 'backdepot/dist/src/index.env'
 import { TUpsert } from './depot'
 
 export type TDepotMssql = {
-    path: string,
-    file: string,
+    path: string | undefined,
+    file: string | undefined,
     title: string,
     instance: string,
     login: string,
@@ -15,7 +15,7 @@ export type TDepotMssql = {
     tags: string[]
 }
 
-export function Load(depot: IApp, list: TDepotMssql[], dataPath: string, callback: (error: Error, isCreateExample: boolean, countLoaded: number) => void) {
+export function Load(depot: IApp, list: TDepotMssql[], dataPath: string, callback: (error: Error | undefined, isCreateExample: boolean, countLoaded: number) => void) {
     depot.get.obtain([{state: 'mssql'}], (error, states) => {
         if (error) {
             callback(error, false, 0)

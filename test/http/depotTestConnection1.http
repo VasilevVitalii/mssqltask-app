@@ -1,0 +1,13 @@
+POST http://localhost:3084 HTTP/1.1
+content-type: application/json
+
+{
+    "kind": "depotTestConnection",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6Imp3dCJ9.eyJhZGRpdGlvbmFsIjp7ImFjY2Vzc0xldmVsIjoiZWRpdCJ9LCJpc3MiOiJtc3NxbHRhc2stYXBwIiwiaWF0IjoxNjQ0MTM0Nzg0MDk2LCJleHAiOjE2NDQyMjExODQwOTZ9.hOB3jeMWda1d/3l0j7FtfNvp9HyGxk3m/SUsVc5r2nY=",
+    "instance": "./EXPRESS2017",
+    "login": "sa",
+    "passwordFromDepot": {
+        "path": "",
+        "file": "20211221174009626-0-7FE98372FB80E286D93B7DEC315ADD13.json"
+    }
+}

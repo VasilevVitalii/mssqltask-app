@@ -1,5 +1,6 @@
 import * as vv from 'vv-common'
-import { TPost, TPostDepotSave, TReply, TReplyDepotLoad } from "./onPost"
+import { Create as CreateServer, IApp as mssqldriver } from 'mssqldriver'
+import { TPost, TPostDepotSave, TPostDepotTestConnection, TReply, TReplyDepotLoad, TReplyDepotTestConnection } from "./onPost"
 import { Load as LoadMssql, TDepotMssql } from '../depotMssql'
 import { Load as LoadTask, TDepotTask } from '../depotTask'
 import { env } from '../app'
@@ -37,6 +38,28 @@ export function OnPostDepotSave(requestData: TPost, callback: (statusCode: numbe
                 return
             }
             OnPostDepotLoad(requestData, callback)
+        })
+    })
+}
+
+export function OnPostDepotTestConnection(requestData: TPost, callback: (statusCode: number, message: TReply | string) => void) {
+    const rd = requestData as TPostDepotTestConnection
+
+    conn(rd, (error, mssqldriver) => {
+        if (error) {
+            callback(500, error.message)
+            return
+        }
+        if (!mssqldriver) {
+            callback(500, `no find server`)
+            return
+        }
+        mssqldriver.ping((error, info) => {
+            if (error) {
+                callback(200, {instance: rd.instance, login: rd.login, result: false, resultText: error.message} as TReplyDepotTestConnection)
+            } else {
+                callback(200, {instance: rd.instance, login: rd.login, result: true, resultText: `version=${info.version}; timezone=${info.timezone};duration=${info.duration}`} as TReplyDepotTestConnection)
+            }
         })
     })
 }
@@ -83,4 +106,32 @@ function ups(mssqls: TDepotMssql[], tasks: TDepotTask[], callback: (error: Error
             callback(error)
         })
     })
+}
+
+function conn (requestData: TPostDepotTestConnection, callback: (error: Error, driver: mssqldriver) => void) {
+    if (requestData.passwordFromDepot && requestData.passwordFromDepot.file) {
+        env.depot.app.get.obtain([{state: 'mssql', filterPath: requestData.passwordFromDepot.path, filterFile: requestData.passwordFromDepot.file}], (error, rows) => {
+            if (error) {
+                callback(error, undefined)
+                return
+            }
+            if (rows.length <= 0 || rows[0].rows.length <= 0) {
+                callback(undefined, undefined)
+                return
+            }
+            callback(undefined, CreateServer({
+                authentication: 'sqlserver',
+                instance: requestData.instance,
+                login: requestData.login,
+                password: (rows[0].rows[0].data as TDepotMssql).password
+            }))
+        })
+    } else {
+        callback(undefined, CreateServer({
+            authentication: 'sqlserver',
+            instance: requestData.instance,
+            login: requestData.login,
+            password: requestData.password
+        }))
+    }
 }

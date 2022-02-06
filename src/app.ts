@@ -45,6 +45,7 @@ export const env = {
 
 export function Go(currentPath: string) {
     env.options = options.Read(currentPath)
+
     env.logger = loggerManager.addLogger ({
         consoleLevel: env.options.log.allowTrace ? 'trace' : 'debug',
         transports: [

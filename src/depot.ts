@@ -13,7 +13,7 @@ export type TUpsert = {
 export function Go() {
     env.depot.app = DepotCreate({
         pathMap: 'MEMORY',
-        pathData: undefined,
+        pathData: '',
         states: [
             {name: 'mssql', pathData: env.options.data.pathMssql},
             {name: 'task', pathData: env.options.data.pathTask},

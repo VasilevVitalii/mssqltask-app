@@ -15,7 +15,8 @@
                     {name: 'key', label: 'uniq key', field: 'item.state.key', sortable: true, style: 'width: 200px', align: 'left'},
                     {name: 'allow', label: 'enabled, allow rows and messages', style: 'width: 200px', align: 'left'},
                     {name: 'schedule', label: 'schedule', field: 'item.state.metronom', style: 'width: 200px', align: 'left'},
-                    {name: 'queries', label: 'queries', field: 'item.state.queries', style: 'width: 100px', align: 'left'},
+                    {name: 'queries', label: 'queries', style: 'width: 100px', align: 'left'},
+                    {name: 'servers', label: 'servers', style: 'width: 100px', align: 'left'},
                 ]">
             <template v-slot:body="props">
                 <q-tr :props="props" :class="props.row.isDel ? 'bg-negative-light' : props.row.isNew || props.row.item.getUpdProps().length > 0 ? 'bg-positive-light' : undefined">
@@ -86,12 +87,36 @@
                             </q-btn-dropdown>
                         </div>
                     </q-td>
-                    <q-td key="schedule" :props="props">
-                        <q-btn-dropdown dense color="accent" flat label="edit">
-                            <div>
-                                <q-btn dense flat color="accent" size="sm" style="margin: 0px 0px 0px 5px" label="add"/>
+                    <q-td key="queries" :props="props">
+                        <q-btn-dropdown dense color="accent" flat label="edit" @before-show="onOpenQueries(props.row)">
+                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
+                                <div style="display: flex; height: 60px; overflow-y: hidden; align-items: center">
+                                    <q-btn dense flat color="accent" style="margin: 0px 0px 0px 5px; width: 100px" label="add query" @click="onAddQuery(props.row)"/>
+                                    <div v-for="(query, queryIdx) in props.row.item.state.queries" :key="queryIdx">
+                                        <q-chip clickable removable square color="primary" text-color="white" :outline="currentQueryIdx !== queryIdx" @remove="onDelQuery(props.row, queryIdx)" @click="onSelectQuery(queryIdx)">
+                                            query #{{queryIdx + 1}}
+                                        </q-chip>
+                                    </div>
+                                </div>
+                                <textarea
+                                    v-if="currentQueryIdx >= 0"
+                                    v-model="props.row.item.state.queries[currentQueryIdx]"
+                                    spellcheck="false"
+                                    style="
+                                        width: 100%;
+                                        height: calc(100% - 60px);
+                                        resize: none;
+                                        overflow-y: scroll;
+                                        overflow-x: scroll;
+                                        border: none;
+                                        outline: none;
+                                        white-space: nowrap;
+                                    " />
                             </div>
                         </q-btn-dropdown>
+                    </q-td>
+                    <q-td key="servers" :props="props">
+                        queries!!!
                     </q-td>
                 </q-tr>
             </template>
@@ -99,18 +124,46 @@
 </template>
 <script lang="ts">
 import { ref } from 'vue'
-import { state, TServer } from './state'
+import { state, TTask } from './state'
 import * as ve from "vv-entity"
 import * as env from '@/core/_env'
 
 export default {
     setup() {
+        let currentQueryIdx = ref(-1)
+
+        const onOpenQueries = (source: TTask) => {
+            console.log('hello')
+            currentQueryIdx.value = source.item.state.queries.length > 0 ? 0 : -1
+        }
+
+        const onSelectQuery = (idx: number) => {
+            currentQueryIdx.value = idx
+        }
+
+        const onAddQuery = (source: TTask) => {
+            console.log('hello2')
+            state.func.task.addQuery(source)
+            currentQueryIdx.value = source.item.state.queries.length - 1
+        }
+
+        const onDelQuery = (source: TTask, idx: number) => {
+            state.func.task.delQuery(source, idx)
+            onOpenQueries(source)
+        }
+
+
         return {
             state,
             env,
             pagination: ref({
                 rowsPerPage: 0
-            })
+            }),
+            currentQueryIdx,
+            onOpenQueries,
+            onSelectQuery,
+            onAddQuery,
+            onDelQuery
         }
     }
 }

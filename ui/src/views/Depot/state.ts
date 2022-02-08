@@ -178,6 +178,12 @@ export const state = reactive({
             undoDel(source: TTask) {
                 source.isDel = false
             },
+            addQuery(source: TTask) {
+                source.item.state.queries.push('')
+            },
+            delQuery(source: TTask, idx: number) {
+                source.item.state.queries.splice(idx, 1)
+            }
         },
 
     }

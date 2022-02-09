@@ -116,7 +116,37 @@
                         </q-btn-dropdown>
                     </q-td>
                     <q-td key="servers" :props="props">
-                        queries!!!
+                        <q-btn-dropdown dense color="accent" flat label="edit" @before-show="onOpenServers(props.row)">
+                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
+                                <q-btn-dropdown dense color="accent" flat :label="'SHOW '+ currentServers">
+                                    <q-list>
+                                        <q-item clickable v-close-popup @click="currentServers = 'tags'">
+                                        <q-item-section>
+                                            <q-item-label>TAGS</q-item-label>
+                                        </q-item-section>
+                                        </q-item>
+
+                                        <q-item clickable v-close-popup @click="currentServers = 'instances'">
+                                        <q-item-section>
+                                            <q-item-label>INSTANCES</q-item-label>
+                                        </q-item-section>
+                                        </q-item>
+                                    </q-list>
+                                </q-btn-dropdown>
+                                <div v-show="currentServers === 'tags'" style="display: flex">
+                                    <div style="width: 50%">
+                                        <div v-for="(tag, tagIdx) in listTags.filter(f => f.exists === false)" :key = "tagIdx">
+                                            {{tag.tag}}
+                                        </div>
+                                    </div>
+                                    <div style="width: 50%">
+                                        <div v-for="(tag, tagIdx) in listTags.filter(f => f.exists === true)" :key = "tagIdx">
+                                            {{tag.tag}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </q-btn-dropdown>
                     </q-td>
                 </q-tr>
             </template>
@@ -131,9 +161,12 @@ import * as env from '@/core/_env'
 export default {
     setup() {
         let currentQueryIdx = ref(-1)
+        let currentServers = ref('tags')
+        // 'instances'
+
+        let listTags = [] as {exists: boolean, tag: string, countInstances: number}[]
 
         const onOpenQueries = (source: TTask) => {
-            console.log('hello')
             currentQueryIdx.value = source.item.state.queries.length > 0 ? 0 : -1
         }
 
@@ -142,7 +175,6 @@ export default {
         }
 
         const onAddQuery = (source: TTask) => {
-            console.log('hello2')
             state.func.task.addQuery(source)
             currentQueryIdx.value = source.item.state.queries.length - 1
         }
@@ -152,6 +184,27 @@ export default {
             onOpenQueries(source)
         }
 
+        const onOpenServers = (source: TTask) => {
+            currentServers.value = 'tags'
+
+            state.data.servers.forEach(server => {
+                server.item.state.tags.forEach(tag => {
+                    const fnd = listTags.find(f => f.tag === tag)
+                    if (fnd) {
+                        fnd.countInstances++
+                    } else {
+                        listTags.push({tag: tag, countInstances: 1, exists: false})
+                    }
+                })
+            })
+
+            source.item.state.mssqls.tags.forEach(t => {
+                const fnd = listTags.find(f => f.tag === t)
+                if (fnd) fnd.exists = true
+            })
+
+            console.log(listTags)
+        }
 
         return {
             state,
@@ -160,10 +213,13 @@ export default {
                 rowsPerPage: 0
             }),
             currentQueryIdx,
+            currentServers,
+            listTags,
             onOpenQueries,
             onSelectQuery,
             onAddQuery,
-            onDelQuery
+            onDelQuery,
+            onOpenServers
         }
     }
 }

@@ -116,9 +116,12 @@
                         </q-btn-dropdown>
                     </q-td>
                     <q-td key="servers" :props="props">
-                        <q-btn-dropdown dense color="accent" flat label="edit" @before-show="onOpenServers(props.row)">
+                        <q-btn-dropdown dense color="accent" flat label="edit">
                             <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
-                                <q-btn-dropdown dense color="accent" flat :label="'SHOW '+ currentServers">
+                                <div v-for="(item, idxItem) in linkedItems(props.row)" :key="idxItem">
+                                    {{ item.title }}
+                                </div>
+                                <!-- <q-btn-dropdown dense color="accent" flat :label="'SHOW '+ currentServers">
                                     <q-list>
                                         <q-item clickable v-close-popup @click="currentServers = 'tags'">
                                         <q-item-section>
@@ -144,7 +147,7 @@
                                             {{tag.tag}}
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                             </div>
                         </q-btn-dropdown>
                     </q-td>
@@ -154,9 +157,10 @@
 </template>
 <script lang="ts">
 import { ref } from 'vue'
-import { state, TTask } from './state'
+import { state, TTask, TServer } from './state'
 import * as ve from "vv-entity"
 import * as env from '@/core/_env'
+import { equal } from 'vv-common'
 
 export default {
     setup() {
@@ -206,6 +210,45 @@ export default {
             console.log(listTags)
         }
 
+        const linkedItems = (source: TTask): {kind: 'tag' | 'instance', checked: boolean, key: string, title: string} [] => {
+            const res = [] as {kind: 'tag' | 'instance', checked: boolean, key: string, title: string} []
+
+            state.data.servers.forEach(server => {
+                if (!res.some(f => f.kind === 'instance' && equal(f.key, server.item.state.instance))) {
+                        const title1 = server.item.state.title && server.item.state.title !== server.item.state.instance ? `${server.item.state.title} - ${server.item.state.instance}` : `${server.item.state.instance}`
+                        const title2 = server.item.state.tags.length > 0 ? ` (in ${server.item.state.tags.length} tag(s))` : ''
+                        res.push({
+                            kind: 'instance',
+                            key: server.item.state.instance,
+                            title: `${title1}${title2}`,
+                            checked: false
+                        })
+                }
+                server.item.state.tags.forEach(tag => {
+                    if (!res.some(f => f.kind === 'tag' && equal(f.key, tag))) {
+                        const cntInstance = state.data.servers.filter(f => f.item.state.tags.some(ff => equal(ff, tag))).length
+                        const title1 = tag
+                        const title2 = cntInstance > 0 ? ` (has ${cntInstance} instance(s))` : ''
+
+                        res.push({kind: 'tag', key: tag,  title: `${title1}${title2}`, checked: false})
+                    }
+                })
+            })
+
+            res.filter(f => f.kind === 'instance' && source.item.state.mssqls.instances.some(ff => equal(ff, f.key))).forEach(item => item.checked = true)
+            res.filter(f => f.kind === 'tag' && source.item.state.mssqls.tags.some(ff => equal(ff, f.key))).forEach(item => item.checked = true)
+
+            res.sort((a, b) => {
+                if (a.kind === 'tag' && b.kind === 'instance') return -1
+                if (a.kind === 'instance' && b.kind === 'tag') return 1
+                if (a.checked && !b.checked) return -1
+                if (!a.checked && b.checked) return 1
+                return 0
+            })
+
+            return res
+        }
+
         return {
             state,
             env,
@@ -219,7 +262,8 @@ export default {
             onSelectQuery,
             onAddQuery,
             onDelQuery,
-            onOpenServers
+            onOpenServers,
+            linkedItems
         }
     }
 }

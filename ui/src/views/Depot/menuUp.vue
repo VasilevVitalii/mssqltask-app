@@ -3,7 +3,7 @@
         <q-btn dense color="accent" flat label="save tasks and servers"/>
         <q-separator style="margin: 10px 10px 10px 10px" vertical color="primary" />
         <div style="width: 150px">
-            <q-btn-dropdown dense color="accent" flat :label="'edit ' + state.data.viewBy + 's'">
+            <q-btn-dropdown dense color="accent" flat :label="'view ' + state.data.viewBy + 's'">
                 <q-list>
                     <q-item clickable v-close-popup @click="state.data.viewBy = 'task'">
                     <q-item-section>

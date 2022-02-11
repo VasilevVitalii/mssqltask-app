@@ -17,6 +17,7 @@
                     {name: 'schedule', label: 'schedule', field: 'item.state.metronom', style: 'width: 200px', align: 'left'},
                     {name: 'queries', label: 'queries', style: 'width: 100px', align: 'left'},
                     {name: 'servers', label: 'servers', style: 'width: 100px', align: 'left'},
+                    {name: 'actions', align: 'left', style: 'width: 200px'},
                 ]">
             <template v-slot:body="props">
                 <q-tr :props="props" :class="props.row.isDel ? 'bg-negative-light' : props.row.isNew || props.row.item.getUpdProps().length > 0 ? 'bg-positive-light' : undefined">
@@ -33,7 +34,7 @@
                     </q-td>
                     <q-td key="schedule" :props="props">
                         <div style="display: flex">
-                            <q-btn-dropdown dense color="accent" flat :label="props.row.item.state.metronom.kind">
+                            <q-btn-dropdown size="sm" dense color="accent" flat :label="props.row.item.state.metronom.kind">
                                 <q-list>
                                     <q-item clickable v-close-popup @click="props.row.item.state.metronom.kind = 'cron'">
                                     <q-item-section>
@@ -49,7 +50,7 @@
                                 </q-list>
                             </q-btn-dropdown>
                             <q-input v-show="props.row.item.state.metronom.kind === 'cron'" borderless placeholder="text cron" v-model="props.row.item.state.metronom.cron"/>
-                            <q-btn-dropdown dense color="accent" flat label="edit" v-show="props.row.item.state.metronom.kind === 'custom'">
+                            <q-btn-dropdown size="sm" dense color="accent" flat label="edit" v-show="props.row.item.state.metronom.kind === 'custom'">
                                 <div style="margin: 10px; display: grid">
                                     <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdaySun" label="sunday" style="margin: 0px 0px 0px 30px" />
                                     <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdayMon" label="monday" style="margin: 0px 0px 0px 30px" />
@@ -88,7 +89,7 @@
                         </div>
                     </q-td>
                     <q-td key="queries" :props="props">
-                        <q-btn-dropdown dense color="accent" flat label="edit" @before-show="onOpenQueries(props.row)">
+                        <q-btn-dropdown size="sm" dense color="accent" flat label="edit" @before-show="onOpenQueries(props.row)">
                             <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
                                 <div style="display: flex; height: 60px; overflow-y: hidden; align-items: center">
                                     <q-btn dense flat color="accent" style="margin: 0px 0px 0px 5px; width: 100px" label="add query" @click="onAddQuery(props.row)"/>
@@ -116,47 +117,34 @@
                         </q-btn-dropdown>
                     </q-td>
                     <q-td key="servers" :props="props">
-                        <q-btn-dropdown dense color="accent" flat label="edit">
-                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: hidden; overflow-x: hidden">
-                                <div v-for="(item, idxItem) in linkedItems(props.row)" :key="idxItem">
-                                    {{ item.title }}
+                        <q-btn-dropdown size="sm" dense color="accent" flat label="edit" @before-show="onOpenServers(props.row)">
+                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: scroll; overflow-x: hidden; display: flex; flex-flow: wrap; align-content: baseline">
+                                <div v-for="(item, idxItem) in linkedItems" :key="idxItem">
+                                    <q-chip square>
+                                        <q-avatar color="primary" text-color="white" :style="item.kind === 'tag' ? {width: '60px'} : {width: '90px'}">
+                                            <q-checkbox dense v-model="item.checked" :label="item.kind" color="primary" keep-color
+                                                @update:model-value="onCheckLinkedItems(props.row, item)"
+                                                />
+                                        </q-avatar>
+                                        {{ item.title }}
+                                    </q-chip>
                                 </div>
-                                <!-- <q-btn-dropdown dense color="accent" flat :label="'SHOW '+ currentServers">
-                                    <q-list>
-                                        <q-item clickable v-close-popup @click="currentServers = 'tags'">
-                                        <q-item-section>
-                                            <q-item-label>TAGS</q-item-label>
-                                        </q-item-section>
-                                        </q-item>
-
-                                        <q-item clickable v-close-popup @click="currentServers = 'instances'">
-                                        <q-item-section>
-                                            <q-item-label>INSTANCES</q-item-label>
-                                        </q-item-section>
-                                        </q-item>
-                                    </q-list>
-                                </q-btn-dropdown>
-                                <div v-show="currentServers === 'tags'" style="display: flex">
-                                    <div style="width: 50%">
-                                        <div v-for="(tag, tagIdx) in listTags.filter(f => f.exists === false)" :key = "tagIdx">
-                                            {{tag.tag}}
-                                        </div>
-                                    </div>
-                                    <div style="width: 50%">
-                                        <div v-for="(tag, tagIdx) in listTags.filter(f => f.exists === true)" :key = "tagIdx">
-                                            {{tag.tag}}
-                                        </div>
-                                    </div>
-                                </div> -->
                             </div>
                         </q-btn-dropdown>
+                    </q-td>
+                    <q-td key="actions" :props="props">
+                        <q-btn dense flat color="accent" size="sm" label="clone" @click="onAdd(props.row)" v-show="!props.row.isDel"/>
+                        <q-btn dense flat color="accent" size="sm" style="margin: 0px 0px 0px 5px" label="undo edit" @click="state.func.task.undoEdit(props.row)" v-show="!props.row.isNew && props.row.item.getUpdProps().length > 0"/>
+                        <q-btn dense flat color="accent" size="sm" style="margin: 0px 0px 0px 5px" label="undo add" @click="state.func.task.undoAdd(props.row)" v-show="!props.row.isDel && props.row.isNew"/>
+                        <q-btn dense flat color="accent" size="sm" style="margin: 0px 0px 0px 5px" label="undo delete" @click="state.func.task.undoDel(props.row)" v-show="props.row.isDel"/>
+                        <q-btn dense flat color="accent" size="sm" style="margin: 0px 0px 0px 5px" label="delete" @click="state.func.task.del(props.row)" v-show="!props.row.isDel && !props.row.isNew"/>
                     </q-td>
                 </q-tr>
             </template>
     </q-table>
 </template>
 <script lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { state, TTask, TServer } from './state'
 import * as ve from "vv-entity"
 import * as env from '@/core/_env'
@@ -164,11 +152,14 @@ import { equal } from 'vv-common'
 
 export default {
     setup() {
+        type TLinkedItem = {kind: 'tag' | 'instance', checked: boolean, key: string, title: string}
+        let linkedItems = ref([])
         let currentQueryIdx = ref(-1)
-        let currentServers = ref('tags')
-        // 'instances'
 
-        let listTags = [] as {exists: boolean, tag: string, countInstances: number}[]
+        const onAdd = (source: TTask) => {
+            state.func.task.add(source)
+            env.dialogNotify('info', 'new task added to the end of the list')
+        }
 
         const onOpenQueries = (source: TTask) => {
             currentQueryIdx.value = source.item.state.queries.length > 0 ? 0 : -1
@@ -189,29 +180,7 @@ export default {
         }
 
         const onOpenServers = (source: TTask) => {
-            currentServers.value = 'tags'
-
-            state.data.servers.forEach(server => {
-                server.item.state.tags.forEach(tag => {
-                    const fnd = listTags.find(f => f.tag === tag)
-                    if (fnd) {
-                        fnd.countInstances++
-                    } else {
-                        listTags.push({tag: tag, countInstances: 1, exists: false})
-                    }
-                })
-            })
-
-            source.item.state.mssqls.tags.forEach(t => {
-                const fnd = listTags.find(f => f.tag === t)
-                if (fnd) fnd.exists = true
-            })
-
-            console.log(listTags)
-        }
-
-        const linkedItems = (source: TTask): {kind: 'tag' | 'instance', checked: boolean, key: string, title: string} [] => {
-            const res = [] as {kind: 'tag' | 'instance', checked: boolean, key: string, title: string} []
+            const res = [] as TLinkedItem []
 
             state.data.servers.forEach(server => {
                 if (!res.some(f => f.kind === 'instance' && equal(f.key, server.item.state.instance))) {
@@ -246,7 +215,19 @@ export default {
                 return 0
             })
 
-            return res
+            linkedItems.value = res as never[]
+        }
+
+        const onCheckLinkedItems = (source: TTask, item: TLinkedItem) => {
+            if (item.checked && item.kind === 'tag') {
+                state.func.task.addMssqlsTag(source, item.key)
+            } else if (item.checked && item.kind === 'instance') {
+                state.func.task.addMssqlsInstance(source, item.key)
+            } else if (!item.checked && item.kind === 'tag') {
+                state.func.task.delMssqlsTag(source, item.key)
+            } else if (!item.checked && item.kind === 'instance') {
+                state.func.task.delMssqlsInstance(source, item.key)
+            }
         }
 
         return {
@@ -256,14 +237,14 @@ export default {
                 rowsPerPage: 0
             }),
             currentQueryIdx,
-            currentServers,
-            listTags,
+            linkedItems,
+            onAdd,
             onOpenQueries,
             onSelectQuery,
             onAddQuery,
             onDelQuery,
             onOpenServers,
-            linkedItems
+            onCheckLinkedItems
         }
     }
 }

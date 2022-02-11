@@ -183,6 +183,20 @@ export const state = reactive({
             },
             delQuery(source: TTask, idx: number) {
                 source.item.state.queries.splice(idx, 1)
+            },
+            addMssqlsTag(source: TTask, tag: string) {
+                if (source.item.state.mssqls.tags.some(f => vv.equal(f, tag))) return
+                source.item.state.mssqls.tags.push(tag)
+            },
+            delMssqlsTag(source: TTask, tag: string) {
+                source.item.state.mssqls.tags = source.item.state.mssqls.tags.filter(f => !vv.equal(f, tag))
+            },
+            addMssqlsInstance(source: TTask, instance: string) {
+                if (source.item.state.mssqls.instances.some(f => vv.equal(f, instance))) return
+                source.item.state.mssqls.instances.push(instance)
+            },
+            delMssqlsInstance(source: TTask, instance: string) {
+                source.item.state.mssqls.instances = source.item.state.mssqls.instances.filter(f => !vv.equal(f, instance))
             }
         },
 

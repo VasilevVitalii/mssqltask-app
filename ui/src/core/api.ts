@@ -1,6 +1,8 @@
 import { THistoryTaskItemType, TPostDepotLoad, TPostDepotSave, TPostHistoryServiceItemDownload, TPostHistoryServiceItemView, TPostHistoryServiceList, TReplyDepotLoad, TReplyDepotSave, TReplyDepotTestConnection, TReplyHistoryServiceItemView, TReplyHistoryServiceList, TReplyHistoryTaskDay, TReplyHistoryTaskItemView, TReplyHistoryTaskList } from '../../../src/api/onPost'
 import { send as sendToBackend } from './axios'
 import * as vv from "vv-common"
+import { TDepotMssql } from '../../../src/depotMssql'
+import { TDepotTask } from '../../../src/depotTask'
 
 export default {
     depotLoad: (callback: (result: TReplyDepotLoad | undefined) => void ) => {
@@ -8,8 +10,8 @@ export default {
             callback(result ? result as TReplyDepotLoad : undefined)
         })
     },
-    depotSave: (options: TPostDepotSave & {token?: string, kind?: string}, callback: (result: TReplyDepotSave | undefined) => void ) => {
-        sendToBackend({...options, kind: 'depotSave'}, result => {
+    depotSave: (options: {delete: {mssqls: {path: string, file: string}[], tasks: {path: string, file: string}[]}, upsert: {mssqls: TDepotMssql[], tasks: TDepotTask[]}}, callback: (result: TReplyDepotSave | undefined) => void ) => {
+        sendToBackend({kind: 'depotSave', token: '', ...options, }, result => {
             callback(result ? result as TReplyDepotSave : undefined)
         })
     },

@@ -1,6 +1,6 @@
 <template>
     <q-toolbar style="height: 50px">
-        <q-btn dense color="accent" flat label="save tasks and servers"/>
+        <q-btn dense color="accent" flat label="save tasks and servers" @click="onSave()"/>
         <q-separator style="margin: 10px 10px 10px 10px" vertical color="primary" />
         <div style="width: 150px">
             <q-btn-dropdown dense color="accent" flat :label="'view ' + state.data.viewBy + 's'">
@@ -60,11 +60,22 @@ export default {
             }
         }
 
+        const onSave = () => {
+            state.func.save(needSave => {
+                if (needSave === false) {
+                    env.dialogNotify('warn', 'no changes')
+                } else if (needSave === true) {
+                    env.dialogNotify('warn', 'changes saved')
+                }
+            })
+        }
+
         return {
             state,
             env,
             onAdd,
-            onUndo
+            onUndo,
+            onSave
         }
     }
 }

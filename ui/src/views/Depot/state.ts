@@ -4,6 +4,7 @@ import * as env from "@/core/_env"
 import * as ve from "vv-entity"
 import { TDepotMssql } from "../../../../src/depotMssql"
 import { TDepotTask } from "../../../../src/depotTask"
+import { TReplyDepotLoad } from "../../../../src/api/onPost"
 
 export type TServer = {
     idx: number
@@ -54,6 +55,32 @@ const emptyTask: TDepotTask = {
 const factoryServer = ve.CreateFactory(emptyServer, [{prop: 'path', func: () => ''}, {prop: 'file', func: () => ''}])
 const factoryTask = ve.CreateFactory(emptyTask)
 
+const list = (data: TReplyDepotLoad | undefined): {servers: TServer[], tasks: TTask[]} => {
+    return {
+        servers: (data?.mssqls || []).map((m,i) => {
+            return {
+                idx: i,
+                isNew: false,
+                isDel: false,
+                buzyTestConnection: false,
+                lastTestConnectionResult: undefined,
+                lastTestConnectionMessage: undefined,
+                item: factoryServer.create(m)
+            }
+        }),
+        tasks: (data?.tasks || []).map((m,i) => {
+            return {
+                idx: i,
+                isNew: false,
+                isDel: false,
+                buzyTestConnection: false,
+                lastTestConnectionSuccess: undefined,
+                item: factoryTask.create(m)
+            }
+        })
+    }
+}
+
 export const state = reactive({
     data: {
         buzy: false,
@@ -70,30 +97,44 @@ export const state = reactive({
             }
             state.data.buzy = true
             env.api.depotLoad(result => {
-                state.data.servers = (result?.mssqls || []).map((m,i) => {
-                    return {
-                        idx: i,
-                        isNew: false,
-                        isDel: false,
-                        buzyTestConnection: false,
-                        lastTestConnectionResult: undefined,
-                        lastTestConnectionMessage: undefined,
-                        item: factoryServer.create(m)
-                    }
-                })
-                state.data.tasks = (result?.tasks || []).map((m,i) => {
-                    return {
-                        idx: i,
-                        isNew: false,
-                        isDel: false,
-                        buzyTestConnection: false,
-                        lastTestConnectionSuccess: undefined,
-                        item: factoryTask.create(m)
-                    }
-                })
+
+                const d = list(result)
+                state.data.servers = d.servers
+                state.data.tasks = d.tasks
+
                 if (result) state.data.countLoad++
                 state.data.buzy = false
                 if (callback) callback()
+            })
+        },
+        save: (callback?: (needSave?: boolean) => void) => {
+            if (state.data.buzy) {
+                if (callback) callback()
+                return
+            }
+            state.data.buzy = true
+
+            const forDelete = {
+                mssqls: state.data.servers.filter(f => f.isDel && f.item.state.path).map(m => { return {path: m.item.state.path || '', file: m.item.state.file || ''} }),
+                tasks: state.data.tasks.filter(f => f.isDel && f.item.state.path).map(m => { return {path: m.item.state.path || '', file: m.item.state.file || ''} })
+            }
+            const forUpsert = {
+                mssqls: state.data.servers.filter(f => f.isNew || f.item.getUpdProps().length > 0).map(m => { return m.item.state }),
+                tasks: state.data.tasks.filter(f => f.isNew || f.item.getUpdProps().length > 0).map(m => { return m.item.state }),
+            }
+
+            if (forDelete.mssqls.length <= 0 && forDelete.tasks.length <= 0 && forUpsert.mssqls.length <= 0 && forUpsert.tasks.length <= 0) {
+                if (callback) callback(false)
+                return
+            }
+            env.api.depotSave({delete: forDelete, upsert: forUpsert}, result => {
+                const d = list(result)
+                state.data.servers = d.servers
+                state.data.tasks = d.tasks
+
+                if (result) state.data.countLoad++
+                state.data.buzy = false
+                if (callback) callback(true)
             })
         },
         server: {

@@ -9,7 +9,7 @@
                 :rows-per-page-options="[0]"
                 :virtual-scroll-sticky-size-start="48"
                 row-key="idx"
-                :rows="state.data.servers"
+                :rows="list()"
                 :columns="[
                     {name: 'title', label: 'title', field: 'item.state.title', sortable: true, style: 'width: 200px', align: 'left'},
                     {name: 'instance', label: 'instance', field: 'item.state.instance', sortable: true, style: 'width: 200px', align: 'left'},
@@ -75,6 +75,17 @@ import * as env from '@/core/_env'
 
 export default {
     setup() {
+
+        const list = () => {
+            if (!state.data.serverFilter) return state.data.servers
+            const sf = state.data.serverFilter.toLowerCase()
+            return state.data.servers.filter(f =>
+                (f.item.state.title && f.item.state.title.toLowerCase().indexOf(sf) >= 0) ||
+                (f.item.state.instance && f.item.state.instance.toLowerCase().indexOf(sf) >= 0) ||
+                (f.item.state.tags.some(ff => ff.indexOf(sf) >= 0))
+            )
+        }
+
         const onAdd = (source: TServer) => {
             state.func.server.add(source)
             env.dialogNotify('info', 'new server added to the end of the list')
@@ -121,6 +132,7 @@ export default {
             pagination: ref({
                 rowsPerPage: 0
             }),
+            list,
             onAdd,
             onPassword,
             widthTag,

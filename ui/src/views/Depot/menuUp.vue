@@ -25,6 +25,20 @@
         <div>
             <q-btn color="accent" dense flat :label="'undo all changes in ' + state.data.viewBy + 's'" @click="onUndo()"/>
         </div>
+        <q-separator style="margin: 10px 10px 10px 10px" vertical color="primary" />
+        <q-input borderless v-model="state.data.taskFilter" v-show="state.data.viewBy === 'task'" placeholder="filter by title and key" input-style="min-width: 200px">
+            <template v-slot:prepend>
+                <q-icon v-if="state.data.taskFilter === ''" name="search" />
+                <q-icon v-else name="clear" class="cursor-pointer" @click="state.data.taskFilter = ''" />
+            </template>
+        </q-input>
+        <q-input borderless v-model="state.data.serverFilter" v-show="state.data.viewBy === 'server'" placeholder="filter by title, instance and tags" input-style="min-width: 200px">
+            <template v-slot:prepend>
+                <q-icon v-if="state.data.serverFilter === ''" name="search" />
+                <q-icon v-else name="clear" class="cursor-pointer" @click="state.data.serverFilter = ''" />
+            </template>
+        </q-input>
+
     </q-toolbar>
 </template>
 <script lang="ts">
@@ -65,7 +79,7 @@ export default {
                 if (needSave === false) {
                     env.dialogNotify('warn', 'no changes')
                 } else if (needSave === true) {
-                    env.dialogNotify('warn', 'changes saved')
+                    env.dialogNotify('info', 'changes saved')
                 }
             })
         }

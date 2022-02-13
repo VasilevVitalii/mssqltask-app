@@ -2,7 +2,7 @@
     <ComponentBuzy v-show="state.data.buzy" />
     <div v-show="!state.data.buzy">
         <div style="display: flex">
-            <div style="overflow-y: scroll; height: calc(100vh - 50px - 30px - 20px); width: 330px; margin: 10px 0px 10px 0px">
+            <div style="overflow-y: scroll; overflow-x: hidden; height: calc(100vh - 50px - 30px - 20px); width: 330px; margin: 10px 0px 10px 0px">
                 <ComponentMenuLeft />
             </div>
             <textarea v-if="state.data.view"

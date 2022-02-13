@@ -88,6 +88,9 @@ export const state = reactive({
         viewBy: "task",
         servers: [] as TServer[],
         tasks: [] as TTask[],
+        serverFilter: '',
+        taskFilter: '',
+        taskLinkFilter: ''
     },
     func: {
         load: (callback?: () => void) => {

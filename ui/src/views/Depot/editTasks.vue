@@ -9,7 +9,7 @@
                 :rows-per-page-options="[0]"
                 :virtual-scroll-sticky-size-start="48"
                 row-key="idx"
-                :rows="state.data.tasks"
+                :rows="list()"
                 :columns="[
                     {name: 'title', label: 'title', field: 'item.state.title', sortable: true, style: 'width: 200px', align: 'left'},
                     {name: 'key', label: 'uniq key', field: 'item.state.key', sortable: true, style: 'width: 200px', align: 'left'},
@@ -118,17 +118,28 @@
                     </q-td>
                     <q-td key="servers" :props="props">
                         <q-btn-dropdown size="sm" dense color="accent" flat label="edit" @before-show="onOpenServers(props.row)">
-                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: scroll; overflow-x: hidden; display: flex; flex-flow: wrap; align-content: baseline">
-                                <div v-for="(item, idxItem) in linkedItems" :key="idxItem">
-                                    <q-chip square>
-                                        <q-avatar color="primary" text-color="white" :style="item.kind === 'tag' ? {width: '60px'} : {width: '90px'}">
-                                            <q-checkbox dense v-model="item.checked" :label="item.kind" color="primary" keep-color
-                                                @update:model-value="onCheckLinkedItems(props.row, item)"
-                                                />
-                                        </q-avatar>
-                                        {{ item.title }}
-                                    </q-chip>
+                            <div style="width: calc(100vw / 2); height: calc(100vh / 2); overflow-y: scroll; overflow-x: hidden">
+
+                                <q-input borderless v-model="state.data.taskLinkFilter" placeholder="filter" style="width: 100%; margin: 10px">
+                                    <template v-slot:prepend>
+                                        <q-icon v-if="state.data.taskLinkFilter === ''" name="search" />
+                                        <q-icon v-else name="clear" class="cursor-pointer" @click="state.data.taskLinkFilter = ''" />
+                                    </template>
+                                </q-input>
+
+                                <div style="display: flex; flex-flow: wrap; align-content: baseline">
+                                    <div v-for="(item, idxItem) in linkedItems" :key="idxItem">
+                                        <q-chip square v-show="showLinkedItem(item)">
+                                            <q-avatar color="primary" text-color="white" :style="item.kind === 'tag' ? {width: '60px'} : {width: '90px'}">
+                                                <q-checkbox dense v-model="item.checked" :label="item.kind" color="primary" keep-color
+                                                    @update:model-value="onCheckLinkedItems(props.row, item)"
+                                                    />
+                                            </q-avatar>
+                                            {{ item.title }}
+                                        </q-chip>
+                                    </div>
                                 </div>
+
                             </div>
                         </q-btn-dropdown>
                     </q-td>
@@ -155,6 +166,22 @@ export default {
         type TLinkedItem = {kind: 'tag' | 'instance', checked: boolean, key: string, title: string}
         let linkedItems = ref([])
         let currentQueryIdx = ref(-1)
+
+        const list = () => {
+            if (!state.data.taskFilter) return state.data.tasks
+            const sf = state.data.taskFilter.toLowerCase()
+            return state.data.tasks.filter(f =>
+                (f.item.state.title && f.item.state.title.toLowerCase().indexOf(sf) >= 0) ||
+                (f.item.state.key && f.item.state.key.toLowerCase().indexOf(sf) >= 0)
+            )
+        }
+
+        const showLinkedItem = (item: TLinkedItem): boolean => {
+            if (!state.data.taskLinkFilter) return true
+            const sf = state.data.taskLinkFilter.toLowerCase()
+            if (item.title && item.title.toLowerCase().indexOf(sf) >= 0) return true
+            return false
+        }
 
         const onAdd = (source: TTask) => {
             state.func.task.add(source)
@@ -238,6 +265,8 @@ export default {
             }),
             currentQueryIdx,
             linkedItems,
+            list,
+            showLinkedItem,
             onAdd,
             onOpenQueries,
             onSelectQuery,

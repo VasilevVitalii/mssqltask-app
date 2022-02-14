@@ -3,7 +3,7 @@ import * as vv from "vv-common"
 import * as env from "@/core/_env"
 import { TTicketResult } from "mssqltask"
 
-export type TTaskServiceStat = {idx: number, path: string, file: string, dateStart: Date, dateStop: Date, duration: number, data: TTicketResult, hasError: boolean}
+export type TTaskServiceStat = {idx: number, path: string, file: string, dateStart: Date, dateStop: Date, duration: number, data: TReplyHistoryTaskDayData, hasError: boolean}
 type TTaskService = {d: Date, task: string, stat: TTaskServiceStat[], hasError: () => boolean}
 type TTaskServiceByTask = {task: string, items: TTaskService[]}
 type TTaskServiceByDate = {d: Date, items: TTaskService[]}
@@ -15,7 +15,8 @@ export const state = reactive({
         viewBy: "date",
         itemsByTask: [] as TTaskServiceByTask[],
         itemsByDate: [] as TTaskServiceByDate[],
-        itemView: undefined as TTaskService | undefined
+        itemView: undefined as TTaskService | undefined,
+        itemFilter: '',
     },
     func: {
         load: (callback?: () => void) => {

@@ -1,9 +1,10 @@
 import path from 'path'
 import * as vv from 'vv-common'
-import { TPost, TPostHistoryServiceList, TPostHistoryServiceItemDownload, TPostHistoryServiceItemView, TReply, TReplyHistoryServiceList, TReplyHistoryServiceItemView, TPostHistoryTaskList, TReplyHistoryTaskList, TPostHistoryTaskDay, TReplyHistoryTaskDay, TPostHistoryTaskItemView, TPostHistoryTaskItemDownload, THistoryTaskItemType, TReplyHistoryTaskItemView } from "./onPost"
+import { TPost, TReply, TPostHistoryTaskList, TReplyHistoryTaskList, TPostHistoryTaskDay, TReplyHistoryTaskDay, TPostHistoryTaskItemView, THistoryTaskItemType, TReplyHistoryTaskItemView, TReplyDepotLoad } from "./onPost"
 import { env } from '../app'
 import * as fs from 'fs'
-import { INSPECT_MAX_BYTES } from 'buffer'
+import { TTicketResult } from 'mssqltask'
+import { OnPostDepotLoad } from './onPostDepot'
 
 export function OnPostHistoryTaskList(requestData: TPost, callback: (statusCode: number, message: TReply | string) => void) {
     const rd = requestData as TPostHistoryTaskList
@@ -44,35 +45,45 @@ export function OnPostHistoryTaskDay(requestData: TPost, callback: (statusCode: 
             callback(500, `in scan task result dir ${error.message}`)
             return
         }
-        vv.readFiles(files.filter(f => f.file.match(fileMask)).map(m => {return path.join(m.path, m.file)}), {encoding: 'utf8'}, files => {
-            const reply: TReplyHistoryTaskDay = {files: []}
 
-            files.filter(f => f.fullFileName).forEach(f => {
-                f.fullFileName = f.fullFileName.substring(env.options.task.path.length + 1, f.fullFileName.length).replace(/\\/g, '/')
-                let ticketData = undefined
-                try {
-                    ticketData = JSON.parse(f.data)
-                } catch(error) {
-                    //empty error handler
-                }
-                if (!ticketData) return
+        OnPostDepotLoad({kind: 'depotLoad', token: ''}, (code, data) => {
+            const mssqllist = data as TReplyDepotLoad
 
-                const p = path.parse(f.fullFileName)
+            vv.readFiles(files.filter(f => f.file.match(fileMask)).map(m => {return path.join(m.path, m.file)}), {encoding: 'utf8'}, files => {
+                const reply: TReplyHistoryTaskDay = {files: []}
 
-                reply.files.push({
-                    path: p.dir,
-                    file: p.base,
-                    data: ticketData
+                files.filter(f => f.fullFileName).forEach(f => {
+                    f.fullFileName = f.fullFileName.substring(env.options.task.path.length + 1, f.fullFileName.length).replace(/\\/g, '/')
+                    let ticketData = undefined as TTicketResult
+                    try {
+                        ticketData = JSON.parse(f.data)
+                    } catch(error) {
+                        //empty error handler
+                    }
+                    if (!ticketData) return
+
+                    const p = path.parse(f.fullFileName)
+
+                    reply.files.push({
+                        path: p.dir,
+                        file: p.base,
+                        data: {...ticketData, servers: ticketData.servers.map(m => {
+                            return {
+                                ...m,
+                                title: (mssqllist?.mssqls || []).find(f => vv.equal(f.instance, m.instance))?.title
+                            }
+                        })}
+                    })
                 })
+
+                const fileReadError = files.find(f => f.errorRead)
+                if (fileReadError) {
+                    callback(500, `in read file ${fileReadError.fullFileName} ${fileReadError.errorRead}`)
+                    return
+                }
+
+                callback(200, reply)
             })
-
-            const fileReadError = files.find(f => f.errorRead)
-            if (fileReadError) {
-                callback(500, `in read file ${fileReadError.fullFileName} ${fileReadError.errorRead}`)
-                return
-            }
-
-            callback(200, reply)
         })
     })
 }

@@ -41,6 +41,12 @@
                                 style="margin: 0px 0px 0px 5px"
                             >
                                 <div>
+                                    <q-input borderless v-model="state.data.itemFilter" placeholder="filter by title and instance" input-style="min-width: 200px" style="margin: 10px">
+                                        <template v-slot:prepend>
+                                            <q-icon v-if="state.data.itemFilter === ''" name="search" />
+                                            <q-icon v-else name="clear" class="cursor-pointer" @click="state.data.itemFilter = ''" />
+                                        </template>
+                                    </q-input>
                                     <q-table
                                         flat
                                         square
@@ -54,6 +60,7 @@
                                         :rows="props.row.data.servers"
                                         style="width: calc(100vw / 2); height: calc(100vh / 1.5 - 15px); overflow-y: hidden; overflow-x: hidden"
                                         :columns="[
+                                            {name: 'title', label: 'title', field: 'title', sortable: true, style: 'width: 200px', align: 'left'},
                                             {name: 'instance', label: 'instance', field: 'instance', sortable: true, style: 'width: 200px', align: 'left'},
                                             {name: 'execDurationMsec', label: 'duration', field: 'execDurationMsec', sortable: true, style: 'width: 200px', align: 'left'},
                                             {name: 'countRows', label: 'download rows', field: 'countRows', sortable: true, style: 'width: 150px', align: 'left'},
@@ -64,6 +71,9 @@
                                         ]">
                                         <template v-slot:body="props2">
                                             <q-tr :props="props2" :class="props2.row.execError ? 'text-negative' : undefined">
+                                                <q-td key="title" :props="props2">
+                                                    {{ props2.row.title }}
+                                                </q-td>
                                                 <q-td key="instance" :props="props2">
                                                     {{ props2.row.instance }}
                                                 </q-td>
@@ -103,7 +113,7 @@
 </template>
 <script lang="ts">
 import { ref } from 'vue'
-import { TTaskServiceStat } from './state'
+import { TTaskServiceStat, state } from './state'
 import * as env from '@/core/_env'
 
 export default {
@@ -121,9 +131,19 @@ export default {
             })
         }
 
+        const list = () => {
+            // if (!state.data.taskFilter) return state.data.tasks
+            // const sf = state.data.taskFilter.toLowerCase()
+            // return state.data.tasks.filter(f =>
+            //     (f.item.state.title && f.item.state.title.toLowerCase().indexOf(sf) >= 0) ||
+            //     (f.item.state.key && f.item.state.key.toLowerCase().indexOf(sf) >= 0)
+            // )
+        }
+
         return {
             showDateTime: env.showDateTime,
             showMsec: env.showMsec,
+            state,
             pagination1: ref({
                 rowsPerPage: 0
             }),

@@ -1,7 +1,7 @@
 import * as vv from 'vv-common'
 import { TRequest } from "vv-httpgate"
 import { Create as CreateJwtManager } from 'vv-jwt'
-import { TTicketResult } from 'mssqltask'
+import { TTicketResult, TTicketResultServer } from 'mssqltask'
 
 import { env } from './../app'
 import { TDepotMssql } from './../depotMssql'
@@ -37,8 +37,9 @@ export type TPostHistoryServiceItemDownload = {kind: 'historyServiceItemDownload
 export type TPostHistoryTaskList = {kind: 'historyTaskList', token: string, d1: string, d2: string }
 export type TReplyHistoryTaskList = {map: {d: string, task: string}[]}
 
+export type TReplyHistoryTaskDayData = TTicketResult & {servers: TTicketResultServer[] & {title: string}[]}
 export type TPostHistoryTaskDay = {kind: 'historyTaskDay', token: string, d: string, task: string }
-export type TReplyHistoryTaskDay = {files: {path: string, file: string, data: TTicketResult}[]}
+export type TReplyHistoryTaskDay = {files: {path: string, file: string, data: TReplyHistoryTaskDayData}[]}
 
 export type THistoryTaskItemType = 'ticket' | 'row' | 'msg'
 export type TPostHistoryTaskItemView = {kind: 'historyTaskItemView', token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }

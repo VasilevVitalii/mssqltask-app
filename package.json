@@ -1,6 +1,6 @@
 {
     "name": "mssqltask-app",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Tasks for many Microsoft SQL Servers",
     "main": "dist/src/index.js",
     "bin": "dist/src/index.js",

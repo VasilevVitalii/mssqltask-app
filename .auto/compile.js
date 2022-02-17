@@ -10,7 +10,7 @@ const vv = require('vv-common')
 //build ui
 fs.emptyDirSync(s.dirDistUi())
 
-const coreRestFullFileName = path.join(s.dirRootUi(), 'src', 'core', 'rest.ts')
+const coreRestFullFileName = path.join(s.dirRootUi(), 'src', 'core', 'axios.ts')
 const coreRestText = fs.readFileSync(coreRestFullFileName, 'utf8')
 fs.writeFileSync(coreRestFullFileName, coreRestText.replace(`const replaceInCompileUrl = "http://localhost:3084"`, `const replaceInCompileUrl = window.location.protocol + '//' + window.location.host`) )
 

@@ -125,8 +125,8 @@ export const state = reactive({
             state.data.buzy = true
 
             const forDelete = {
-                mssqls: state.data.servers.filter(f => f.isDel && f.item.state.path).map(m => { return {path: m.item.state.path || '', file: m.item.state.file || ''} }),
-                tasks: state.data.tasks.filter(f => f.isDel && f.item.state.path).map(m => { return {path: m.item.state.path || '', file: m.item.state.file || ''} })
+                mssqls: state.data.servers.filter(f => f.isDel && f.item.state.file).map(m => { return {path: m.item.state.path || '', file: m.item.state.file || ''} }),
+                tasks: state.data.tasks.filter(f => f.isDel && f.item.state.file).map(m => { return {path: m.item.state.path || '', file: m.item.state.file || ''} })
             }
             const forUpsert = {
                 mssqls: state.data.servers.filter(f => f.isNew || f.item.getUpdProps().length > 0).map(m => { return m.item.state }),
@@ -134,6 +134,7 @@ export const state = reactive({
             }
 
             if (forDelete.mssqls.length <= 0 && forDelete.tasks.length <= 0 && forUpsert.mssqls.length <= 0 && forUpsert.tasks.length <= 0) {
+                state.data.buzy = false
                 if (callback) callback(false)
                 return
             }

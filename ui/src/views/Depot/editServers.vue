@@ -92,7 +92,7 @@ export default {
         }
 
         const onPassword = (source: TServer) => {
-            const password = env.dialogQuestion('password', 'Password', 'change password for server', '', result => {
+            const password = env.dialogPromt('password', 'Password', 'change password for server', '', result => {
                 if (!result) return
                 source.item.state.password = result
             })

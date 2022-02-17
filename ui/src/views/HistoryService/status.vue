@@ -5,7 +5,9 @@
         </div>
         <div style="display: flex; align-self: center; margin: 0px 0px 0px 10px" class="noactive" v-if="state.data.view">
             <q-separator style="margin: 2px 10px 2px 10px" vertical color="white" />
-            view file "{{state.data.view.type}}" on date {{env.showDate(state.data.view.item.d)}}, file has {{state.data.view.countLines}} line(s)
+            view file "{{state.data.view.type}}" on date {{env.showDate(state.data.view.item.d)}}
+            <q-separator style="margin: 2px 10px 2px 10px" vertical color="white" />
+            {{state.data.view.countLines}} line(s)
         </div>
     </div>
 </template>

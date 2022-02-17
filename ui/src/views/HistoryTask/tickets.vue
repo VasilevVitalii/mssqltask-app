@@ -57,7 +57,7 @@
                                         :rows-per-page-options="[0]"
                                         :virtual-scroll-sticky-size-start="48"
                                         row-key="idxs"
-                                        :rows="props.row.data.servers"
+                                        :rows="list(props.row.data?.servers || [])"
                                         style="width: calc(100vw / 2); height: calc(100vh / 1.5 - 15px); overflow-y: hidden; overflow-x: hidden"
                                         :columns="[
                                             {name: 'title', label: 'title', field: 'title', sortable: true, style: 'width: 200px', align: 'left'},
@@ -113,14 +113,15 @@
 </template>
 <script lang="ts">
 import { ref } from 'vue'
-import { TTaskServiceStat, state } from './state'
+import { TTaskService, TTaskServiceStat, state } from './state'
 import * as env from '@/core/_env'
+import { TReplyHistoryTaskDayDataServer } from "../../../../src/api/onPost"
 
 export default {
     props: {
-        item: undefined as TTaskServiceStat | undefined
+        item: undefined as TTaskService | undefined
     },
-    setup() {
+    setup(props: any) {
         const downloadFile = (type: string, path: string, file: string, idxs: string) => {
             env.api.historyTaskItemDownload({type: type as any, pathTicket: path, fileTicket: file, serverIdxs: idxs}, (blob, filename) => {
                 if (!blob || !filename) return
@@ -131,13 +132,13 @@ export default {
             })
         }
 
-        const list = () => {
-            // if (!state.data.taskFilter) return state.data.tasks
-            // const sf = state.data.taskFilter.toLowerCase()
-            // return state.data.tasks.filter(f =>
-            //     (f.item.state.title && f.item.state.title.toLowerCase().indexOf(sf) >= 0) ||
-            //     (f.item.state.key && f.item.state.key.toLowerCase().indexOf(sf) >= 0)
-            // )
+        const list = (servers: any[]) => {
+            if (!state.data.itemFilter) return servers
+            const sf = state.data.itemFilter.toLowerCase()
+            return servers.filter((f: any) =>
+                (f.title && f.title.toLowerCase().indexOf(sf) >= 0) ||
+                (f.instance && f.instance.toLowerCase().indexOf(sf) >= 0)
+            )
         }
 
         return {
@@ -151,6 +152,7 @@ export default {
                 rowsPerPage: 0
             }),
             downloadFile,
+            list
         }
     }
 }

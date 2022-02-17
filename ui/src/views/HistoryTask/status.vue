@@ -8,7 +8,11 @@
         </div>
         <div style="display: flex; align-self: center; margin: 0px 0px 0px 10px" class="noactive" v-if="state.data.itemView">
             <q-separator style="margin: 2px 10px 2px 10px" vertical color="white" />
-            view statistics by task "{{ state.data.itemView.task }}" on date {{env.showDate(state.data.itemView.d)}}, {{state.data.itemView.stat.length}} exec(s)
+            view statistics by task "{{ state.data.itemView.task }}" on date {{env.showDate(state.data.itemView.d)}}
+            <q-separator style="margin: 2px 10px 2px 10px" vertical color="white" />
+            {{state.data.itemView.stat.length}} exec(s)
+            <q-separator style="margin: 2px 10px 2px 10px" vertical color="white" />
+            {{ state.data.itemView.stat.some(f => f.hasError) ? 'has error(s)' : 'no errors' }}
         </div>
     </div>
 </template>

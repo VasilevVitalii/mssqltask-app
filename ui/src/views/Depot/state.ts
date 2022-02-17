@@ -110,6 +110,13 @@ export const state = reactive({
                 if (callback) callback()
             })
         },
+        hasChanges: (): boolean => {
+            if (state.data.servers.some(f => f.isNew || f.isDel)) return true
+            if (state.data.tasks.some(f => f.isNew || f.isDel)) return true
+            if (state.data.servers.some(f => f.item.getUpdProps().length > 0)) return true
+            if (state.data.tasks.some(f => f.item.getUpdProps().length > 0)) return true
+            return false
+        },
         save: (callback?: (needSave?: boolean) => void) => {
             if (state.data.buzy) {
                 if (callback) callback()

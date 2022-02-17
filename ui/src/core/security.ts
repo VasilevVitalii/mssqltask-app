@@ -1,7 +1,7 @@
 import { ref } from "vue"
 import { TReplySignin } from "../../../src/api/onPost"
 import { sendDirectly } from "./axios"
-import { question } from "./dialog"
+import { promt } from "./dialog"
 
 export let token = ref((localStorage.getItem("token") as string) || "")
 export function setToken(value: string) {
@@ -14,7 +14,7 @@ export function setToken(value: string) {
 }
 
 export function signin(callback: (token: string | undefined) => void) {
-    question('password', 'SIGN IN', 'enter password', '', password => {
+    promt('password', 'SIGN IN', 'enter password', '', password => {
         if (password === undefined) {
             callback(undefined)
             return

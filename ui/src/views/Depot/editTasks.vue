@@ -11,10 +11,10 @@
                 row-key="idx"
                 :rows="list()"
                 :columns="[
-                    {name: 'title', label: 'title', field: 'item.state.title', sortable: true, style: 'width: 200px', align: 'left'},
-                    {name: 'key', label: 'uniq key', field: 'item.state.key', sortable: true, style: 'width: 200px', align: 'left'},
+                    {name: 'title', label: 'title', field: 'item.state.title', sortable: true, align: 'left'},
+                    {name: 'key', label: 'uniq key', field: 'item.state.key', sortable: true, style: 'width: 300px', align: 'left'},
                     {name: 'allow', label: 'enabled, allow rows and messages', style: 'width: 200px', align: 'left'},
-                    {name: 'schedule', label: 'schedule', field: 'item.state.metronom', style: 'width: 200px', align: 'left'},
+                    {name: 'schedule', label: 'schedule', field: 'item.state.metronom', style: 'width: 180px', align: 'left'},
                     {name: 'queries', label: 'queries', style: 'width: 100px', align: 'left'},
                     {name: 'servers', label: 'servers', style: 'width: 100px', align: 'left'},
                     {name: 'actions', align: 'left', style: 'width: 200px'},

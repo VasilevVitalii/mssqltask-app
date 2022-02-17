@@ -37,7 +37,8 @@ export type TPostHistoryServiceItemDownload = {kind: 'historyServiceItemDownload
 export type TPostHistoryTaskList = {kind: 'historyTaskList', token: string, d1: string, d2: string }
 export type TReplyHistoryTaskList = {map: {d: string, task: string}[]}
 
-export type TReplyHistoryTaskDayData = TTicketResult & {servers: TTicketResultServer[] & {title: string}[]}
+export type TReplyHistoryTaskDayDataServer = TTicketResultServer & {title: string}
+export type TReplyHistoryTaskDayData = TTicketResult & {servers: TReplyHistoryTaskDayDataServer[]}
 export type TPostHistoryTaskDay = {kind: 'historyTaskDay', token: string, d: string, task: string }
 export type TReplyHistoryTaskDay = {files: {path: string, file: string, data: TReplyHistoryTaskDayData}[]}
 

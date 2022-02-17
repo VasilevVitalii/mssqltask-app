@@ -1,5 +1,7 @@
 <template>
     <q-toolbar style="height: 50px">
+        <q-btn dense color="accent" flat :label="state.data.countLoad > 0 ? 'reload' : 'load'" @click="onLoad()"/>
+        <q-separator style="margin: 10px 10px 10px 10px" vertical color="primary" />
         <q-btn dense color="accent" flat label="save tasks and servers" @click="onSave()"/>
         <q-separator style="margin: 10px 10px 10px 10px" vertical color="primary" />
         <div style="width: 150px">
@@ -48,6 +50,18 @@ import * as env from '@/core/_env'
 export default {
 
     setup() {
+
+        const onLoad = () => {
+            if (state.func.hasChanges()) {
+                env.dialogQuestion('Load tasks and servers', 'Task or servers has changed that will be lost after reload. Continue?', result => {
+                    if (!result) return
+                    state.func.load()
+                })
+            } else {
+                state.func.load()
+            }
+        }
+
         const onAdd = () => {
             if (state.data.viewBy === 'server') {
                 state.func.server.add()
@@ -87,6 +101,7 @@ export default {
         return {
             state,
             env,
+            onLoad,
             onAdd,
             onUndo,
             onSave

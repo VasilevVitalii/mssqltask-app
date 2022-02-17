@@ -1,9 +1,9 @@
-import { notify as dialogNotify, question as dialogQuestion } from './dialog'
+import { notify as dialogNotify, promt as dialogPromt, question as dialogQuestion} from './dialog'
 import { goto as routerGoto } from './router'
 import * as vv from "vv-common"
 import api from './api'
 
-export { api, dialogNotify, dialogQuestion, routerGoto }
+export { api, dialogNotify, dialogPromt, dialogQuestion, routerGoto }
 
 export function showDate(d: Date): string {
     return vv.dateFormat(d, "yyyy-mm-dd")

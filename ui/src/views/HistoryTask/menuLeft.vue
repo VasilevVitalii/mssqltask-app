@@ -29,14 +29,15 @@
                         group="g"
                     >
                         <div>
-                            <q-btn v-if="item.items.some(f => f.stat.length <= 0)" flat color="accent" size="sm" label="load statistics for all tasks by date" @click="state.func.loadStat(item.items.filter(f => !f.statDay))" style="margin-left: auto; display: block"/>
+                            <q-btn v-if="item.items.some(f => f.stat.length <= 0)" flat color="accent" size="sm" label="load all tasks by date" @click="state.func.loadStat(item.items.filter(f => !f.statDay))" style="margin-left: auto; display: block"/>
                             <div v-for="(item, idx) in item.items" :key="idx" >
                                 <div style="display: flex">
                                     <div :class="item.hasError() ? 'text-negative' : undefined">
                                         {{ item.task }}
                                     </div>
-                                <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view statistic" @click="state.data.itemView = item" style="margin-left: auto; display: block"/>
-                                <q-btn v-else flat color="accent" size="sm" label="load statistic" @click="state.func.loadStat([item])" style="margin-left: auto; display: block"/>
+                                    <q-space/>
+                                    <q-btn flat color="accent" size="sm" label="load" @click="state.func.loadStat([item], () => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block"/>    
+                                    <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view" @click="state.data.itemView = item" style="margin-left: auto; display: block"/>
                                 </div>
                             </div>
                         </div>
@@ -52,14 +53,15 @@
                         :header-class="item.items.some(f => f.hasError()) ? 'text-negative' : undefined"
                         group="g"
                     >
-                        <q-btn v-if="item.items.some(f => f.stat.length <= 0)" flat color="accent" size="sm" label="load statistics for all dates by task" @click="state.func.loadStat(item.items.filter(f => !f.statDay))" style="margin-left: auto; display: block"/>
+                        <q-btn v-if="item.items.some(f => f.stat.length <= 0)" flat color="accent" size="sm" label="load all dates by task" @click="state.func.loadStat(item.items.filter(f => !f.statDay))" style="margin-left: auto; display: block"/>
                         <div v-for="(item, idx) in item.items" :key="idx" >
                             <div style="display: flex">
                                 <div :class="item.hasError() ? 'text-negative' : undefined">
                                     {{ env.showDate(item.d) }}
                                 </div>
-                                <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view statistic" @click="state.data.itemView = item" style="margin-left: auto; display: block"/>
-                                <q-btn v-else flat color="accent" size="sm" label="load statistic" @click="state.func.loadStat([item])" style="margin-left: auto; display: block"/>
+                                <q-space/>
+                                <q-btn flat color="accent" size="sm" label="load" @click="state.func.loadStat([item],() => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block"/>
+                                <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view" @click="state.data.itemView = item" style="margin-left: auto; display: block"/>
                             </div>
                         </div>
                     </q-expansion-item>
@@ -73,7 +75,6 @@ import { state } from './state'
 import * as env from '@/core/_env'
 
 export default {
-
     setup() {
         return {
             state,

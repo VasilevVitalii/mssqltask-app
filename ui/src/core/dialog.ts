@@ -15,7 +15,7 @@ export function notify(kind: "info" | "warn" | "error", text: string | Error) {
     })
 }
 
-export function question(kind: "text" | "number" | "textarea" | "password", title: string, message: string, defaultValue: string, callback: (result: string) => void) {
+export function promt(kind: "text" | "number" | "textarea" | "password", title: string, message: string, defaultValue: string, callback: (result: string) => void) {
     const res = new Promise(resolve => {
         Dialog.create({
             title: title,
@@ -39,5 +39,31 @@ export function question(kind: "text" | "number" | "textarea" | "password", titl
     })
     res.then(data => {
         callback(data as string)
+    })
+}
+
+export function question(title: string, message: string, callback: (result: boolean) => void) {
+    const res = new Promise(resolve => {
+        Dialog.create({
+            title: title,
+            message: message,
+            cancel: true,
+            persistent: true,
+        })
+            .onOk(() => {
+                resolve(true)
+            })
+            .onOk(() => {
+                resolve(true)
+            })
+            .onCancel(() => {
+                resolve(false)
+            })
+            .onDismiss(() => {
+                resolve(false)
+            })
+    })
+    res.then(data => {
+        callback(data as boolean)
     })
 }

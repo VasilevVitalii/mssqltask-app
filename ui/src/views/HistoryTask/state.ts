@@ -2,9 +2,10 @@ import { reactive } from "vue"
 import * as vv from "vv-common"
 import * as env from "@/core/_env"
 import { TTicketResult } from "mssqltask"
+import { TReplyHistoryTaskDayData } from "../../../../src/api/onPost"
 
 export type TTaskServiceStat = {idx: number, path: string, file: string, dateStart: Date, dateStop: Date, duration: number, data: TReplyHistoryTaskDayData, hasError: boolean}
-type TTaskService = {d: Date, task: string, stat: TTaskServiceStat[], hasError: () => boolean}
+export type TTaskService = {d: Date, task: string, stat: TTaskServiceStat[], hasError: () => boolean}
 type TTaskServiceByTask = {task: string, items: TTaskService[]}
 type TTaskServiceByDate = {d: Date, items: TTaskService[]}
 
@@ -105,7 +106,9 @@ export const state = reactive({
                     return
                 }
                 state.data.buzy = false
-                if (callback) callback()
+                if (callback) {
+                    callback()
+                }
             }, 200)
 
             requests.forEach(r => {

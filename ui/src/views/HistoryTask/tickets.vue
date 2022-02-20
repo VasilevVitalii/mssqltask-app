@@ -1,6 +1,8 @@
 <template>
     <div v-if="item && item.stat && item.stat.length > 0">
+        <q-btn flat color="accent" label="reload" style="margin: 10px 0px 0px 5px" @click="state.func.loadStat([item])" />
         <q-table
+            ref="tabData"
             flat
             square
             virtual-scroll
@@ -40,7 +42,7 @@
                                 label="view"
                                 style="margin: 0px 0px 0px 5px"
                             >
-                                <div>
+                                <div style="width: calc(100vw / 2); height: calc(100vh / 1.5); overflow-x: hidden; overflow-y: hidden">
                                     <q-input borderless v-model="state.data.itemFilter" placeholder="filter by title and instance" input-style="min-width: 200px" style="margin: 10px">
                                         <template v-slot:prepend>
                                             <q-icon v-if="state.data.itemFilter === ''" name="search" />
@@ -58,7 +60,7 @@
                                         :virtual-scroll-sticky-size-start="48"
                                         row-key="idxs"
                                         :rows="list(props.row.data?.servers || [])"
-                                        style="width: calc(100vw / 2); height: calc(100vh / 1.5 - 15px); overflow-y: hidden; overflow-x: hidden"
+                                        style="width: 100%; height: calc(100vh / 1.5 - 60px); overflow-x: scroll"
                                         :columns="[
                                             {name: 'title', label: 'title', field: 'title', sortable: true, style: 'width: 200px', align: 'left'},
                                             {name: 'instance', label: 'instance', field: 'instance', sortable: true, style: 'width: 200px', align: 'left'},

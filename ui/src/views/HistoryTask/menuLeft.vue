@@ -36,8 +36,8 @@
                                         {{ item.task }}
                                     </div>
                                     <q-space/>
-                                    <q-btn flat color="accent" size="sm" label="load" @click="state.func.loadStat([item], () => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block"/>    
                                     <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view" @click="state.data.itemView = item" style="margin-left: auto; display: block"/>
+                                    <q-btn v-else flat color="accent" size="sm" label="load" @click="state.func.loadStat([item], () => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block"/>    
                                 </div>
                             </div>
                         </div>
@@ -60,8 +60,8 @@
                                     {{ env.showDate(item.d) }}
                                 </div>
                                 <q-space/>
-                                <q-btn flat color="accent" size="sm" label="load" @click="state.func.loadStat([item],() => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block"/>
                                 <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view" @click="state.data.itemView = item" style="margin-left: auto; display: block"/>
+                                <q-btn v-else flat color="accent" size="sm" label="load" @click="state.func.loadStat([item],() => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block"/>
                             </div>
                         </div>
                     </q-expansion-item>

@@ -20,11 +20,11 @@ export function Go() {
         ]
     }, error => {
         if (error) {
-            env.logger.errorExt(`on init DEPOT`, error)
+            env.logger.errorExt(`depot`, error)
         }
     })
     env.depot.app.callback.onError(error => {
-        env.logger.errorExt(`DEPOT`, error)
+        env.logger.errorExt(`depot`, error)
     })
     if (env.options.log.allowTrace) {
         env.depot.app.callback.onDebug(debug => {
@@ -37,7 +37,7 @@ export function Go() {
     env.depot.app.callback.onStateComplete(() => {
         depotMssql.Load(env.depot.app, env.depot.mssql.list, env.options.data.pathMssql, (error, isCreateExample, countLoaded) => {
             if (error) {
-                env.logger.errorExt('DEPOT', error)
+                env.logger.errorExt('depot', error)
             } else {
                 env.depot.mssql.isInit = true
                 env.depot.mssql.isChange = true
@@ -46,7 +46,7 @@ export function Go() {
         })
         depotTask.Load(env.depot.app, env.depot.task.list, env.options.data.pathTask, (error, isCreateExample, countLoaded) => {
             if (error) {
-                env.logger.errorExt('DEPOT', error)
+                env.logger.errorExt('depot', error)
             } else {
                 env.depot.task.isInit = true
                 env.depot.task.isChange = true

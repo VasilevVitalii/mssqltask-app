@@ -17,7 +17,7 @@
                         </q-chip>
                         <q-btn-group outline>
                             <q-btn flat color="accent" size="sm" label="download" @click="downloadFile(item.fileError)" />
-                            <q-btn flat color="accent" size="sm" label="view" @click="state.func.view('error', item)" />
+                            <q-btn flat color="accent" size="sm" label="load" @click="state.func.view('error', item)" />
                         </q-btn-group>
                     </div>
                     <div v-show="item.fileDebug && item.sizeDebug > 0" style="display: flex; align-items: center">
@@ -27,7 +27,7 @@
                         </q-chip>
                         <q-btn-group outline>
                             <q-btn flat color="accent" size="sm" label="download" @click="downloadFile(item.fileDebug)"/>
-                            <q-btn flat color="accent" size="sm" label="view" @click="state.func.view('debug', item)" />
+                            <q-btn flat color="accent" size="sm" label="load" @click="state.func.view('debug', item)" />
                         </q-btn-group>
                     </div>
                     <div v-show="item.fileTrace && item.sizeTrace > 0" style="display: flex; align-items: center">
@@ -37,7 +37,7 @@
                         </q-chip>
                         <q-btn-group outline>
                             <q-btn flat color="accent" size="sm" label="download" @click="downloadFile(item.fileTrace)"/>
-                            <q-btn flat color="accent" size="sm" label="view" @click="state.func.view('trace', item)" />
+                            <q-btn flat color="accent" size="sm" label="load" @click="state.func.view('trace', item)" />
                         </q-btn-group>
                     </div>
                 </div>

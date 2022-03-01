@@ -5,7 +5,7 @@
         <q-btn flat :class="{ noactive: router.currentRoute.value.path !== '/realtime'}" @click="routerGoto('/realtime')">realtime</q-btn>
         <q-btn flat :class="{ noactive: router.currentRoute.value.path !== '/historyservice' }" @click="routerGoto('/historyservice')">service log</q-btn>
         <q-btn flat :class="{ noactive: router.currentRoute.value.path !== '/historytask' }" @click="routerGoto('/historytask')">tasks history</q-btn>
-        <q-btn flat :class="{ noactive: router.currentRoute.value.path !== '/depot' }" @click="routerGoto('/depot')">edit tasks</q-btn>
+        <q-btn flat :class="{ noactive: router.currentRoute.value.path !== '/depot' }" @click="routerGoto('/depot')">edit tasks and servers</q-btn>
         <q-space />
         <q-separator v-show="token && token.length > 0" class="noactive" color="white" vertical style="margin: 10px"></q-separator>
         <q-btn v-show="token && token.length > 0" flat class="noactive"  @click="signout()">sign out</q-btn>

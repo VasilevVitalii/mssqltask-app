@@ -10,13 +10,22 @@ const vv = require('vv-common')
 //build ui
 fs.emptyDirSync(s.dirDistUi())
 
-const coreRestFullFileName = path.join(s.dirRootUi(), 'src', 'core', 'axios.ts')
-const coreRestText = fs.readFileSync(coreRestFullFileName, 'utf8')
-fs.writeFileSync(coreRestFullFileName, coreRestText.replace(`const replaceInCompileUrl = "http://localhost:3084"`, `const replaceInCompileUrl = window.location.protocol + '//' + window.location.host`) )
+// const coreRestFullFileName = path.join(s.dirRootUi(), 'src', 'core', 'axios.ts')
+// const coreRestText = fs.readFileSync(coreRestFullFileName, 'utf8')
+// fs.writeFileSync(coreRestFullFileName, coreRestText.replace(`const replaceInCompileUrl = "http://localhost:3084"`, `const replaceInCompileUrl = window.location.protocol + '//' + window.location.host`) )
+
+const understudyValuesFilaName = path.join(s.dirRootUi(), 'src', 'core', 'understudyValues.ts')
+const understudyValuesText = fs.readFileSync(understudyValuesFilaName, 'utf8')
+fs.writeFileSync(
+    understudyValuesFilaName,
+    understudyValuesText
+        .replace(`export const values`, `export const valuesDev`)
+        .replace(`export const valuesProd`, `export const values`)
+)
 
 execSync(`npm rebuild`, {cwd: s.dirRootUi() })
 execSync(`npm run build`, {cwd: s.dirRootUi() })
-fs.writeFileSync(coreRestFullFileName, coreRestText)
+fs.writeFileSync(understudyValuesFilaName, understudyValuesText)
 
 //build backend
 fs.emptyDirSync(s.dirDist())

@@ -3,6 +3,7 @@ import { notify } from "./dialog"
 import axios, { AxiosRequestHeaders, AxiosResponseHeaders } from "axios"
 import { TPost, TReply } from "../../../src/api/onPost"
 import {token, setToken, signin} from './security'
+import { values } from './understudyValues'
 
 const posts: { data: TPost; callback: (result: any | undefined, headers?: AxiosResponseHeaders) => void }[] = []
 
@@ -14,10 +15,10 @@ export function sendDirectly(post: TPost, callback: (status: number, reply: TRep
     (post as any).token = token.value
 
     //in project compile replaced by "window.location.protocol + '//' + window.location.host"
-    const replaceInCompileUrl = "http://localhost:3084"
+    //const replaceInCompileUrl = "http://localhost:3084"
 
     axios({
-        url: replaceInCompileUrl,
+        url: values.backendUrl,
         method: "POST",
         headers: { "Content-Type": "application/json; charset=UTF-8" },
         data: JSON.stringify(post),

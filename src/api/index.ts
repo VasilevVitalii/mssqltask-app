@@ -2,6 +2,7 @@ import { env } from './../app'
 import { Create as CreateHttpGate } from 'vv-httpgate'
 import * as onGet from './onGet'
 import * as onPost from './onPost'
+import * as onServerEvent from './onServerEvent'
 
 export function Go() {
     if (!env.options.manage.allowApi) return
@@ -24,6 +25,10 @@ export function Go() {
         }
 
         request.reply(400, `request method "${request.method}" not supported`)
+    })
+
+    httpGate.onServerEvent(event => {
+        onServerEvent.Handler(event)
     })
 
     httpGate.start(addr => {

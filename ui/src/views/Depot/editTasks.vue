@@ -11,8 +11,8 @@
                 row-key="idx"
                 :rows="list()"
                 :columns="[
-                    {name: 'title', label: 'title', field: 'item.state.title', sortable: true, align: 'left'},
                     {name: 'key', label: 'uniq key', field: 'item.state.key', sortable: true, style: 'width: 300px', align: 'left'},
+                    {name: 'title', label: 'note', field: 'item.state.title', sortable: true, align: 'left'},
                     {name: 'allow', label: 'enabled, allow rows and messages', style: 'width: 200px', align: 'left'},
                     {name: 'schedule', label: 'schedule', field: 'item.state.metronom', style: 'width: 180px', align: 'left'},
                     {name: 'queries', label: 'queries', style: 'width: 100px', align: 'left'},
@@ -21,11 +21,11 @@
                 ]">
             <template v-slot:body="props">
                 <q-tr :props="props" :class="props.row.isDel ? 'bg-negative-light' : props.row.isNew || props.row.item.getUpdProps().length > 0 ? 'bg-positive-light' : undefined">
-                    <q-td key="title" :props="props">
-                        <q-input borderless placeholder="title" v-model="props.row.item.state.title"/>
-                    </q-td>
                     <q-td key="key" :props="props">
-                        <q-input borderless placeholder="key" v-model="props.row.item.state.key"/>
+                        <q-input type="textarea" spellcheck="false" autogrow borderless placeholder="key" v-model="props.row.item.state.key"/>
+                    </q-td>
+                    <q-td key="title" :props="props">
+                        <q-input type="textarea" spellcheck="false" autogrow borderless placeholder="note" v-model="props.row.item.state.title"/>
                     </q-td>
                     <q-td key="allow" :props="props">
                         <q-checkbox v-model="props.row.item.state.allowExec"/>
@@ -129,13 +129,13 @@
 
                                 <div style="display: flex; flex-flow: wrap; align-content: baseline">
                                     <div v-for="(item, idxItem) in linkedItems" :key="idxItem">
-                                        <q-chip square v-show="showLinkedItem(item)">
+                                        <q-chip square v-show="showLinkedItem(item)" style="max-width: calc(100vw / 2 - 100px)">
                                             <q-avatar color="primary" text-color="white" :style="item.kind === 'tag' ? {width: '60px'} : {width: '90px'}">
                                                 <q-checkbox dense v-model="item.checked" :label="item.kind" color="primary" keep-color
                                                     @update:model-value="onCheckLinkedItems(props.row, item)"
                                                     />
                                             </q-avatar>
-                                            {{ item.title }}
+                                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.title }}</span>
                                         </q-chip>
                                     </div>
                                 </div>

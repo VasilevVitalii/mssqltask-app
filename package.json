@@ -1,6 +1,6 @@
 {
     "name": "mssqltask-app",
-    "version": "0.0.5",
+    "version": "0.0.7",
     "description": "Tasks for many Microsoft SQL Servers",
     "main": "dist/src/index.js",
     "bin": "dist/src/index.js",
@@ -41,11 +41,11 @@
     },
     "homepage": "https://github.com/VasilevVitalii/mssqltask-app#readme",
     "devDependencies": {
-        "@types/node": "^17.0.18",
-        "@typescript-eslint/eslint-plugin": "5.12.0",
-        "@typescript-eslint/parser": "5.12.0",
+        "@types/node": "^17.0.21",
+        "@typescript-eslint/eslint-plugin": "5.12.1",
+        "@typescript-eslint/parser": "5.12.1",
         "adm-zip": "^0.5.9",
-        "eslint": "8.9.0",
+        "eslint": "8.10.0",
         "npm-check-updates": "^12.4.0",
         "pkg": "^5.5.2",
         "prettier": "2.5.1",
@@ -57,9 +57,9 @@
     "dependencies": {
         "backdepot": "^0.2.1",
         "mssqldriver": "^0.0.11",
-        "mssqltask": "^0.2.3",
+        "mssqltask": "^0.3.3",
         "vv-common": "^0.1.1",
-        "vv-httpgate": "^0.1.0",
+        "vv-httpgate": "^0.1.1",
         "vv-jwt": "^0.0.5",
         "vv-logger": "^0.1.0"
     }

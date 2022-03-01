@@ -5,6 +5,10 @@ import { TDepotTask } from './depotTask'
 import { TDepotMssql } from './depotMssql'
 
 const SUCCESS_STORY_LENGTH = 10
+const MAX_MESSAGE_IN_STORY = 20
+
+export type TStoryServer = mssqltask.TTicketResultServer & {title: string, messages: string[]}
+export type TStory = mssqltask.TTicketResult & {servers: TStoryServer[]}
 
 export type TMssqlTask = {
     mssqltask: mssqltask.IApp,
@@ -13,10 +17,11 @@ export type TMssqlTask = {
     state: ('idle' | 'work' | 'stop'),
     needRemove: boolean,
     shift: {task: TDepotTask, mssqls: TDepotMssql[]} | undefined,
-    sucessStory: ('full' | 'part' | 'none')[]
+    stories: TStory[]
 }
 
 export function Go() {
+
     env.mssqltask.timerRefresh = setTimeout(function tick() {
         for (let i = env.mssqltask.list.length - 1; i >= 0; i--) {
             if (!env.mssqltask.list[i].needRemove) continue
@@ -97,7 +102,7 @@ function createCore(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) : mssqltas
             pathSaveRows: depot.task.allowRows === true ? env.options.task.path : undefined,
             pathSaveMessages: depot.task.allowMessages === true ? env.options.task.path : undefined,
         }
-    })
+    }, true)
     res.maxWorkersSet(env.options.task.maxThreads)
     res.onError(error => {
         env.logger.errorExt('MSSQLTASK core', error)
@@ -113,31 +118,51 @@ function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
         shift: undefined,
         state: 'idle',
         needRemove: false,
-        sucessStory: []
+        stories: []
     }
     env.mssqltask.list.push(item)
+    env.callbackTaskChange.forEach(callback => {
+        callback(item, undefined)
+    })
 
     item.mssqltask.onChanged(state => {
+
+        let isSeriousState = false
+
         if (state.kind === 'start') {
             item.state = 'work'
             item.usedWorkers = state.usedWorkers
             env.logger.traceExt('task', `process "${item.source.task.key}"`)
             setMaxWorkers()
+            isSeriousState = true
         } else if (state.kind === 'stop') {
             item.state = 'idle'
             item.usedWorkers = 0
             env.logger.traceExt('task', `idle "${item.source.task.key}"`)
             setMaxWorkers()
-            const countOk = state.ticket.servers.filter(f => !f.execError).length
-            const countBad = state.ticket.servers.filter(f => f.execError).length
-            item.sucessStory.unshift(countBad === 0 ? 'full' : countOk === 0 ? 'none' : 'part')
-            if (item.sucessStory.length > SUCCESS_STORY_LENGTH) item.sucessStory.splice(SUCCESS_STORY_LENGTH, 1)
+
+            item.stories.push({
+                ...state.ticket,
+                servers: state.ticket.servers.map(m => { return {
+                    ...m,
+                    title: env.depot.mssql.list.find(f => f.instance === m.instance)?.title || m.instance,
+                    messages: (state.messages.find(f => f.serverIdxs === m.idxs)?.messages || []).slice(0, MAX_MESSAGE_IN_STORY).map(mm => { return mm.text })
+                }})
+            })
+            if (item.stories.length > SUCCESS_STORY_LENGTH) item.stories.splice(0, 1)
+            isSeriousState = true
         } else if (state.kind === 'finish') {
             env.logger.debugExt('task', `finish "${item.source.task.key}"`)
             item.needRemove = true
             if (item.shift) {
                 addAndStart(item.shift)
             }
+            isSeriousState = true
+        }
+        if (isSeriousState) {
+            env.callbackTaskChange.forEach(callback => {
+                callback(item, state)
+            })
         }
     })
 

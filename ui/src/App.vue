@@ -1,5 +1,5 @@
 <template>
-    <MainMenu v-show="router.currentRoute.value.path !== '/'"></MainMenu>
+    <MainMenu v-show="router.currentRoute.value.path !== '/' && state.data.showMainMenu" ></MainMenu>
     <router-view />
 </template>
 <script lang="ts">
@@ -7,6 +7,7 @@ import MainMenu from "@/components/MainMenu.vue"
 import { useQuasar } from "quasar"
 import { onNotify } from "@/core/dialog"
 import * as route from "@/core/router"
+import { state } from './state'
 // import { onGoto } from "@/core/router"
 // import { onSetToken } from "@/core/token"
 // import { state as stateEdit } from "@/state/edit"
@@ -24,7 +25,8 @@ export default {
         })
 
         return {
-            router: route.router
+            router: route.router,
+            state
         }
 
         // onGoto((from, to, workflow) => {

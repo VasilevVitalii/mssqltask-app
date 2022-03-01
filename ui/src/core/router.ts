@@ -1,11 +1,12 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router"
 import { reactive } from "vue"
+import {state as stateMain } from '@/state'
 
 import PageNotFound from "@/views/404.vue"
 import Depot from "@/views/Depot/index.vue"
 import HistoryService from "@/views/HistoryService/index.vue"
 import HistoryTask from "@/views/HistoryTask/index.vue"
-import Realtime from "@/views/Realtime.vue"
+import Realtime from "@/views/Realtime/index.vue"
 import Welcome from "@/views/Welcome.vue"
 
 export type TPath = "/404" | "/depot" | "/historyservice" | "/historytask" | "/realtime" | "/"
@@ -25,6 +26,9 @@ export const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+    if (from.path !== '/realtime') {
+        stateMain.data.showMainMenu = true
+    }
     next()
 })
 

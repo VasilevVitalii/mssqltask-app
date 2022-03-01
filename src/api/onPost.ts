@@ -9,11 +9,15 @@ import { TDepotTask } from './../depotTask'
 import { OnPostDepotLoad, OnPostDepotSave, OnPostDepotTestConnection } from './onPostDepot'
 import { OnPostHistoryServiceList, OnPostHistoryServiceItemDownload, OnPostHistoryServiceItemView } from './onPostHistoryService'
 import { OnPostHistoryTaskList, OnPostHistoryTaskDay, OnPostHistoryTaskItemView, OnPostHistoryTaskItemDownload } from './onPostHistoryTask'
+import { OnSigninRealtime, OnTasksRealtime } from './onServerEvent'
 
 export type TFileMode = 'view' | 'download'
 
 export type TPostSignin = {kind: 'signin', password: string}
 export type TReplySignin = {token: string}
+
+export type TPostSigninRealtime = {kind: 'signin-realtime', password: string, session: string}
+export type TPostTasksRealtime = {kind: 'tasks-realtime', session: string}
 
 export type TPostDepotLoad = {kind: 'depotLoad', token: string}
 export type TReplyDepotLoad = {mssqls: TDepotMssql[], tasks: TDepotTask[]}
@@ -48,7 +52,7 @@ export type TReplyHistoryTaskItemView = {text: string}
 
 export type TPostHistoryTaskItemDownload = {kind: 'historyTaskItemDownload', token: string, type: THistoryTaskItemType, pathTicket: string, fileTicket: string, serverIdxs: string }
 
-export type TPost = TPostSignin | TPostDepotLoad | TPostDepotSave | TPostDepotTestConnection | TPostHistoryServiceList | TPostHistoryServiceItemView | TPostHistoryServiceItemDownload | TPostHistoryTaskList | TPostHistoryTaskDay | TPostHistoryTaskItemView | TPostHistoryTaskItemDownload
+export type TPost = TPostSignin | TPostDepotLoad | TPostDepotSave | TPostDepotTestConnection | TPostHistoryServiceList | TPostHistoryServiceItemView | TPostHistoryServiceItemDownload | TPostHistoryTaskList | TPostHistoryTaskDay | TPostHistoryTaskItemView | TPostHistoryTaskItemDownload | TPostSigninRealtime | TPostTasksRealtime
 export type TReply = TReplySignin | TReplyDepotLoad | TReplyDepotSave | TReplyDepotTestConnection | TReplyHistoryServiceList | TReplyHistoryServiceItemView | TReplyHistoryTaskList | TReplyHistoryTaskDay | TReplyHistoryTaskItemView
 
 const jwtManager = CreateJwtManager({
@@ -66,6 +70,8 @@ type THandlerRule = {
 }
 const handlerRules: THandlerRule[] = [
     {kind: 'signin', level: undefined, handler: onSignin, handlerDownload: undefined },
+    {kind: 'signin-realtime', level: undefined, handler: OnSigninRealtime, handlerDownload: undefined },
+    {kind: 'tasks-realtime', level: undefined, handler: OnTasksRealtime, handlerDownload: undefined },
     {kind: 'depotLoad', level: 'view', handler: OnPostDepotLoad, handlerDownload: undefined },
     {kind: 'depotSave', level: 'edit', handler: OnPostDepotSave, handlerDownload: undefined },
     {kind: 'depotTestConnection', level: 'edit', handler: OnPostDepotTestConnection, handlerDownload: undefined },

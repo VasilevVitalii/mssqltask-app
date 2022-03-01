@@ -32,12 +32,12 @@
                             <q-btn v-if="item.items.some(f => f.stat.length <= 0)" flat color="accent" size="sm" label="load all tasks by date" @click="state.func.loadStat(item.items.filter(f => !f.statDay))" style="margin-left: auto; display: block"/>
                             <div v-for="(item, idx) in item.items" :key="idx" >
                                 <div style="display: flex">
-                                    <div :class="item.hasError() ? 'text-negative' : undefined">
+                                    <div :class="item.hasError() ? 'text-negative' : undefined" style="word-break: break-word">
                                         {{ item.task }}
                                     </div>
                                     <q-space/>
-                                    <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view" @click="state.data.itemView = item" style="margin-left: auto; display: block"/>
-                                    <q-btn v-else flat color="accent" size="sm" label="load" @click="state.func.loadStat([item], () => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block"/>    
+                                    <q-btn v-if="item.stat.length > 0" flat color="accent" size="sm" label="view" @click="state.data.itemView = item" style="margin-left: auto; display: block; align-self: center"/>
+                                    <q-btn v-else flat color="accent" size="sm" label="load" @click="state.func.loadStat([item], () => {if (item.stat.length > 0) state.data.itemView = item})" style="margin-left: auto; display: block; align-self: center"/>
                                 </div>
                             </div>
                         </div>
@@ -47,6 +47,7 @@
             <div v-show="state.data.viewBy === 'task'">
                 <div v-for="(item, idx) in state.data.itemsByTask" :key="idx" style="margin: 0px 0px 0px 15px">
                     <q-expansion-item
+                        style="word-break: break-word"
                         expand-separator
                         :label="item.task"
                         :caption="item.items.some(f => f.hasError()) ? 'has error' : '   '"

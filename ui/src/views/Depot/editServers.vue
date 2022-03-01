@@ -21,10 +21,10 @@
             <template v-slot:body="props">
                 <q-tr :props="props" :class="props.row.isDel ? 'bg-negative-light' : props.row.isNew || props.row.item.getUpdProps().length > 0 ? 'bg-positive-light' : undefined">
                     <q-td key="title" :props="props">
-                        <q-input borderless placeholder="title" v-model="props.row.item.state.title"/>
+                        <q-input type="textarea" spellcheck="false" autogrow borderless placeholder="title" v-model="props.row.item.state.title"/>
                     </q-td>
                     <q-td key="instance" :props="props">
-                        <q-input borderless placeholder="instance" v-model="props.row.item.state.instance"/>
+                        <q-input type="textarea" spellcheck="false" autogrow borderless placeholder="instance" v-model="props.row.item.state.instance"/>
                     </q-td>
                     <q-td key="login" :props="props">
                         <q-input borderless placeholder="login" v-model="props.row.item.state.login"/>

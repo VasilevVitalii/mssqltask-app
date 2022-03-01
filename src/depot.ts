@@ -116,22 +116,14 @@ function refresh() {
 
                 let needCheckDoubles = true
 
-                if (vv.isEmpty(itemA.key) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
-                    env.depot.task.badList.push(itemA.key)
-                    env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it has an empty key`)
-                    needCheckDoubles = false
-                }
-
-                if (itemA.key.length > 50 && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
-                    env.depot.task.badList.push(itemA.key)
-                    env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it has a key with length more 50 chars`)
-                    needCheckDoubles = false
-                }
-
-                if (!(new RegExp(/^[a-zA-Z0-9-_]+$/g)).test(itemA.key) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
-                    env.depot.task.badList.push(itemA.key)
-                    env.logger.errorExt('depot', `task - ignore "${itemA.key}", because it has a key with illegal chars, legal chars - "a-z", "A-Z", "0-9", "_", "-"`)
-                    needCheckDoubles = false
+                CheckTaskKey
+                if (!env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
+                    const error = CheckTaskKey(itemA.key)
+                    if (error) {
+                        env.depot.task.badList.push(itemA.key)
+                        env.logger.errorExt('depot', `task - ignore "${itemA.key}" - ${error}`)
+                        needCheckDoubles = false
+                    }
                 }
 
                 if (vv.isEmpty(itemA.queries.join('')) && !env.depot.task.badList.some(f => vv.equal(f, itemA.key))) {
@@ -155,4 +147,11 @@ function refresh() {
 
         env.depot.timerRefresh = setTimeout(tick, 1000)
     }, 1000)
+}
+
+export function CheckTaskKey(key: string): string {
+    if (!key || key.length <= 0) return 'empty key'
+    if (key.length > 50) return 'key length more 50 chars'
+    if (!(new RegExp(/^[a-zA-Z0-9-_]+$/g)).test(key)) return 'key has illegal chars, legal chars - "a-z", "A-Z", "0-9", "_", "-"'
+    return ''
 }

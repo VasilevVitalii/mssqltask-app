@@ -20,6 +20,7 @@ export type TOptions = {
         allowUi: boolean
         passwordEdit: string,
         passwordView: string,
+        passwordRealtime: string,
         http: string
     }
 }
@@ -48,6 +49,7 @@ export function Read(currentPath: string): TOptions {
             allowUi: dataJson?.manage?.allowUi === true ? true : true,
             passwordEdit: dataJson?.manage?.passwordEdit || '',
             passwordView: dataJson?.manage?.passwordView || '',
+            passwordRealtime: dataJson?.manage?.passwordRealtime || '',
             http: dataJson?.manage?.http || 'http://localhost:3084',
         }
     }

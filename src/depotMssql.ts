@@ -43,6 +43,7 @@ export function Upsert(rows: TStateRow[], action: string, list: TDepotMssql[]): 
             const item = getFromStorage(row)
             const fnd = list.find(f => vv.equal(f.path, item.path) && vv.equal(f.file, item.file))
             if (fnd) {
+                fnd.title = item.title
                 fnd.instance = item.instance
                 fnd.login = item.login
                 fnd.password = item.password,

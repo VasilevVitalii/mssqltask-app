@@ -32,7 +32,6 @@
                     </q-td>
                     <q-td key="ticket" :props="props">
                         <div style="display: flex">
-                            {{ props.row.file }}
                             <q-btn dense flat color="accent" size="sm" label="download" @click="downloadFile('ticket', props.row.path, props.row.file, '0')" style="margin: 0px 0px 0px 10px"/>
                             <q-btn-dropdown
                                 flat
@@ -42,7 +41,7 @@
                                 label="view"
                                 style="margin: 0px 0px 0px 5px"
                             >
-                                <div style="width: calc(100vw / 2); height: calc(100vh / 1.5); overflow-x: hidden; overflow-y: hidden">
+                                <div style="width: calc(100vw / 1.5); height: calc(100vh / 2)">
                                     <q-input borderless v-model="state.data.itemFilter" placeholder="filter by title and instance" input-style="min-width: 200px" style="margin: 10px">
                                         <template v-slot:prepend>
                                             <q-icon v-if="state.data.itemFilter === ''" name="search" />
@@ -60,23 +59,23 @@
                                         :virtual-scroll-sticky-size-start="48"
                                         row-key="idxs"
                                         :rows="list(props.row.data?.servers || [])"
-                                        style="width: 100%; height: calc(100vh / 1.5 - 60px); overflow-x: scroll"
+                                        style="width: calc(100vw / 1.5); display: table-row;"
                                         :columns="[
-                                            {name: 'title', label: 'title', field: 'title', sortable: true, style: 'width: 200px', align: 'left'},
-                                            {name: 'instance', label: 'instance', field: 'instance', sortable: true, style: 'width: 200px', align: 'left'},
+                                            {name: 'title', label: 'title', field: 'title', sortable: true, style: 'width: 200px; max-width: 500px', align: 'left'},
+                                            {name: 'instance', label: 'instance', field: 'instance', sortable: true, style: 'width: 200px; max-width: 400px', align: 'left'},
                                             {name: 'execDurationMsec', label: 'duration', field: 'execDurationMsec', sortable: true, style: 'width: 200px', align: 'left'},
                                             {name: 'countRows', label: 'download rows', field: 'countRows', sortable: true, style: 'width: 150px', align: 'left'},
                                             {name: 'countMessages', label: 'download msgs', field: 'countMessages', sortable: true, style: 'width: 150px', align: 'left'},
                                             {name: 'execSpId', label: 'spid', field: 'execSpId', sortable: true, style: 'width: 100px', align: 'left'},
                                             {name: 'idxs', label: 'idxs', field: 'idxs', sortable: true, style: 'width: 100px', align: 'left'},
-                                            {name: 'execError', label: 'execError', field: 'execError', sortable: true, align: 'left'},
+                                            {name: 'execError', label: 'execError', field: 'execError', sortable: true, align: 'left', style: 'max-width: 400px'},
                                         ]">
                                         <template v-slot:body="props2">
                                             <q-tr :props="props2" :class="props2.row.execError ? 'text-negative' : undefined">
-                                                <q-td key="title" :props="props2">
-                                                    {{ props2.row.title }}
+                                                <q-td key="title" :props="props2" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;align-self: center">
+                                                    <span> {{ props2.row.title }} </span>
                                                 </q-td>
-                                                <q-td key="instance" :props="props2">
+                                                <q-td key="instance" :props="props2" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;align-self: center">
                                                     {{ props2.row.instance }}
                                                 </q-td>
                                                 <q-td key="execDurationMsec" :props="props2">
@@ -88,8 +87,8 @@
                                                         @click="downloadFile('row', props.row.path, props.row.file, props2.row.idxs)"/>
                                                 </q-td>
                                                 <q-td key="countMessages" :props="props2">
-                                                    <q-btn v-if="props2.row.countMessage > 0" dense flat color="accent" size="sm"
-                                                        :label="props2.row.countMessage + ' msg(s)'"
+                                                    <q-btn v-if="props2.row.countMessages > 0" dense flat color="accent" size="sm"
+                                                        :label="props2.row.countMessages + ' msg(s)'"
                                                         @click="downloadFile('msg', props.row.path, props.row.file, props2.row.idxs)"/>
                                                 </q-td>
                                                 <q-td key="execSpId" :props="props2">
@@ -99,13 +98,14 @@
                                                     {{ props2.row.idxs }}
                                                 </q-td>
                                                 <q-td key="execError" :props="props2">
-                                                    {{ props2.row.execError }}
+                                                    <span style="white-space: normal"> {{ props2.row.execError }} </span>
                                                 </q-td>
                                             </q-tr>
                                         </template>
                                     </q-table>
                                 </div>
                             </q-btn-dropdown>
+                            <span  style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"> {{ props.row.file }} </span>
                         </div>
                     </q-td>
                 </q-tr>
@@ -139,7 +139,8 @@ export default {
             const sf = state.data.itemFilter.toLowerCase()
             return servers.filter((f: any) =>
                 (f.title && f.title.toLowerCase().indexOf(sf) >= 0) ||
-                (f.instance && f.instance.toLowerCase().indexOf(sf) >= 0)
+                (f.instance && f.instance.toLowerCase().indexOf(sf) >= 0) ||
+                (f.execError && f.execError.toLowerCase().indexOf(sf) >= 0)
             )
         }
 

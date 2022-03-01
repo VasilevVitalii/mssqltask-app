@@ -9,6 +9,7 @@ import * as storeTask from './depotTask'
 import { Go as depotGo } from './depot'
 import { Go as mssqltaskGo, TMssqlTask } from './mssqltask'
 import { Go as apiGo } from './api'
+import { TTaskState } from 'mssqltask'
 
 const loggerManager = LoggerManagerCreate()
 loggerManager.onError(error => {
@@ -40,7 +41,8 @@ export const env = {
         timerRefresh: undefined as NodeJS.Timeout,
         needUpdate: false,
         list: [] as TMssqlTask[]
-    }
+    },
+    callbackTaskChange: [] as ((task: TMssqlTask, state: TTaskState) => void)[]
 }
 
 export function Go(currentPath: string) {

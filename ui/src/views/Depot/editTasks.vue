@@ -50,15 +50,15 @@
                                 </q-list>
                             </q-btn-dropdown>
                             <q-input v-show="props.row.item.state.metronom.kind === 'cron'" borderless placeholder="text cron" v-model="props.row.item.state.metronom.cron"/>
-                            <q-btn-dropdown size="sm" dense color="accent" flat label="edit" v-show="props.row.item.state.metronom.kind === 'custom'">
+                            <q-btn-dropdown size="sm" dense color="accent" flat :label="Cron(props.row.item.state.metronom)?.cron || '<empty>'" v-show="props.row.item.state.metronom.kind === 'custom'">
                                 <div style="margin: 10px; display: grid">
-                                    <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdaySun" label="sunday" style="margin: 0px 0px 0px 30px" />
-                                    <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdayMon" label="monday" style="margin: 0px 0px 0px 30px" />
-                                    <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdayTue" label="tuesday" style="margin: 0px 0px 0px 30px" />
-                                    <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdayWed" label="wednesday" style="margin: 0px 0px 0px 30px" />
-                                    <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdayThu" label="thursday" style="margin: 0px 0px 0px 30px" />
-                                    <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdayFri" label="friday" style="margin: 0px 0px 0px 30px" />
-                                    <q-checkbox :false-value="false || null" v-model="props.row.item.state.metronom.weekdaySat" label="saturday" style="margin: 0px 0px 0px 30px" />
+                                    <q-checkbox :false-value="null" v-model="props.row.item.state.metronom.weekdaySun" label="sunday" style="margin: 0px 0px 0px 70px" />
+                                    <q-checkbox :false-value="null" v-model="props.row.item.state.metronom.weekdayMon" label="monday" style="margin: 0px 0px 0px 70px" />
+                                    <q-checkbox :false-value="null" v-model="props.row.item.state.metronom.weekdayTue" label="tuesday" style="margin: 0px 0px 0px 70px" />
+                                    <q-checkbox :false-value="null" v-model="props.row.item.state.metronom.weekdayWed" label="wednesday" style="margin: 0px 0px 0px 70px" />
+                                    <q-checkbox :false-value="null" v-model="props.row.item.state.metronom.weekdayThu" label="thursday" style="margin: 0px 0px 0px 70px" />
+                                    <q-checkbox :false-value="null" v-model="props.row.item.state.metronom.weekdayFri" label="friday" style="margin: 0px 0px 0px 70px" />
+                                    <q-checkbox :false-value="null" v-model="props.row.item.state.metronom.weekdaySat" label="saturday" style="margin: 0px 0px 0px 70px" />
                                     <div style="display: flex; align-items: center">
                                         <div style="width: 100px">
                                             <q-btn-dropdown dense color="accent" flat :label="props.row.item.state.metronom.periodicity || '???'">
@@ -79,7 +79,7 @@
                                         </div>
                                         <q-input
                                             borderless
-                                            style="width: 130px"
+                                            style="width: 180px"
                                             v-model="props.row.item.state.metronom.periodMinutes"
                                             :label="'minutes' + (props.row.item.state.metronom.periodicity === 'every' ? ' every hour' : props.row.item.state.metronom.periodicity === 'once' ? ' after midnight' : '')"
                                         />
@@ -157,7 +157,8 @@
 <script lang="ts">
 import { ref, reactive } from 'vue'
 import { state, TTask, TServer } from './state'
-import * as ve from "vv-entity"
+import * as ve from 'vv-entity'
+import { Cron } from 'vv-metronom'
 import * as env from '@/core/_env'
 import { equal } from 'vv-common'
 
@@ -273,7 +274,8 @@ export default {
             onAddQuery,
             onDelQuery,
             onOpenServers,
-            onCheckLinkedItems
+            onCheckLinkedItems,
+            Cron
         }
     }
 }

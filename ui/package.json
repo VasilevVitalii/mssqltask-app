@@ -18,6 +18,7 @@
         "vue-router": "^4.0.0-0",
         "vv-common": "^0.1.0",
         "vv-entity": "^0.0.2",
+        "vv-metronom": "^0.1.1",
         "vv-timer": "^0.0.4"
     },
     "devDependencies": {

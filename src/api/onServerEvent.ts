@@ -29,7 +29,7 @@ const sessions = [] as TSession[]
 export function Handler(event: TServerEvent) {
     const session: TSession = {
         event: event,
-        key: `${vv.dateFormat(new Date(), '126')}#${vv.guid()}`,
+        key: `${vv.dateFormat(new Date(), 'yyyymmddhhmissmsec')}-${vv.guid().replace(/-/g,'')}`,
         callbackTaskChange: undefined
     }
     env.logger.debugExt('api', `prepare ServerEvent, session key ${session.key}`)

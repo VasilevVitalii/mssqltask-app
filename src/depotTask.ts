@@ -88,13 +88,13 @@ function getFromStorage(row: TypeStateRow): TDepotTask {
         const periodicity = vv.toString(vv.toBool(row.data?.metronom?.periodicity))
         metronom = {
             kind: 'custom',
-            weekdaySun: vv.nz(vv.toBool(row.data?.metronom?.weekdaySun), true),
-            weekdayMon: vv.nz(vv.toBool(row.data?.metronom?.weekdayMon), true),
-            weekdayTue: vv.nz(vv.toBool(row.data?.metronom?.weekdayTue), true),
-            weekdayWed: vv.nz(vv.toBool(row.data?.metronom?.weekdayWed), true),
-            weekdayThu: vv.nz(vv.toBool(row.data?.metronom?.weekdayThu), true),
-            weekdayFri: vv.nz(vv.toBool(row.data?.metronom?.weekdayFri), true),
-            weekdaySat: vv.nz(vv.toBool(row.data?.metronom?.weekdaySat), true),
+            weekdaySun: vv.nz(vv.toBool(row.data?.metronom?.weekdaySun), false),
+            weekdayMon: vv.nz(vv.toBool(row.data?.metronom?.weekdayMon), false),
+            weekdayTue: vv.nz(vv.toBool(row.data?.metronom?.weekdayTue), false),
+            weekdayWed: vv.nz(vv.toBool(row.data?.metronom?.weekdayWed), false),
+            weekdayThu: vv.nz(vv.toBool(row.data?.metronom?.weekdayThu), false),
+            weekdayFri: vv.nz(vv.toBool(row.data?.metronom?.weekdayFri), false),
+            weekdaySat: vv.nz(vv.toBool(row.data?.metronom?.weekdaySat), false),
             periodMinutes: vv.nz(vv.toInt(row.data?.metronom?.periodMinutes), 1),
             periodicity: periodicity === 'every' || periodicity === 'once' ? periodicity : 'every'
         }

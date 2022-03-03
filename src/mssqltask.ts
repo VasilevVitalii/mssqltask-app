@@ -43,6 +43,9 @@ export function Go() {
             if (item.task.allowExec !== true) {
                 needIgnore = true
                 env.logger.debugExt('task', `ignore "${item.task.key}", because allowExec !== true`)
+            } else if (!mssqltask.Cron(item.task.metronom)?.cron) {
+                needIgnore = true
+                env.logger.errorExt('task', `ignore "${item.task.key}", because it has an empty cron`)
             } else if (item.mssqls.length <= 0) {
                 needIgnore = true
                 env.logger.errorExt('task', `ignore "${item.task.key}", because it has an empty server list`)
@@ -166,7 +169,8 @@ function addAndStart(depot: {task: TDepotTask, mssqls: TDepotMssql[]}) {
         }
     })
 
-    env.logger.debugExt('task', `run "${item.source.task.key}" on ${item.source.mssqls.length} mssql server(s)`)
+    const cron = mssqltask.Cron(item.source.task.metronom)
+    env.logger.debugExt('task', `run "${item.source.task.key}" on ${item.source.mssqls.length} mssql server(s) with ${cron.native ? 'native' : 'generated'} cron "${cron.cron}"`)
     item.mssqltask.start()
 }
 

@@ -56,6 +56,21 @@ const factoryServer = ve.CreateFactory(emptyServer, [{prop: 'path', func: () => 
 const factoryTask = ve.CreateFactory(emptyTask)
 
 const list = (data: TReplyDepotLoad | undefined): {servers: TServer[], tasks: TTask[]} => {
+
+    if (data?.tasks) {
+        data.tasks.forEach(task => {
+            if (task.metronom.kind === 'custom') {
+                if (task.metronom.weekdaySun !== true) task.metronom.weekdaySun = null as any
+                if (task.metronom.weekdayMon !== true) task.metronom.weekdayMon = null as any
+                if (task.metronom.weekdayTue !== true) task.metronom.weekdayTue = null as any
+                if (task.metronom.weekdayWed !== true) task.metronom.weekdayWed = null as any
+                if (task.metronom.weekdayThu !== true) task.metronom.weekdayThu = null as any
+                if (task.metronom.weekdayFri !== true) task.metronom.weekdayFri = null as any
+                if (task.metronom.weekdaySat !== true) task.metronom.weekdaySat = null as any
+            }
+        })
+    }
+
     return {
         servers: (data?.mssqls || []).map((m,i) => {
             return {
@@ -129,9 +144,21 @@ export const state = reactive({
                 tasks: state.data.tasks.filter(f => f.isDel && f.item.state.file).map(m => { return {path: m.item.state.path || '', file: m.item.state.file || ''} })
             }
             const forUpsert = {
-                mssqls: state.data.servers.filter(f => f.isNew || f.item.getUpdProps().length > 0).map(m => { return m.item.state }),
-                tasks: state.data.tasks.filter(f => f.isNew || f.item.getUpdProps().length > 0).map(m => { return m.item.state }),
+                mssqls: state.data.servers.filter(f => f.isNew || f.item.getUpdProps().length > 0).map(m => { return {...m.item.state} }),
+                tasks: state.data.tasks.filter(f => f.isNew || f.item.getUpdProps().length > 0).map(m => { return {...m.item.state} }),
             }
+
+            forUpsert.tasks.forEach(task => {
+                if (task.metronom.kind === 'custom') {
+                    if (task.metronom.weekdaySun !== true) task.metronom.weekdaySun = false
+                    if (task.metronom.weekdayMon !== true) task.metronom.weekdayMon = false
+                    if (task.metronom.weekdayTue !== true) task.metronom.weekdayTue = false
+                    if (task.metronom.weekdayWed !== true) task.metronom.weekdayWed = false
+                    if (task.metronom.weekdayThu !== true) task.metronom.weekdayThu = false
+                    if (task.metronom.weekdayFri !== true) task.metronom.weekdayFri = false
+                    if (task.metronom.weekdaySat !== true) task.metronom.weekdaySat = false
+                }
+            })
 
             if (forDelete.mssqls.length <= 0 && forDelete.tasks.length <= 0 && forUpsert.mssqls.length <= 0 && forUpsert.tasks.length <= 0) {
                 state.data.buzy = false

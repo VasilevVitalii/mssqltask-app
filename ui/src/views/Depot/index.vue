@@ -6,7 +6,7 @@
             <ComponentEditServers v-show="state.data.viewBy === 'server'"/>
             <ComponentEditTasks v-show="state.data.viewBy === 'task'"/>
         </div>
-        <ComponentStatus/>
+        <ComponentStatus class="fixed-bottom"/>
     </div>
 </template>
 <script lang="ts">

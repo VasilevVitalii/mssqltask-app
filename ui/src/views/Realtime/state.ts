@@ -20,11 +20,10 @@ export const state = reactive({
         timer: undefined as TTimerHandler | undefined,
         showPasswordPromt: false,
         session: undefined as string | undefined,
-        showDetailsByTaskKey: undefined as string | undefined,
+        showDetailsByTaskKey: undefined as string | undefined
     },
     func: {
         start: (callback?: () => void) => {
-            console.log('START!')
             if (state.data.es) {
                 if (callback) callback
                 return
@@ -87,13 +86,12 @@ export const state = reactive({
                         })
                     })
                 } else if (data.kind === 'tasks') {
-                    console.log('tasks')
                     state.data.tasks = data.tasks.map(m => {
                         return {
                             ...m,
                             msecAgo: undefined,
                             story: function (): TStory | undefined {
-                                return this.stories.length > 0 ? this.stories[this.stories.length - 1] : undefined 
+                                return this.stories.length > 0 ? this.stories[this.stories.length - 1] : undefined
                             }
                         }
                     })
@@ -104,7 +102,6 @@ export const state = reactive({
                     })
                 } else if (data.kind === 'task') {
                     const task = data.task
-                    console.log('task', task.key, task.state)
                     let fnd = state.data.tasks.findIndex(f => vv.equal(f.key, task.key))
                     if (fnd >= 0) {
                         state.data.tasks[fnd].state = task.state
@@ -127,7 +124,6 @@ export const state = reactive({
                     })
                 } else if (data.kind === 'task-remove') {
                     const key = data.key
-                    console.log('del task', key)
                     let fnd = state.data.tasks.findIndex(f => vv.equal(f.key, key))
                     if (fnd >= 0) {
                         if (vv.equal(state.data.showDetailsByTaskKey, state.data.tasks[fnd].key)) {
@@ -139,7 +135,6 @@ export const state = reactive({
             }
         },
         stop: () => {
-            console.log('STOP')
             if (state.data.timer) {
                 state.data.timer.finish()
                 state.data.timer = undefined

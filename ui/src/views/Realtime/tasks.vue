@@ -7,7 +7,7 @@
                     {{ itemTask.key }}
                 </div>
                 <q-space/>
-                <q-btn size="xs" dense color="accent" flat label="open" @click="state.data.showDetailsByTaskKey = itemTask.key" style="margin: 0px 4px 0px 0px; align-self: start"/>
+                <q-btn size="xs" dense color="accent" flat label="watch" @click="state.data.showDetailsByTaskKey = itemTask.key" style="margin: 0px 4px 0px 0px; align-self: start"/>
             </div>
             <div style="display: flex; width: 100%; height: 22px; margin: 0px 0px 0px 5px">
                 <div v-for="(itemStory, idxStory) in itemTask.stories" :key="idxStory" style="margin: 0px 0px 0px 2px">

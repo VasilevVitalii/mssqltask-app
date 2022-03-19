@@ -7,12 +7,7 @@ import MainMenu from "@/components/MainMenu.vue"
 import { useQuasar } from "quasar"
 import { onNotify } from "@/core/dialog"
 import * as route from "@/core/router"
-import { state } from './state'
-// import { onGoto } from "@/core/router"
-// import { onSetToken } from "@/core/token"
-// import { state as stateEdit } from "@/state/edit"
-// import { state as stateTaskLog } from "@/state/taskLog"
-// import { state as stateServiceLog } from "@/state/serviceLog"
+import { state, callbacksFullScreen } from './state'
 
 export default {
     components: {
@@ -24,26 +19,28 @@ export default {
             $q.notify(notify)
         })
 
+        window.onresize = function () {
+            if (window.matchMedia('(display-mode: fullscreen)').matches || window.document.fullscreenElement) {
+                state.data.fullscreen = true
+                callbacksFullScreen.forEach(callback => {
+                    callback()
+                })
+            } else {
+                state.data.fullscreen = false
+                callbacksFullScreen.forEach(callback => {
+                    callback()
+                })
+            }
+        }
+
+        state.func.onFullScreen(() => {
+            state.data.showMainMenu = !state.data.fullscreen
+        })
+
         return {
             router: route.router,
             state
         }
-
-        // onGoto((from, to, workflow) => {
-        //     if (to?.url === "u-workflow") {
-        //         if (workflow === "w-edit" && !stateEdit.loadedInit) {
-        //             stateEdit.load()
-        //         }
-        //     }
-        // })
-
-        // onSetToken((prev, curr) => {
-        //     if (prev !== curr) {
-        //         stateEdit.loadedInit = false
-        //         stateTaskLog.loadedInit = false
-        //         stateServiceLog.loadedInit = false
-        //     }
-        // })
     }
 }
 </script>

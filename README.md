@@ -1,6 +1,18 @@
+<div id="badges">
+  <a href="https://www.linkedin.com/in/vasilev-vitalii/">
+    <img src="https://img.shields.io/badge/LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn Badge"/>
+  </a>
+  <a href="https://www.youtube.com/channel/UChlSfeGAF1fTDwu6-5b3dnQ">
+    <img src="https://img.shields.io/badge/YouTube-red?style=for-the-badge&logo=youtube&logoColor=white" alt="Youtube Badge"/>
+  </a>
+</div>
+
 # mssqltask-app
 Many tasks for many Microsoft SQL Servers.
 Can save queries results to JSON files (for example, to collect various statistics).
+* Video (RUS) - https://youtu.be/eGZ08J6_EGg
+* Video (ENG) - https://youtu.be/xXaeoi0Lqzc
+
 ## 1. getting started
 From https://drive.google.com/drive/folders/13qF-zbjZE8DPyhU5-tyyxaRlpdqWNPjF?usp=sharing download this compiled app for windows or linux.
 Unzip and run. After first start app will create setting file **mssqltask-app.json** and directories **data**, **log**, **result**.

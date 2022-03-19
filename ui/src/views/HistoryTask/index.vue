@@ -9,7 +9,7 @@
                 <ComponentTickets :item="state.data.itemView"/>
             </div>
         </div>
-        <ComponentStatus/>
+        <ComponentStatus class="fixed-bottom"/>
     </div>
 </template>
 <script lang="ts">

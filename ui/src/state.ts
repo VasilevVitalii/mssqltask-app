@@ -1,11 +1,15 @@
 import { reactive } from "vue"
-import * as vv from "vv-common"
-import * as env from "@/core/_env"
+
+export const callbacksFullScreen = [] as (() => void)[]
 
 export const state = reactive({
     data: {
         showMainMenu: true,
+        fullscreen: false,
     },
     func: {
+        onFullScreen(callback: (() => void)) {
+            callbacksFullScreen.push(callback)
+        }
     }
 })
